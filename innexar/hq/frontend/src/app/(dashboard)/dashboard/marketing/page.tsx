@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Mail, Send, Users } from 'lucide-react'
+import { Plus, Mail, Send } from 'lucide-react'
 
 import { useQuery } from '@tanstack/react-query'
 import { marketingApi } from '@/lib/api/marketing'

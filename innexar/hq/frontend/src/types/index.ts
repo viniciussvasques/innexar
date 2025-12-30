@@ -115,7 +115,7 @@ export interface Plan {
   name: string
   price: number
   billingPeriod: 'monthly' | 'yearly'
-  features: any
+  features: Record<string, unknown>
   isActive: boolean
   createdAt: string
   updatedAt: string

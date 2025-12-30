@@ -1,5 +1,5 @@
 import api from '../api' // Importa a instância do axios configurada
-import { TeamMember, UserRole } from '@/types'
+import { TeamMember } from '@/types'
 
 export const teamApi = {
     getAll: async () => {

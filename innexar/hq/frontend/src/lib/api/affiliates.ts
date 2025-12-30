@@ -12,12 +12,12 @@ export const affiliatesApi = {
         return data
     },
 
-    create: async (data: any) => {
+    create: async (data: Partial<Affiliate>) => {
         const response = await api.post<Affiliate>('/affiliates', data);
         return response.data;
     },
 
-    update: async (id: string, data: any) => {
+    update: async (id: string, data: Partial<Affiliate>) => {
         const response = await api.patch<Affiliate>(`/affiliates/${id}`, data);
         return response.data;
     },

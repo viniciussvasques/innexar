@@ -220,6 +220,7 @@ export default function TeamPage() {
                     </div>
                   </TableCell>
                   <TableCell>
+                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     <Badge variant={roleColors[member.role as UserRole] as any}>
                       <Shield className="mr-1 h-3 w-3" />
                       {roleLabels[member.role as UserRole]}

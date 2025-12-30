@@ -50,7 +50,7 @@ export default function LoginPage() {
         description: 'Bem-vindo ao INNEXAR HQ',
       })
       router.push('/dashboard')
-    } catch (error) {
+    } catch {
       toast({
         title: 'Erro ao fazer login',
         description: 'Email ou senha incorretos',

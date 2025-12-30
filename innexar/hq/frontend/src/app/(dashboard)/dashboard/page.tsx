@@ -12,19 +12,13 @@ import {
 import {
   LineChart,
   Line,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from 'recharts'
-import { formatCurrency, formatPercentage } from '@/lib/utils'
+import { formatCurrency } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
@@ -90,10 +84,7 @@ export default function DashboardPage() {
     { month: 'Jun', value: 127450 },
   ]
 
-  const productsData = [
-    { name: 'Mecânica365', value: 127450, color: '#3B82F6' },
-    { name: 'Futuros SaaS', value: 0, color: '#64748B' },
-  ]
+
 
   const recentActivities = [
     { type: 'sale', text: 'Nova venda - Plano Pro', time: 'há 5 minutos' },

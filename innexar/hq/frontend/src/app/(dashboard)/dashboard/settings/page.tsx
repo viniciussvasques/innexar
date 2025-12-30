@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
-import { Bell, Shield, Key, Globe, Save } from 'lucide-react'
+import { Bell, Shield, Key, Save } from 'lucide-react'
 
 export default function SettingsPage() {
   return (

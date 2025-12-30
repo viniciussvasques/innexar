@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { DollarSign, TrendingUp, Download, Calendar } from 'lucide-react'
+import { TrendingUp, Download } from 'lucide-react'
 import { formatCurrency, formatDate } from '@/lib/utils'
 
 import { useQuery } from '@tanstack/react-query'
@@ -89,6 +89,7 @@ export default function BillingPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
+              {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
               {transactions.map((transaction: any) => (
                 <TableRow key={transaction.id}>
                   <TableCell className="text-sm text-muted-foreground">
