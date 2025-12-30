@@ -49,6 +49,7 @@ export interface Product {
   color?: string
   totalUsers: number
   totalRevenue: number
+  monthlyGrowth: number
   createdAt: string
   updatedAt: string
 }
@@ -109,3 +110,36 @@ export interface DashboardStats {
   topAffiliates: Array<{ name: string; sales: number; commission: number }>
 }
 
+export interface Plan {
+  id: string
+  name: string
+  price: number
+  billingPeriod: 'monthly' | 'yearly'
+  features: any
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface Subscription {
+  id: string
+  customerId: string
+  planId: string
+  status: 'active' | 'canceled' | 'past_due' | 'trialing'
+  startDate: string
+  currentPeriodEnd: string
+  createdAt: string
+  updatedAt: string
+  plan?: Plan
+}
+
+export interface Invoice {
+  id: string
+  subscriptionId: string
+  amount: number
+  status: 'paid' | 'open' | 'void' | 'uncollectible'
+  dueDate: string
+  paidAt?: string
+  pdfUrl?: string
+  createdAt: string
+}

@@ -7,8 +7,6 @@ import {
   Users,
   UserPlus,
   Package,
-  TrendingUp,
-  TrendingDown,
   ArrowRight,
 } from 'lucide-react'
 import {
@@ -30,106 +28,98 @@ import { formatCurrency, formatPercentage } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 
-// Mock data - Substituir por dados reais da API
-const stats = [
-  {
-    title: 'Receita Total',
-    value: 'R$ 127.450',
-    change: +12.5,
-    icon: DollarSign,
-    description: 'vs. mês anterior',
-  },
-  {
-    title: 'Clientes Ativos',
-    value: '2.847',
-    change: +8.3,
-    icon: Users,
-    description: 'em todos os produtos',
-  },
-  {
-    title: 'Afiliados',
-    value: '184',
-    change: +5.2,
-    icon: UserPlus,
-    description: 'gerando vendas',
-  },
-  {
-    title: 'Produtos SaaS',
-    value: '1',
-    change: 0,
-    icon: Package,
-    description: 'Mecânica365',
-  },
-]
+import { useQuery } from '@tanstack/react-query'
+import { billingApi } from '@/lib/api/billing'
+import { affiliatesApi } from '@/lib/api/affiliates'
+import { productsApi } from '@/lib/api/products'
 
-const revenueData = [
-  { month: 'Jan', value: 85000 },
-  { month: 'Fev', value: 92000 },
-  { month: 'Mar', value: 98000 },
-  { month: 'Abr', value: 105000 },
-  { month: 'Mai', value: 115000 },
-  { month: 'Jun', value: 127450 },
-]
+import type { Invoice, Subscription, Affiliate, Product } from '@/types'
+import { PageHeader } from '@/components/common/page-header'
+import { StatsCard } from '@/components/common/stats-card'
 
-const productsData = [
-  { name: 'Mecânica365', value: 127450, color: '#3B82F6' },
-  { name: 'Futuros SaaS', value: 0, color: '#64748B' },
-]
-
-const recentActivities = [
-  { type: 'sale', text: 'Nova venda - Plano Pro', time: 'há 5 minutos' },
-  { type: 'affiliate', text: 'Novo afiliado cadastrado', time: 'há 1 hora' },
-  { type: 'support', text: 'Ticket #1234 resolvido', time: 'há 2 horas' },
-  { type: 'user', text: '5 novos clientes', time: 'há 3 horas' },
-]
+// ... existing imports ...
 
 export default function DashboardPage() {
+  const { data: invoices = [] } = useQuery<Invoice[]>({ queryKey: ['invoices'], queryFn: () => billingApi.getAllInvoices() })
+  const { data: subscriptions = [] } = useQuery<Subscription[]>({ queryKey: ['subscriptions'], queryFn: () => billingApi.getAllSubscriptions() })
+  const { data: affiliates = [] } = useQuery<Affiliate[]>({ queryKey: ['affiliates'], queryFn: () => affiliatesApi.getAll() })
+  const { data: products = [] } = useQuery<Product[]>({ queryKey: ['products'], queryFn: () => productsApi.getAll() })
+
+  const totalRevenue = invoices.reduce((acc: number, inv: Invoice) => acc + (inv.amount || 0), 0)
+  const activeClients = subscriptions.filter((sub: Subscription) => sub.status === 'active').length
+  const activeAffiliates = affiliates.filter((aff: Affiliate) => aff.status === 'active').length
+  const totalProducts = products.length
+
+  const stats = [
+    {
+      title: 'Receita Total',
+      value: formatCurrency(totalRevenue),
+      change: 0, // Mock change for now
+      icon: DollarSign,
+      description: 'total acumulado',
+    },
+    {
+      title: 'Clientes Ativos',
+      value: activeClients.toLocaleString(),
+      change: 0,
+      icon: Users,
+      description: 'em todos os produtos',
+    },
+    {
+      title: 'Afiliados Ativos',
+      value: activeAffiliates.toLocaleString(),
+      change: 0,
+      icon: UserPlus,
+      description: 'gerando vendas',
+    },
+    {
+      title: 'Produtos SaaS',
+      value: totalProducts.toString(),
+      change: 0,
+      icon: Package,
+      description: 'disponíveis',
+    },
+  ]
+
+  const revenueData = [
+    { month: 'Jan', value: 85000 },
+    { month: 'Fev', value: 92000 },
+    { month: 'Mar', value: 98000 },
+    { month: 'Abr', value: 105000 },
+    { month: 'Mai', value: 115000 },
+    { month: 'Jun', value: 127450 },
+  ]
+
+  const productsData = [
+    { name: 'Mecânica365', value: 127450, color: '#3B82F6' },
+    { name: 'Futuros SaaS', value: 0, color: '#64748B' },
+  ]
+
+  const recentActivities = [
+    { type: 'sale', text: 'Nova venda - Plano Pro', time: 'há 5 minutos' },
+    { type: 'affiliate', text: 'Novo afiliado cadastrado', time: 'há 1 hora' },
+    { type: 'support', text: 'Ticket #1234 resolvido', time: 'há 2 horas' },
+    { type: 'user', text: '5 novos clientes', time: 'há 3 horas' },
+  ]
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Visão geral de todos os produtos e serviços INNEXAR
-        </p>
-      </div>
+      <PageHeader
+        title="Dashboard"
+        description="Visão geral de todos os produtos e serviços INNEXAR"
+      />
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
-          <Card key={stat.title}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {stat.title}
-              </CardTitle>
-              <stat.icon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  {stat.change > 0 ? (
-                    <>
-                      <TrendingUp className="h-3 w-3 text-green-500" />
-                      <span className="text-green-500">
-                        {formatPercentage(stat.change)}
-                      </span>
-                    </>
-                  ) : stat.change < 0 ? (
-                    <>
-                      <TrendingDown className="h-3 w-3 text-red-500" />
-                      <span className="text-red-500">
-                        {formatPercentage(stat.change)}
-                      </span>
-                    </>
-                  ) : (
-                    <span>—</span>
-                  )}
-                </span>
-                <span>{stat.description}</span>
-              </div>
-            </CardContent>
-          </Card>
+          <StatsCard
+            key={stat.title}
+            title={stat.title}
+            value={stat.value}
+            icon={stat.icon}
+            description={stat.description}
+            change={stat.change}
+          />
         ))}
       </div>
 
@@ -265,4 +255,4 @@ export default function DashboardPage() {
     </div>
   )
 }
-
+}

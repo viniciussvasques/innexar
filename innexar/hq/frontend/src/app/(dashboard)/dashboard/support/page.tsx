@@ -8,14 +8,18 @@ import { Badge } from '@/components/ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Search, MessageSquare, Clock, CheckCircle2 } from 'lucide-react'
 
-const mockTickets = [
-  { id: '1234', title: 'Erro ao cadastrar cliente', priority: 'high', status: 'open', product: 'Mecânica365', user: 'João Silva', createdAt: '2025-12-28T10:30:00' },
-  { id: '1235', title: 'Dúvida sobre planos', priority: 'medium', status: 'in_progress', product: 'Mecânica365', user: 'Maria Santos', createdAt: '2025-12-27T15:20:00' },
-  { id: '1236', title: 'Integração com API', priority: 'low', status: 'resolved', product: 'Mecânica365', user: 'Carlos Lima', createdAt: '2025-12-26T09:15:00' },
-]
+import { useQuery } from '@tanstack/react-query'
+import { supportApi } from '@/lib/api/support'
+
+// Mock removed
 
 export default function SupportPage() {
   const [search, setSearch] = useState('')
+
+  const { data: tickets = [] } = useQuery({
+    queryKey: ['tickets'],
+    queryFn: () => supportApi.getAll(),
+  })
 
   return (
     <div className="space-y-6">
@@ -93,7 +97,7 @@ export default function SupportPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockTickets.map((ticket) => (
+              {tickets.map((ticket: any) => (
                 <TableRow key={ticket.id}>
                   <TableCell className="font-mono">#{ticket.id}</TableCell>
                   <TableCell className="font-medium">{ticket.title}</TableCell>

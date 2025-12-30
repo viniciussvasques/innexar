@@ -15,81 +15,59 @@ import {
 } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 
-const products = [
-  {
-    id: 'mecanica365',
-    name: 'Mecânica365',
-    slug: 'mecanica365',
-    description: 'ERP para gestão de oficinas mecânicas',
-    status: 'active',
-    url: 'https://admin.mecanica365.com',
-    color: '#3B82F6',
-    totalUsers: 2847,
-    totalRevenue: 127450,
-    monthlyGrowth: 12.5,
-    activeTickets: 12,
-  },
-]
+import { useQuery } from '@tanstack/react-query'
+import { productsApi } from '@/lib/api/products'
+
+import type { Product } from '@/types'
+import { PageHeader } from '@/components/common/page-header'
+import { StatsCard } from '@/components/common/stats-card'
+import { StatusBadge } from '@/components/common/status-badge'
 
 export default function ProductsPage() {
+  const { data: products = [] } = useQuery<Product[]>({
+    queryKey: ['products'],
+    queryFn: () => productsApi.getAll(),
+  })
+
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Produtos SaaS</h1>
-          <p className="text-muted-foreground">
-            Gerencie todos os produtos da INNEXAR
-          </p>
-        </div>
+      <PageHeader
+        title="Produtos SaaS"
+        description="Gerencie todos os produtos da INNEXAR"
+      >
         <Button variant="outline">
           <Plus className="mr-2 h-4 w-4" />
           Novo Produto
         </Button>
-      </div>
+      </PageHeader>
 
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total de Produtos</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{products.length}</div>
-            <p className="text-xs text-muted-foreground">1 ativo</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Clientes Totais</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {products.reduce((acc, p) => acc + p.totalUsers, 0).toLocaleString()}
-            </div>
-            <p className="text-xs text-muted-foreground">em todos os produtos</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Receita Total</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(products.reduce((acc, p) => acc + p.totalRevenue, 0))}
-            </div>
-            <p className="text-xs text-muted-foreground">neste mês</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Crescimento</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">+12.5%</div>
-            <p className="text-xs text-muted-foreground">vs. mês anterior</p>
-          </CardContent>
-        </Card>
+        <StatsCard
+          title="Total de Produtos"
+          value={products.length.toString()}
+          icon={Package}
+          description="1 ativo"
+        />
+        <StatsCard
+          title="Clientes Totais"
+          value={products.reduce((acc, p) => acc + p.totalUsers, 0).toLocaleString()}
+          icon={Users}
+          description="em todos os produtos"
+        />
+        <StatsCard
+          title="Receita Total"
+          value={formatCurrency(products.reduce((acc, p) => acc + p.totalRevenue, 0))}
+          icon={DollarSign}
+          description="neste mês"
+        />
+        <StatsCard
+          title="Crescimento"
+          value="+12.5%"
+          icon={TrendingUp}
+          description="vs. mês anterior"
+          change={12.5}
+        />
       </div>
 
       {/* Products Grid */}
@@ -114,7 +92,7 @@ export default function ProductsPage() {
                     <p className="text-sm text-muted-foreground">{product.description}</p>
                   </div>
                 </div>
-                <Badge variant="success">{product.status === 'active' ? 'Ativo' : 'Inativo'}</Badge>
+                <StatusBadge status={product.status} />
               </div>
             </CardHeader>
             <CardContent className="space-y-4">

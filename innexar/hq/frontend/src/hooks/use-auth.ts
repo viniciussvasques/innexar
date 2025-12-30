@@ -24,7 +24,7 @@ export const useAuth = create<AuthState>()(
       login: async (email: string, password: string) => {
         set({ isLoading: true })
         try {
-          const response = await api.post('/auth/login', { email, password })
+          const response = await api.post('/auth/login/team', { email, password })
           const { user, token } = response.data
 
           localStorage.setItem('token', token)

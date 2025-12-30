@@ -9,7 +9,7 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-  ) {}
+  ) { }
 
   async login(dto: LoginDto) {
     const affiliate = await this.prisma.affiliate.findUnique({
@@ -39,8 +39,8 @@ export class AuthService {
       data: { lastLoginAt: new Date() },
     });
 
-    const payload = { 
-      sub: affiliate.id, 
+    const payload = {
+      sub: affiliate.id,
       email: affiliate.email,
       role: 'affiliate',
     };
@@ -53,6 +53,42 @@ export class AuthService {
         email: affiliate.email,
         status: affiliate.status,
         referralCode: affiliate.referralCode,
+      },
+    };
+  }
+
+  async loginTeam(dto: LoginDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { email: dto.email.toLowerCase() },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Credenciais inválidas');
+    }
+
+    const isPasswordValid = await bcrypt.compare(dto.password, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Credenciais inválidas');
+    }
+
+    if (!user.isActive) {
+      throw new UnauthorizedException('Sua conta foi desativada.');
+    }
+
+    const payload = {
+      sub: user.id,
+      email: user.email,
+      role: user.role, // Enum role
+    };
+
+    return {
+      accessToken: this.jwtService.sign(payload),
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatarUrl: user.avatarUrl,
       },
     };
   }
@@ -112,7 +148,7 @@ export class AuthService {
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^A-Z]/g, '')
       .substring(0, 6);
-    
+
     const randomSuffix = Math.random().toString(36).substring(2, 6).toUpperCase();
     let code = `${baseName}${randomSuffix}`;
 

@@ -7,13 +7,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { DollarSign, TrendingUp, Download, Calendar } from 'lucide-react'
 import { formatCurrency, formatDate } from '@/lib/utils'
 
-const mockTransactions = [
-  { id: '1', type: 'sale', amount: 499, status: 'completed', product: 'Mecânica365', description: 'Plano Pro - Oficina XYZ', createdAt: '2025-12-28' },
-  { id: '2', type: 'commission', amount: -99.8, status: 'completed', affiliateId: '1', description: 'Comissão - Pedro Fernandes', createdAt: '2025-12-28' },
-  { id: '3', type: 'sale', amount: 299, status: 'completed', product: 'Mecânica365', description: 'Plano Basic - Oficina ABC', createdAt: '2025-12-27' },
-]
+import { useQuery } from '@tanstack/react-query'
+import { billingApi } from '@/lib/api/billing'
+
+// Mock removed
 
 export default function BillingPage() {
+  const { data: transactions = [] } = useQuery({
+    queryKey: ['invoices'],
+    queryFn: () => billingApi.getAllInvoices(),
+  })
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -86,7 +89,7 @@ export default function BillingPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockTransactions.map((transaction) => (
+              {transactions.map((transaction: any) => (
                 <TableRow key={transaction.id}>
                   <TableCell className="text-sm text-muted-foreground">
                     {formatDate(transaction.createdAt)}

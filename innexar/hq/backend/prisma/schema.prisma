@@ -231,20 +231,212 @@ model AffiliateWithdrawal {
 }
 
 // =====================================================
-// ADMINISTRADORES DO INNEXAR
+// USUÁRIOS E EQUIPE (Antigo Admin)
 // =====================================================
 
-model Admin {
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  SUPPORT
+  MARKETING
+  FINANCE
+  DEV
+}
+
+model User {
   id        String   @id @default(uuid())
   name      String   @db.VarChar(255)
   email     String   @unique @db.VarChar(255)
   password  String   @db.VarChar(255)
-  role      String   @default("admin") @db.VarChar(50) // admin, super_admin
+  role      Role     @default(ADMIN)
+  avatarUrl String?  @map("avatar_url") @db.VarChar(500)
   isActive  Boolean  @default(true) @map("is_active")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@map("admins")
+  // Relacionamentos
+  ticketsAssigned  Ticket[]      @relation("AssignedTickets")
+  ticketsCreated   Ticket[]      @relation("CreatedTickets") // Tickets internos
+  ticketMessages   TicketMessage[]
+  campaigns        Campaign[]
+  
+  @@map("users")
+}
+
+// =====================================================
+// SUPORTE (Tickets)
+// =====================================================
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING_CUSTOMER
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model Ticket {
+  id            String         @id @default(uuid())
+  subject       String         @db.VarChar(255)
+  description   String         @db.Text
+  status        TicketStatus   @default(OPEN)
+  priority      TicketPriority @default(MEDIUM)
+  
+  // Origem do ticket
+  source        String?        @db.VarChar(50) // email, chat, form
+  customerEmail String?        @map("customer_email") @db.VarChar(255)
+  customerId    String?        @map("customer_id") @db.VarChar(255) // ID externo (do SaaS)
+  
+  // Atribuição
+  assignedToId  String?        @map("assigned_to_id")
+  createdById   String?        @map("created_by_id") // Se criado por usuário interno
+  
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  resolvedAt    DateTime?      @map("resolved_at")
+
+  assignedTo    User?          @relation("AssignedTickets", fields: [assignedToId], references: [id])
+  createdBy     User?          @relation("CreatedTickets", fields: [createdById], references: [id])
+  messages      TicketMessage[]
+
+  @@map("tickets")
+}
+
+model TicketMessage {
+  id        String   @id @default(uuid())
+  ticketId  String   @map("ticket_id")
+  userId    String?  @map("user_id") // Null se for resposta do cliente/sistema externo
+  
+  content   String   @db.Text
+  isInternal Boolean @default(false) @map("is_internal") // Notas internas
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@map("ticket_messages")
+}
+
+// =====================================================
+// MARKETING (Campanhas)
+// =====================================================
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  ACTIVE
+  PAUSED
+  COMPLETED
+}
+
+model Campaign {
+  id          String         @id @default(uuid())
+  name        String         @db.VarChar(255)
+  description String?        @db.Text
+  type        String         @db.VarChar(50) // email, social, ads
+  status      CampaignStatus @default(DRAFT)
+  
+  startDate   DateTime?      @map("start_date")
+  endDate     DateTime?      @map("end_date")
+  budget      Decimal?       @db.Decimal(10, 2)
+  
+  createdById String         @map("created_by_id")
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+
+  createdBy   User           @relation(fields: [createdById], references: [id])
+  leads       Lead[]
+
+  @@map("campaigns")
+}
+
+model Lead {
+  id          String   @id @default(uuid())
+  email       String   @unique @db.VarChar(255)
+  name        String?  @db.VarChar(255)
+  phone       String?  @db.VarChar(20)
+  source      String?  @db.VarChar(50)
+  
+  campaignId  String?  @map("campaign_id")
+  status      String   @default("new") @db.VarChar(50) // new, contacted, qualified, converted
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  campaign    Campaign? @relation(fields: [campaignId], references: [id])
+
+  @@map("leads")
+}
+
+// =====================================================
+// FINANCEIRO (Billing & Assinaturas)
+// =====================================================
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  TRIALING
+}
+
+model Plan {
+  id            String   @id @default(uuid())
+  name          String   @db.VarChar(100)
+  price         Decimal  @db.Decimal(10, 2)
+  billingPeriod String   @map("billing_period") @db.VarChar(20) // monthly, yearly
+  features      Json?
+  
+  isActive      Boolean  @default(true) @map("is_active")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  
+  subscriptions Subscription[]
+
+  @@map("plans")
+}
+
+model Subscription {
+  id            String             @id @default(uuid())
+  customerId    String             @map("customer_id") @db.VarChar(255) // ID externo do cliente (SaaS)
+  planId        String             @map("plan_id")
+  
+  status        SubscriptionStatus @default(ACTIVE)
+  startDate     DateTime           @map("start_date")
+  currentPeriodEnd DateTime        @map("current_period_end")
+  
+  createdAt     DateTime           @default(now()) @map("created_at")
+  updatedAt     DateTime           @updatedAt @map("updated_at")
+  
+  plan          Plan               @relation(fields: [planId], references: [id])
+  invoices      Invoice[]
+
+  @@map("subscriptions")
+}
+
+model Invoice {
+  id             String   @id @default(uuid())
+  subscriptionId String   @map("subscription_id")
+  amount         Decimal  @db.Decimal(10, 2)
+  status         String   @db.VarChar(50) // paid, open, void, uncollectible
+  
+  dueDate        DateTime @map("due_date")
+  paidAt         DateTime? @map("paid_at")
+  
+  pdfUrl         String?  @map("pdf_url") @db.VarChar(500)
+  
+  createdAt      DateTime @default(now()) @map("created_at")
+  
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id])
+
+  @@map("invoices")
 }
 
 // =====================================================

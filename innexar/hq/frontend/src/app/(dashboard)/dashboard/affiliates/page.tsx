@@ -13,7 +13,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
@@ -24,81 +24,65 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Plus, Search, Edit, Trash2, DollarSign, TrendingUp, Users } from 'lucide-react'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatCurrency } from '@/lib/utils'
 import type { Affiliate } from '@/types'
-
-// Mock data
-const mockAffiliates: Affiliate[] = [
-  {
-    id: '1',
-    name: 'Pedro Fernandes',
-    email: 'pedro@example.com',
-    phone: '(11) 98765-4321',
-    document: '123.456.789-00',
-    status: 'active',
-    commission: 20,
-    products: ['mecanica365'],
-    totalSales: 45,
-    totalCommission: 15400,
-    createdAt: '2024-01-10',
-    updatedAt: '2025-12-28',
-  },
-  {
-    id: '2',
-    name: 'Ana Costa',
-    email: 'ana@example.com',
-    phone: '(21) 91234-5678',
-    status: 'active',
-    commission: 25,
-    products: ['mecanica365'],
-    totalSales: 32,
-    totalCommission: 11200,
-    createdAt: '2024-02-15',
-    updatedAt: '2025-12-27',
-  },
-  {
-    id: '3',
-    name: 'Ricardo Lima',
-    email: 'ricardo@example.com',
-    status: 'pending',
-    commission: 20,
-    products: [],
-    totalSales: 0,
-    totalCommission: 0,
-    createdAt: '2025-12-20',
-    updatedAt: '2025-12-20',
-  },
-]
+import { affiliatesApi } from '@/lib/api/affiliates'
+import { PageHeader } from '@/components/common/page-header'
+import { StatsCard } from '@/components/common/stats-card'
+import { StatusBadge } from '@/components/common/status-badge'
 
 export default function AffiliatesPage() {
   const [search, setSearch] = useState('')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
-  const { data: affiliates = mockAffiliates } = useQuery({
+  const { data: affiliates = [] } = useQuery<Affiliate[]>({
     queryKey: ['affiliates'],
-    queryFn: async () => mockAffiliates,
+    queryFn: () => affiliatesApi.getAll(),
   })
 
   const filteredAffiliates = affiliates.filter(
-    (aff: Affiliate) =>
+    (aff) =>
       aff.name.toLowerCase().includes(search.toLowerCase()) ||
       aff.email.toLowerCase().includes(search.toLowerCase())
   )
 
-  const totalCommission = affiliates.reduce((acc: number, aff: Affiliate) => acc + aff.totalCommission, 0)
-  const totalSales = affiliates.reduce((acc: number, aff: Affiliate) => acc + aff.totalSales, 0)
-  const activeAffiliates = affiliates.filter((aff: Affiliate) => aff.status === 'active').length
+  const totalCommission = affiliates.reduce((acc, aff) => acc + (aff.totalCommission || 0), 0)
+  const totalSales = affiliates.reduce((acc, aff) => acc + (aff.totalSales || 0), 0)
+  const activeAffiliates = affiliates.filter((aff) => aff.status === 'active').length
+
+  const stats = [
+    {
+      title: 'Total de Afiliados',
+      value: affiliates.length.toString(),
+      icon: Users,
+      description: `${activeAffiliates} ativos`
+    },
+    {
+      title: 'Total de Vendas',
+      value: totalSales.toString(),
+      icon: TrendingUp,
+      description: 'vendas realizadas'
+    },
+    {
+      title: 'Comissões Totais',
+      value: formatCurrency(totalCommission),
+      icon: DollarSign,
+      description: 'pagos até hoje'
+    },
+    {
+      title: 'Pendentes',
+      value: affiliates.filter((a) => a.status === 'pending').length.toString(),
+      icon: Users,
+      description: 'aguardando aprovação'
+    }
+  ]
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Afiliados</h1>
-          <p className="text-muted-foreground">
-            Gerencie afiliados de todos os produtos SaaS
-          </p>
-        </div>
+      <PageHeader
+        title="Afiliados"
+        description="Gerencie afiliados de todos os produtos SaaS"
+      >
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -153,59 +137,19 @@ export default function AffiliatesPage() {
             </form>
           </DialogContent>
         </Dialog>
-      </div>
+      </PageHeader>
 
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Total de Afiliados
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{affiliates.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {activeAffiliates} ativos
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" />
-              Total de Vendas
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalSales}</div>
-            <p className="text-xs text-muted-foreground">vendas realizadas</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <DollarSign className="h-4 w-4" />
-              Comissões Totais
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalCommission)}</div>
-            <p className="text-xs text-muted-foreground">pagos até hoje</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {affiliates.filter((a: Affiliate) => a.status === 'pending').length}
-            </div>
-            <p className="text-xs text-muted-foreground">aguardando aprovação</p>
-          </CardContent>
-        </Card>
+        {stats.map((stat, i) => (
+          <StatsCard
+            key={i}
+            title={stat.title}
+            value={stat.value}
+            icon={stat.icon}
+            description={stat.description}
+          />
+        ))}
       </div>
 
       {/* Table */}
@@ -267,21 +211,7 @@ export default function AffiliatesPage() {
                     {formatCurrency(affiliate.totalCommission)}
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      variant={
-                        affiliate.status === 'active'
-                          ? 'success'
-                          : affiliate.status === 'blocked'
-                          ? 'destructive'
-                          : 'secondary'
-                      }
-                    >
-                      {affiliate.status === 'active'
-                        ? 'Ativo'
-                        : affiliate.status === 'blocked'
-                        ? 'Bloqueado'
-                        : 'Pendente'}
-                    </Badge>
+                    <StatusBadge status={affiliate.status} />
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">

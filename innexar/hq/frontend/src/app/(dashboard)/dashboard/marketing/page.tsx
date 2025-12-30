@@ -5,13 +5,16 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Plus, Mail, Send, Users } from 'lucide-react'
 
-const mockCampaigns = [
-  { id: '1', name: 'Lançamento Black Friday', type: 'email', status: 'active', productIds: ['mecanica365'], totalSent: 2500, totalClicks: 380, totalConversions: 45, startDate: '2025-12-01' },
-  { id: '2', name: 'Webinar Grátis', type: 'email', status: 'scheduled', productIds: ['mecanica365'], totalSent: 0, totalClicks: 0, totalConversions: 0, startDate: '2026-01-15' },
-  { id: '3', name: 'Newsletter Semanal', type: 'email', status: 'active', productIds: ['mecanica365'], totalSent: 8500, totalClicks: 950, totalConversions: 125, startDate: '2025-11-01' },
-]
+import { useQuery } from '@tanstack/react-query'
+import { marketingApi } from '@/lib/api/marketing'
+
+// Mock removed
 
 export default function MarketingPage() {
+  const { data: campaigns = [] } = useQuery({
+    queryKey: ['campaigns'],
+    queryFn: () => marketingApi.getAllCampaigns(),
+  })
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -32,7 +35,7 @@ export default function MarketingPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {mockCampaigns.filter(c => c.status === 'active').length}
+              {campaigns.filter((c: any) => c.status === 'active').length}
             </div>
           </CardContent>
         </Card>
@@ -45,7 +48,7 @@ export default function MarketingPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {mockCampaigns.reduce((acc, c) => acc + c.totalSent, 0).toLocaleString()}
+              {campaigns.reduce((acc: number, c: any) => acc + (c.totalSent || 0), 0).toLocaleString()}
             </div>
           </CardContent>
         </Card>
@@ -54,7 +57,13 @@ export default function MarketingPage() {
             <CardTitle className="text-sm font-medium">Taxa de Cliques</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">15.2%</div>
+            <div className="text-2xl font-bold">
+              {(() => {
+                const totalSent = campaigns.reduce((acc: number, c: any) => acc + (c.totalSent || 0), 0);
+                const totalClicks = campaigns.reduce((acc: number, c: any) => acc + (c.totalClicks || 0), 0);
+                return totalSent > 0 ? ((totalClicks / totalSent) * 100).toFixed(1) + '%' : '0%';
+              })()}
+            </div>
           </CardContent>
         </Card>
         <Card>
@@ -63,14 +72,14 @@ export default function MarketingPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {mockCampaigns.reduce((acc, c) => acc + c.totalConversions, 0)}
+              {campaigns.reduce((acc: number, c: any) => acc + (c.totalConversions || 0), 0)}
             </div>
           </CardContent>
         </Card>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {mockCampaigns.map((campaign) => (
+        {campaigns.map((campaign: any) => (
           <Card key={campaign.id}>
             <CardHeader>
               <div className="flex items-start justify-between">
