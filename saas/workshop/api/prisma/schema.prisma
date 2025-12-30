@@ -1,0 +1,1632 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id                          String                       @id @default(uuid())
+  name                        String
+  subdomain                   String                       @unique
+  plan                        String
+  status                      String                       @default("active")
+  createdAt                   DateTime                     @default(now())
+  updatedAt                   DateTime                     @updatedAt
+  documentType                String                       @default("cnpj") @map("document_type") @db.VarChar(10)
+  document                    String                       @unique @db.VarChar(20)
+  adminEmail                  String?                      @map("admin_email") @db.VarChar(255)
+  appointments                Appointment[]
+  customers                   Customer[]
+  elevators                   Elevator[]
+  invoices                    Invoice[]
+  parts                       Part[]
+  serviceOrders               ServiceOrder[]
+  quotes                      Quote[]
+  subscription                Subscription?
+  users                       User[]
+  notifications               Notification[]
+  checklists                  Checklist[]
+  workshopSettings            WorkshopSettings?
+  auditLogs                   AuditLog[]
+  suppliers                   Supplier[]
+  webhooks                    Webhook[]
+  payments                    Payment[]
+  partMovements               PartMovement[]
+  attachments                 Attachment[]
+  integrations                Integration[]
+  automations                 Automation[]
+  jobs                        Job[]
+  reports                     Report[]
+  supportTickets              SupportTicket[]
+  paymentGateways             PaymentGateway[]
+  emailSettings               EmailSettings[]
+  maintenanceTemplates        MaintenanceTemplate[]
+  vehicleMaintenanceSchedules VehicleMaintenanceSchedule[]
+  maintenanceHistory          MaintenanceHistory[]
+  vehicleIssuePatterns        VehicleIssuePattern[]
+  knowledgeBase               KnowledgeBase[]
+  backups                     Backup[]
+  restoreOperations           RestoreOperation[]
+
+  referredByLinkId            String?                      @map("referred_by_link_id")
+
+  @@map("tenants")
+}
+
+model User {
+  id                     String                   @id @default(uuid())
+  tenantId               String
+  email                  String
+  name                   String
+  password               String
+  role                   String
+  isActive               Boolean                  @default(true)
+  passwordResetToken     String?                  @unique
+  passwordResetExpiresAt DateTime?
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+  appointments           Appointment[]            @relation("AssignedTo")
+  refreshTokens          RefreshToken[]
+  serviceOrders          ServiceOrder[]           @relation("Technician")
+  assignedQuotes         Quote[]                  @relation("AssignedQuotes") // Orçamentos atribuídos
+  quoteAssignments       QuoteAssignmentHistory[] @relation("QuoteAssignments") // Histórico de atribuições feitas por este usuário
+  quoteAssignmentHistory QuoteAssignmentHistory[] @relation("QuoteAssignmentMechanic") // Histórico de atribuições onde este usuário é o mecânico
+  notifications          Notification[]           @relation("Notifications") // Notificações do usuário
+  auditLogs              AuditLog[] // Logs de auditoria
+  uploadedAttachments    Attachment[]             @relation("UploadedAttachments") // Arquivos enviados por este usuário
+  completedChecklists    Checklist[]              @relation("CompletedChecklists") // Checklists completados por este usuário
+  generatedReports       Report[]                 @relation("GeneratedReports") // Relatórios gerados por este usuário
+  supportTickets         SupportTicket[]          @relation("SupportTicketAssignedTo") // Tickets atribuídos a este usuário
+  createdSupportTickets  SupportTicket[]          @relation("SupportTicketUser") // Tickets criados por este usuário
+  supportReplies         SupportReply[] // Respostas em tickets de suporte
+  tenant                 Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, email])
+  @@index([tenantId, role])
+  @@index([role])
+  @@map("users")
+}
+
+model Subscription {
+  id                   String   @id @default(uuid())
+  tenantId             String   @unique
+  plan                 String
+  planId               String?  @map("plan_id") // Referência ao Plan dinâmico
+  status               String   @default("active")
+  currentPeriodStart   DateTime
+  currentPeriodEnd     DateTime
+  activeFeatures       String[]
+  serviceOrdersLimit   Int?
+  serviceOrdersUsed    Int      @default(0)
+  partsLimit           Int?
+  stripeSubscriptionId String?  @unique
+  stripeCustomerId     String?
+  billingCycle         String   @default("monthly")
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  tenant               Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  planRef              Plan?    @relation(fields: [planId], references: [id], onDelete: SetNull)
+
+  @@index([planId])
+  @@map("subscriptions")
+}
+
+// Plan - Planos de assinatura configuráveis dinamicamente
+model Plan {
+  id          String  @id @default(uuid())
+  code        String  @unique @db.VarChar(50) // workshops_starter, workshops_professional, etc.
+  name        String  @db.VarChar(100)
+  description String? @db.Text
+
+  // Preços
+  monthlyPrice Decimal @map("monthly_price") @db.Decimal(10, 2)
+  annualPrice  Decimal @map("annual_price") @db.Decimal(10, 2)
+
+  // Limites
+  serviceOrdersLimit Int? @map("service_orders_limit") // null = ilimitado
+  partsLimit         Int? @map("parts_limit") // null = ilimitado
+  usersLimit         Int? @map("users_limit") // null = ilimitado
+
+  // Features (array de strings com os códigos das features)
+  features String[] // basic_service_orders, advanced_reports, api_access, etc.
+
+  // Configurações
+  isActive      Boolean @default(true) @map("is_active")
+  isDefault     Boolean @default(false) @map("is_default") // Plano padrão para novos tenants
+  sortOrder     Int     @default(0) @map("sort_order") // Ordem de exibição
+  highlightText String? @map("highlight_text") @db.VarChar(50) // "Popular", "Recomendado", etc.
+
+  // Stripe
+  stripePriceIdMonthly String? @map("stripe_price_id_monthly") @db.VarChar(255)
+  stripePriceIdAnnual  String? @map("stripe_price_id_annual") @db.VarChar(255)
+  stripeProductId      String? @map("stripe_product_id") @db.VarChar(255)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relações
+  subscriptions Subscription[]
+
+  @@index([isActive])
+  @@index([sortOrder])
+  @@map("plans")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  token     String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@map("refresh_tokens")
+}
+
+model ServiceOrder {
+  id               String    @id @default(uuid())
+  tenantId         String
+  number           String
+  customerId       String?
+  vehicleVin       String?
+  vehiclePlaca     String?
+  vehicleMake      String?
+  vehicleModel     String?
+  vehicleYear      Int?
+  vehicleMileage   Int?
+  technicianId     String?
+  status           String    @default("scheduled")
+  appointmentDate  DateTime?
+  checkInDate      DateTime?
+  checkInKm        Int?
+  checkInFuelLevel String?
+
+  // Problema relatado pelo cliente
+  reportedProblemCategory    String? // Categoria do problema relatado
+  reportedProblemDescription String? // Descrição do problema relatado
+  reportedProblemSymptoms    String[] // Sintomas relatados
+
+  // Problema identificado pelo mecânico
+  identifiedProblemCategory    String? // Categoria do problema identificado
+  identifiedProblemDescription String? // Descrição do problema identificado
+  identifiedProblemId          String? // Referência a CommonProblem
+
+  // Observações e diagnóstico
+  inspectionNotes  String? // Notas de inspeção
+  inspectionPhotos String[] // Fotos da inspeção
+  diagnosticNotes  String? // Observações do mecânico durante diagnóstico
+
+  // Recomendações
+  recommendations String? // Recomendações do mecânico
+
+  estimatedHours     Decimal?
+  laborCost          Decimal?
+  partsCost          Decimal?
+  totalCost          Decimal?
+  discount           Decimal?              @default(0)
+  actualHours        Decimal?
+  startedAt          DateTime?
+  completedAt        DateTime?
+  invoiceId          String?
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  appointments       Appointment[]
+  invoice            Invoice?
+  partsConsumed      ServiceOrderPart[]
+  services           ServiceOrderService[]
+  customer           Customer?             @relation(fields: [customerId], references: [id])
+  technician         User?                 @relation("Technician", fields: [technicianId], references: [id])
+  tenant             Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  elevatorUsages     ElevatorUsage[]
+  quotes             Quote[]
+  identifiedProblem  CommonProblem?        @relation("IdentifiedProblem", fields: [identifiedProblemId], references: [id])
+  attachments        Attachment[] // Anexos da ordem de serviço
+  maintenanceHistory MaintenanceHistory[] // Histórico de manutenções vinculadas
+
+  @@unique([tenantId, number])
+  @@index([tenantId, status])
+  @@index([tenantId, createdAt])
+  @@index([tenantId, customerId])
+  @@map("service_orders")
+}
+
+model ServiceOrderService {
+  id             String       @id @default(uuid())
+  serviceOrderId String
+  serviceId      String?
+  serviceName    String
+  serviceType    String?      @map("service_type") @db.VarChar(50)
+  description    String?
+  hours          Decimal
+  cost           Decimal
+  performedAt    DateTime?    @map("performed_at")
+  createdAt      DateTime     @default(now()) @map("createdAt")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  serviceOrder   ServiceOrder @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
+
+  @@index([serviceOrderId])
+  @@index([serviceType])
+  @@map("service_order_services")
+}
+
+model ServiceOrderPart {
+  id             String       @id @default(uuid())
+  serviceOrderId String
+  partId         String?
+  partName       String
+  quantity       Int
+  unitCost       Decimal
+  totalCost      Decimal
+  createdAt      DateTime     @default(now())
+  part           Part?        @relation(fields: [partId], references: [id])
+  serviceOrder   ServiceOrder @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
+
+  @@map("service_order_parts")
+}
+
+model Appointment {
+  id             String        @id @default(uuid())
+  tenantId       String
+  customerId     String?
+  serviceOrderId String?
+  assignedToId   String?
+  date           DateTime
+  duration       Int           @default(60)
+  serviceType    String?
+  notes          String?
+  status         String        @default("scheduled")
+  reminderSent   Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  assignedTo     User?         @relation("AssignedTo", fields: [assignedToId], references: [id])
+  customer       Customer?     @relation(fields: [customerId], references: [id])
+  serviceOrder   ServiceOrder? @relation(fields: [serviceOrderId], references: [id])
+  tenant         Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, date])
+  @@map("appointments")
+}
+
+model Customer {
+  id            String            @id @default(uuid())
+  tenantId      String
+  name          String
+  email         String?
+  phone         String
+  documentType  String            @default("cpf") @map("document_type") @db.VarChar(10)
+  cpf           String?
+  cnpj          String?
+  address       String?
+  notes         String?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  appointments  Appointment[]
+  vehicles      CustomerVehicle[]
+  tenant        Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  invoices      Invoice[]
+  serviceOrders ServiceOrder[]
+  quotes        Quote[]
+  attachments   Attachment[] // Anexos do cliente
+
+  @@unique([tenantId, phone])
+  @@unique([tenantId, cpf])
+  @@unique([tenantId, cnpj])
+  @@index([tenantId, name])
+  @@index([tenantId, documentType])
+  @@map("customers")
+}
+
+model CustomerVehicle {
+  id                   String                       @id @default(uuid())
+  customerId           String
+  vin                  String?
+  renavan              String?                      @db.VarChar(11)
+  placa                String?
+  make                 String?
+  model                String?
+  year                 Int?
+  color                String?
+  mileage              Int?
+  isDefault            Boolean                      @default(false)
+  createdAt            DateTime                     @default(now())
+  updatedAt            DateTime                     @updatedAt
+  customer             Customer                     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  elevatorUsages       ElevatorUsage[] // Histórico de uso em elevadores
+  quotes               Quote[] // Orçamentos relacionados ao veículo
+  attachments          Attachment[] // Anexos do veículo
+  maintenanceSchedules VehicleMaintenanceSchedule[] // Manutenções programadas
+  maintenanceHistory   MaintenanceHistory[] // Histórico de manutenções
+
+  @@index([renavan])
+  @@index([placa])
+  @@index([vin])
+  @@map("customer_vehicles")
+}
+
+model Part {
+  id          String             @id @default(uuid())
+  tenantId    String
+  partNumber  String?            @map("part_number") @db.VarChar(100)
+  name        String
+  description String?            @db.Text
+  category    String?            @db.VarChar(100)
+  brand       String?            @db.VarChar(100)
+  supplierId  String?            @map("supplier_id")
+  quantity    Int                @default(0)
+  minQuantity Int                @default(0) @map("min_quantity")
+  costPrice   Decimal            @map("cost_price") @db.Decimal(10, 2)
+  sellPrice   Decimal            @map("sell_price") @db.Decimal(10, 2)
+  location    String?            @db.VarChar(100)
+  isActive    Boolean            @default(true) @map("is_active")
+  createdAt   DateTime           @default(now()) @map("created_at")
+  updatedAt   DateTime           @updatedAt @map("updated_at")
+  movements   PartMovement[]
+  tenant      Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  supplier    Supplier?          @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  consumedIn  ServiceOrderPart[]
+  quoteItems  QuoteItem[]        @relation("PartQuoteItems")
+
+  @@index([tenantId, partNumber])
+  @@index([tenantId, name])
+  @@index([tenantId, category])
+  @@index([supplierId])
+  @@map("parts")
+}
+
+model PartMovement {
+  id            String   @id @default(uuid())
+  tenantId      String   @map("tenant_id")
+  partId        String   @map("part_id")
+  type          String   @map("movement_type") @db.VarChar(50) // receive, sale, transfer, adjustment, consumption
+  quantity      Int
+  unitCost      Decimal? @map("unit_cost") @db.Decimal(10, 2)
+  referenceId   String?  @map("reference_id")
+  referenceType String?  @map("reference_type") @db.VarChar(50) // ServiceOrder, Quote, etc.
+  notes         String?  @db.Text
+  createdAt     DateTime @default(now()) @map("created_at")
+  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  part          Part     @relation(fields: [partId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, createdAt])
+  @@index([partId])
+  @@index([referenceType, referenceId])
+  @@map("part_movements")
+}
+
+model Invoice {
+  id                String          @id @default(uuid())
+  tenantId          String          @map("tenant_id")
+  invoiceNumber     String          @unique @map("invoice_number") @db.VarChar(100)
+  serviceOrderId    String?         @unique @map("service_order_id")
+  customerId        String?         @map("customer_id")
+  type              String          @db.VarChar(50) // service, sale, part
+  total             Decimal         @db.Decimal(10, 2)
+  taxAmount         Decimal         @default(0) @map("tax_amount") @db.Decimal(10, 2)
+  discount          Decimal         @default(0) @db.Decimal(10, 2)
+  nfeKey            String?         @unique @map("nfe_key") @db.VarChar(44)
+  nfeXmlUrl         String?         @map("nfe_xml_url") @db.Text
+  nfePdfUrl         String?         @map("nfe_pdf_url") @db.Text
+  nfeStatus         String?         @map("nfe_status") @db.VarChar(50)
+  paymentMethod     String?         @map("payment_method") @db.VarChar(50)
+  paymentPreference String?         @map("payment_preference") @db.VarChar(50)
+  paymentGatewayId  String?         @map("payment_gateway_id")
+  paymentStatus     String          @default("pending") @map("payment_status") @db.VarChar(50)
+  paidAt            DateTime?       @map("paid_at")
+  status            String          @default("draft") @db.VarChar(50)
+  issuedAt          DateTime?       @map("issued_at")
+  dueDate           DateTime?       @map("due_date")
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+  customer          Customer?       @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  serviceOrder      ServiceOrder?   @relation(fields: [serviceOrderId], references: [id], onDelete: SetNull)
+  tenant            Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  paymentGateway    PaymentGateway? @relation(fields: [paymentGatewayId], references: [id], onDelete: SetNull)
+  items             InvoiceItem[]
+  payments          Payment[]
+
+  @@index([tenantId, status])
+  @@index([tenantId, customerId])
+  @@index([paymentStatus])
+  @@index([paymentGatewayId])
+  @@map("invoices")
+}
+
+// Invoice Items - Itens da fatura
+model InvoiceItem {
+  id          String   @id @default(uuid())
+  invoiceId   String   @map("invoice_id")
+  type        String   @db.VarChar(50) // service, part
+  name        String
+  description String?  @db.Text
+  quantity    Int      @default(1)
+  unitPrice   Decimal  @map("unit_price") @db.Decimal(10, 2)
+  totalPrice  Decimal  @map("total_price") @db.Decimal(10, 2)
+  createdAt   DateTime @default(now()) @map("created_at")
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@map("invoice_items")
+}
+
+// Payments - Pagamentos
+model Payment {
+  id            String    @id @default(uuid())
+  tenantId      String    @map("tenant_id")
+  invoiceId     String?   @map("invoice_id")
+  amount        Decimal   @db.Decimal(10, 2)
+  method        String    @db.VarChar(50) // cash, credit_card, debit_card, pix, boleto, transfer
+  status        String    @default("pending") @db.VarChar(50) // pending, completed, failed, refunded
+  paidAt        DateTime? @map("paid_at")
+  transactionId String?   @map("transaction_id") @db.VarChar(255) // ID da transação no gateway
+  installments  Int       @default(1) // Número de parcelas
+  notes         String?   @db.Text
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  tenant        Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  invoice       Invoice?  @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, createdAt])
+  @@index([invoiceId])
+  @@index([status])
+  @@map("payments")
+}
+
+model PaymentGateway {
+  id          String    @id @default(uuid())
+  tenantId    String    @map("tenant_id")
+  name        String
+  type        String    @db.VarChar(50)
+  isActive    Boolean   @default(true) @map("is_active")
+  isDefault   Boolean   @default(false) @map("is_default")
+  credentials Json
+  settings    Json?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  invoices    Invoice[]
+
+  @@index([tenantId, isActive])
+  @@index([tenantId, isDefault])
+  @@map("payment_gateways")
+}
+
+// Email Settings - Configurações de SMTP (deprecated - manter para compatibilidade)
+model EmailSettings {
+  id          String   @id @default(uuid())
+  tenantId    String   @map("tenant_id")
+  name        String   // Nome identificador (ex: "SMTP Principal")
+  host        String   @db.VarChar(255)
+  port        Int
+  secure      Boolean  @default(false) // true para porta 465, false para porta 587
+  user        String   @db.VarChar(255)
+  password    String   @db.VarChar(255) // Será criptografada
+  fromEmail   String   @map("from_email") @db.VarChar(255)
+  fromName    String   @map("from_name") @db.VarChar(255)
+  isActive    Boolean  @default(true) @map("is_active")
+  isDefault   Boolean  @default(false) @map("is_default")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, isActive])
+  @@index([tenantId, isDefault])
+  @@map("email_settings")
+}
+
+// System Email Settings - Configurações globais de email (sem tenant)
+model SystemEmailSettings {
+  id          String   @id @default(uuid())
+  name        String   // Nome identificador (ex: "SMTP Principal")
+  host        String   @db.VarChar(255)
+  port        Int
+  secure      Boolean  @default(false) // true para porta 465, false para porta 587
+  user        String   @db.VarChar(255)
+  password    String   @db.VarChar(255) // Será criptografada
+  fromEmail   String   @map("from_email") @db.VarChar(255)
+  fromName    String   @map("from_name") @db.VarChar(255)
+  isActive    Boolean  @default(true) @map("is_active")
+  isDefault   Boolean  @default(false) @map("is_default")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("system_email_settings")
+}
+
+// System Payment Gateway - Configurações globais de pagamento (sem tenant)
+model SystemPaymentGateway {
+  id            String   @id @default(uuid())
+  name          String
+  type          String   @db.VarChar(50) // stripe, mercadopago, etc
+  publicKey     String   @map("public_key")
+  secretKey     String   @map("secret_key") // Encrypted
+  webhookSecret String?  @map("webhook_secret") // Encrypted
+  isActive      Boolean  @default(true) @map("is_active")
+  isDefault     Boolean  @default(false) @map("is_default")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("system_payment_gateways")
+}
+
+// Admin Users - Usuários do painel administrativo
+model AdminUser {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  name         String
+  role         String    @default("admin") // admin, superadmin
+  isActive     Boolean   @default(true) @map("is_active")
+  lastLoginAt  DateTime? @map("last_login_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@map("admin_users")
+}
+
+// System Settings - Configurações gerais do sistema
+model SystemSettings {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  value     String   // JSON stringified
+  category  String   // email, payment, general, appearance
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("system_settings")
+}
+
+// Suppliers - Fornecedores
+model Supplier {
+  id           String   @id @default(uuid())
+  tenantId     String   @map("tenant_id")
+  name         String
+  document     String?  @db.VarChar(20) // CNPJ
+  documentType String?  @default("cnpj") @map("document_type") @db.VarChar(10)
+  phone        String?  @db.VarChar(20)
+  email        String?  @db.VarChar(255)
+  address      String?  @db.Text
+  city         String?  @db.VarChar(100)
+  state        String?  @db.VarChar(2)
+  zipCode      String?  @map("zip_code") @db.VarChar(10)
+  contactName  String?  @map("contact_name") @db.VarChar(255)
+  notes        String?  @db.Text
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  parts        Part[]
+
+  @@index([tenantId])
+  @@map("suppliers")
+}
+
+// Webhooks - Configuração de webhooks externos
+model Webhook {
+  id              String           @id @default(uuid())
+  tenantId        String           @map("tenant_id")
+  url             String           @db.Text
+  secret          String           @db.VarChar(255) // Secret para assinatura HMAC
+  events          String[] // Eventos que o webhook escuta
+  isActive        Boolean          @default(true) @map("is_active")
+  lastTriggeredAt DateTime?        @map("last_triggered_at")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+  tenant          Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  attempts        WebhookAttempt[]
+
+  @@index([tenantId])
+  @@index([isActive])
+  @@map("webhooks")
+}
+
+// Webhook Attempts - Tentativas de envio de webhook
+model WebhookAttempt {
+  id          String   @id @default(uuid())
+  webhookId   String   @map("webhook_id")
+  event       String   @db.VarChar(100)
+  payload     Json
+  status      String   @db.VarChar(50) // success, failed, pending
+  statusCode  Int?     @map("status_code")
+  response    String?  @db.Text
+  error       String?  @db.Text
+  attemptedAt DateTime @default(now()) @map("attempted_at")
+  webhook     Webhook  @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+
+  @@index([webhookId, attemptedAt])
+  @@map("webhook_attempts")
+}
+
+// Integration - Integrações externas configuráveis via admin
+model Integration {
+  id        String   @id @default(uuid())
+  tenantId  String   @map("tenant_id")
+  name      String   @db.VarChar(255)
+  type      String   @db.VarChar(50) // renavan, vin, cep, custom
+  apiUrl    String   @map("api_url") @db.VarChar(500)
+  apiKey    String?  @map("api_key") @db.VarChar(255)
+  config    Json? // Configurações adicionais
+  status    String   @default("active") @db.VarChar(50) // active, inactive, error
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, type])
+  @@index([tenantId, isActive])
+  @@map("integrations")
+}
+
+// Automation - Automações e workflows configuráveis via admin
+model Automation {
+  id           String   @id @default(uuid())
+  tenantId     String   @map("tenant_id")
+  name         String   @db.VarChar(255)
+  description  String   @db.VarChar(500)
+  trigger      String   @db.VarChar(100) // quote.approved, service_order.completed, etc.
+  action       String   @db.VarChar(100) // send_email, send_sms, create_notification, etc.
+  conditions   Json? // Condições para execução
+  actionConfig Json     @map("action_config") // Configuração da ação
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, trigger])
+  @@index([tenantId, isActive])
+  @@map("automations")
+}
+
+// Job - Jobs para processamento assíncrono
+model Job {
+  id          String    @id @default(uuid())
+  tenantId    String    @map("tenant_id")
+  type        String    @db.VarChar(50) // email, report, webhook, cleanup, export
+  status      String    @default("pending") @db.VarChar(50) // pending, processing, completed, failed, cancelled
+  data        Json // Dados do job
+  priority    Int       @default(5) // 1-10, 10 = mais alta
+  attempts    Int       @default(0)
+  maxAttempts Int       @default(3) @map("max_attempts")
+  error       String?   @db.Text
+  result      Json? // Resultado do processamento
+  createdAt   DateTime  @default(now()) @map("created_at")
+  processedAt DateTime? @map("processed_at")
+  completedAt DateTime? @map("completed_at")
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, status])
+  @@index([tenantId, type])
+  @@index([tenantId, createdAt])
+  @@index([status, priority])
+  @@map("jobs")
+}
+
+model WorkshopService {
+  id             String   @id @default(uuid())
+  name           String   @unique
+  description    String?
+  category       String
+  estimatedHours Decimal
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("workshop_services")
+}
+
+model CommonProblem {
+  id            String         @id @default(uuid())
+  name          String         @unique
+  category      String
+  severity      String
+  estimatedCost Decimal?
+  description   String?
+  symptoms      String[] // Sintomas comuns que indicam este problema
+  solutions     String[] // Soluções recomendadas
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  serviceOrders ServiceOrder[] @relation("IdentifiedProblem") // Ordens de serviço que identificaram este problema
+  quotes        Quote[]        @relation("QuoteIdentifiedProblem") // Orçamentos que identificaram este problema
+
+  @@index([category])
+  @@index([severity])
+  @@map("common_problems")
+}
+
+// Support - Sistema de suporte/tickets
+model SupportTicket {
+  id            String    @id @default(uuid())
+  tenantId      String?   @map("tenant_id")
+  userId        String?   @map("user_id")
+  subject       String    @db.VarChar(255)
+  message       String    @db.Text
+  status        String    @default("open") @db.VarChar(50) // open, in_progress, waiting_for_user, resolved, closed
+  priority      String    @default("normal") @db.VarChar(50) // low, normal, high, urgent
+  category      String    @default("general") @db.VarChar(50) // technical, billing, account, feature_request, general
+  userEmail     String?   @db.VarChar(255)
+  userName      String?   @db.VarChar(255)
+  assignedToId  String?   @map("assigned_to_id")
+  internalNotes String?   @map("internal_notes") @db.Text
+  lastReplyAt   DateTime? @map("last_reply_at")
+  resolvedAt    DateTime? @map("resolved_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  tenant     Tenant?        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user       User?          @relation("SupportTicketUser", fields: [userId], references: [id], onDelete: SetNull)
+  assignedTo User?          @relation("SupportTicketAssignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
+  replies    SupportReply[]
+
+  @@index([tenantId, status])
+  @@index([tenantId, priority])
+  @@index([tenantId, category])
+  @@index([tenantId, createdAt])
+  @@index([assignedToId])
+  @@index([userId])
+  @@map("support_tickets")
+}
+
+model SupportReply {
+  id          String   @id @default(uuid())
+  ticketId    String   @map("ticket_id")
+  userId      String   @map("user_id")
+  message     String   @db.Text
+  isInternal  Boolean  @default(false) @map("is_internal") // Visível apenas para admins
+  attachments String[] // URLs ou IDs de arquivos
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId, createdAt])
+  @@index([userId])
+  @@map("support_replies")
+}
+
+model PartsCategory {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  code      String   @unique
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("parts_categories")
+}
+
+model Elevator {
+  id          String                @id @default(uuid())
+  tenantId    String
+  name        String
+  number      String
+  type        String                @default("hydraulic") // hydraulic, pneumatic, scissor
+  capacity    Decimal // Capacidade em toneladas
+  status      String                @default("free") // free, occupied, maintenance, scheduled
+  location    String? // Localização na oficina
+  notes       String?
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  tenant      Tenant                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  usages      ElevatorUsage[]
+  maintenance ElevatorMaintenance[]
+  quotes      Quote[]
+
+  @@unique([tenantId, number])
+  @@index([tenantId, status])
+  @@map("elevators")
+}
+
+model ElevatorUsage {
+  id             String           @id @default(uuid())
+  elevatorId     String
+  serviceOrderId String?
+  vehicleId      String? // Rastrear qual veículo está no elevador
+  startTime      DateTime
+  endTime        DateTime?
+  notes          String?
+  createdAt      DateTime         @default(now())
+  elevator       Elevator         @relation(fields: [elevatorId], references: [id], onDelete: Cascade)
+  serviceOrder   ServiceOrder?    @relation(fields: [serviceOrderId], references: [id], onDelete: SetNull)
+  vehicle        CustomerVehicle? @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+
+  @@index([elevatorId])
+  @@index([serviceOrderId])
+  @@index([vehicleId])
+  @@map("elevator_usages")
+}
+
+model ElevatorMaintenance {
+  id            String    @id @default(uuid())
+  elevatorId    String
+  scheduledDate DateTime
+  completedDate DateTime?
+  notes         String?
+  technicianId  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  elevator      Elevator  @relation(fields: [elevatorId], references: [id], onDelete: Cascade)
+
+  @@index([elevatorId])
+  @@index([scheduledDate])
+  @@map("elevator_maintenances")
+}
+
+model Quote {
+  id             String  @id @default(uuid())
+  tenantId       String
+  number         String // Sequencial único por tenant (ex: ORC-001)
+  customerId     String?
+  vehicleId      String? // Referência a CustomerVehicle
+  elevatorId     String? // Elevador onde será realizado (se necessário)
+  serviceOrderId String? // ServiceOrder gerada quando aprovado
+  status         String  @default("draft") // draft, awaiting_diagnosis, diagnosed, sent, viewed, accepted, rejected, expired, converted
+  version        Int     @default(1)
+  parentQuoteId  String? // Para versões/revisões
+
+  // Valores
+  laborCost      Decimal?
+  partsCost      Decimal?
+  totalCost      Decimal  @default(0)
+  discount       Decimal  @default(0)
+  taxAmount      Decimal  @default(0)
+  estimatedHours Decimal? @map("estimatedHours") // Tempo estimado de serviço em horas (preenchido no diagnóstico)
+
+  // Validade
+  expiresAt  DateTime?
+  validUntil DateTime?
+
+  // Aprovação
+  sentAt            DateTime?
+  viewedAt          DateTime?
+  acceptedAt        DateTime?
+  rejectedAt        DateTime?
+  rejectedReason    String?
+  customerSignature String? // Base64 da assinatura do cliente
+  approvalMethod    String? // 'digital' ou 'manual' - método de aprovação usado
+
+  // Link público para visualização e aprovação
+  publicToken          String?   @unique // Token único para acesso público
+  publicTokenExpiresAt DateTime? // Data de expiração do token (padrão: 30 dias)
+
+  // Conversão
+  convertedAt               DateTime?
+  convertedToServiceOrderId String?
+
+  // Problema relatado pelo cliente
+  reportedProblemCategory    String? // Categoria do problema relatado (motor, suspensão, etc.)
+  reportedProblemDescription String? // Descrição detalhada do problema relatado pelo cliente
+  reportedProblemSymptoms    String[] // Sintomas relatados (ex: "ruído no motor", "ar não gelando")
+
+  // Problema identificado pelo mecânico
+  identifiedProblemCategory    String? // Categoria do problema identificado
+  identifiedProblemDescription String? // Descrição do problema identificado pelo mecânico
+  identifiedProblemId          String? // Referência a CommonProblem (se identificado)
+  identifiedProblem            CommonProblem? @relation("QuoteIdentifiedProblem", fields: [identifiedProblemId], references: [id])
+
+  // Diagnóstico e observações do mecânico
+  diagnosticNotes  String? // Observações do mecânico durante diagnóstico
+  inspectionNotes  String? // Notas de inspeção
+  inspectionPhotos String[] // Fotos da inspeção
+
+  // Recomendações
+  recommendations String? // Recomendações do mecânico (troca de peça, manutenção preventiva, etc.)
+
+  // Atribuição de mecânico
+  assignedMechanicId String? // Mecânico atribuído para diagnóstico
+  assignedAt         DateTime? // Quando foi atribuído
+
+  // Relações
+  items             QuoteItem[]
+  customer          Customer?                @relation(fields: [customerId], references: [id])
+  vehicle           CustomerVehicle?         @relation(fields: [vehicleId], references: [id])
+  elevator          Elevator?                @relation(fields: [elevatorId], references: [id])
+  serviceOrder      ServiceOrder?            @relation(fields: [serviceOrderId], references: [id])
+  tenant            Tenant                   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  parentQuote       Quote?                   @relation("QuoteVersions", fields: [parentQuoteId], references: [id])
+  childQuotes       Quote[]                  @relation("QuoteVersions")
+  assignedMechanic  User?                    @relation("AssignedQuotes", fields: [assignedMechanicId], references: [id])
+  assignmentHistory QuoteAssignmentHistory[] // Histórico de atribuições
+  attachments       Attachment[] // Anexos do orçamento
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, number])
+  @@index([tenantId, status])
+  @@index([tenantId, createdAt])
+  @@index([tenantId, customerId])
+  @@index([tenantId, vehicleId])
+  @@index([elevatorId])
+  @@index([assignedMechanicId])
+  @@index([tenantId, status, assignedMechanicId])
+  @@map("quotes")
+}
+
+model QuoteItem {
+  id          String   @id @default(uuid())
+  quoteId     String
+  type        String // "service" | "part"
+  serviceId   String? // Referência a WorkshopService (futuro)
+  partId      String? // Referência a Part
+  name        String
+  description String?
+  quantity    Int      @default(1)
+  unitCost    Decimal
+  totalCost   Decimal
+  hours       Decimal? // Para serviços
+
+  quote Quote @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  part  Part? @relation("PartQuoteItems", fields: [partId], references: [id], onDelete: SetNull)
+
+  @@index([quoteId])
+  @@index([type])
+  @@map("quote_items")
+}
+
+// Histórico de atribuições de orçamentos
+model QuoteAssignmentHistory {
+  id             String    @id @default(uuid())
+  quoteId        String
+  mechanicId     String // Mecânico atribuído
+  assignedBy     String // Usuário que fez a atribuição (pode ser o próprio mecânico)
+  assignedAt     DateTime  @default(now())
+  unassignedAt   DateTime? // Quando foi desatribuído (se aplicável)
+  reason         String? // Motivo da atribuição/desatribuição
+  quote          Quote     @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  mechanic       User      @relation("QuoteAssignmentMechanic", fields: [mechanicId], references: [id], onDelete: Cascade)
+  assignedByUser User      @relation("QuoteAssignments", fields: [assignedBy], references: [id], onDelete: Cascade)
+
+  @@index([quoteId])
+  @@index([mechanicId])
+  @@index([assignedAt])
+  @@map("quote_assignment_history")
+}
+
+// Notificações do sistema
+model Notification {
+  id        String    @id @default(uuid())
+  tenantId  String
+  userId    String? // Usuário específico (null = todos do tenant)
+  type      String // 'quote_assigned', 'quote_available', 'diagnosis_completed', etc.
+  title     String
+  message   String
+  data      Json? // Dados adicionais (ex: quoteId, mechanicId)
+  read      Boolean   @default(false)
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user      User?     @relation("Notifications", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, userId])
+  @@index([userId, read])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+model WorkshopSettings {
+  id       String @id @default(uuid())
+  tenantId String @unique
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Informações básicas
+  displayName String? @map("display_name") @db.VarChar(255)
+  logoUrl     String? @map("logo_url") @db.Text
+  faviconUrl  String? @map("favicon_url") @db.Text
+
+  // Cores e tema
+  primaryColor   String? @map("primary_color") @db.VarChar(7) // Hex color
+  secondaryColor String? @map("secondary_color") @db.VarChar(7)
+  accentColor    String? @map("accent_color") @db.VarChar(7)
+
+  // Contatos
+  phone    String? @db.VarChar(20)
+  email    String? @db.VarChar(255)
+  whatsapp String? @db.VarChar(20)
+
+  // Endereço
+  address String? @db.Text
+  city    String? @db.VarChar(100)
+  state   String? @db.VarChar(2)
+  zipCode String? @map("zip_code") @db.VarChar(10)
+  country String? @default("BR") @db.VarChar(2)
+
+  // Redes sociais
+  website   String? @db.VarChar(255)
+  facebook  String? @db.VarChar(255)
+  instagram String? @db.VarChar(255)
+  linkedin  String? @db.VarChar(255)
+
+  // Configurações de documentos
+  showLogoOnQuotes    Boolean @default(true) @map("show_logo_on_quotes")
+  showAddressOnQuotes Boolean @default(true) @map("show_address_on_quotes")
+  showContactOnQuotes Boolean @default(true) @map("show_contact_on_quotes")
+
+  // Textos personalizados
+  quoteFooterText   String? @map("quote_footer_text") @db.Text
+  invoiceFooterText String? @map("invoice_footer_text") @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId])
+  @@map("workshop_settings")
+}
+
+// Audit Logs - Rastreamento de ações dos usuários
+model AuditLog {
+  id           String   @id @default(uuid())
+  tenantId     String?  @map("tenant_id")
+  userId       String?  @map("user_id")
+  action       String // CREATE, UPDATE, DELETE, VIEW, EXPORT, LOGIN, LOGOUT
+  resourceType String?  @map("resource_type") @db.VarChar(50) // Customer, Quote, ServiceOrder, etc.
+  resourceId   String?  @map("resource_id")
+  changes      Json? // Before/After changes
+  ipAddress    String?  @map("ip_address") @db.VarChar(45)
+  userAgent    String?  @map("user_agent") @db.Text
+  metadata     Json? // Additional metadata
+  createdAt    DateTime @default(now()) @map("created_at")
+  tenant       Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, createdAt])
+  @@index([userId, createdAt])
+  @@index([resourceType, resourceId])
+  @@index([action])
+  @@map("audit_logs")
+}
+
+// Attachments - Gerenciamento de arquivos e fotos
+model Attachment {
+  id           String @id @default(uuid())
+  tenantId     String @map("tenant_id")
+  type         String // "photo_before" | "photo_during" | "photo_after" | "document"
+  fileName     String @map("file_name")
+  originalName String @map("original_name")
+  mimeType     String @map("mime_type")
+  fileSize     Int    @map("file_size") // em bytes
+  filePath     String @map("file_path") // caminho relativo do arquivo
+  url          String // URL pública para acesso
+
+  // Relacionamentos opcionais
+  quoteId        String? @map("quote_id")
+  serviceOrderId String? @map("service_order_id")
+  customerId     String? @map("customer_id")
+  vehicleId      String? @map("vehicle_id")
+
+  // Metadados
+  description  String? @db.Text
+  uploadedById String? @map("uploaded_by_id")
+
+  // Relações
+  tenant       Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  quote        Quote?           @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  serviceOrder ServiceOrder?    @relation(fields: [serviceOrderId], references: [id], onDelete: Cascade)
+  customer     Customer?        @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  vehicle      CustomerVehicle? @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  uploadedBy   User?            @relation("UploadedAttachments", fields: [uploadedById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([tenantId])
+  @@index([tenantId, type])
+  @@index([quoteId])
+  @@index([serviceOrderId])
+  @@index([customerId])
+  @@index([vehicleId])
+  @@index([tenantId, quoteId])
+  @@index([tenantId, serviceOrderId])
+  @@map("attachments")
+}
+
+// Checklists - Sistema de checklists para validação de processos
+model Checklist {
+  id            String    @id @default(uuid())
+  tenantId      String    @map("tenant_id")
+  entityType    String    @map("entity_type") // 'quote' | 'service_order'
+  entityId      String    @map("entity_id") // ID da entidade relacionada
+  checklistType String    @map("checklist_type") // 'pre_diagnosis' | 'pre_service' | 'during_service' | 'post_service'
+  name          String
+  description   String?   @db.Text
+  status        String    @default("pending") // 'pending' | 'in_progress' | 'completed' | 'cancelled'
+  completedAt   DateTime? @map("completed_at")
+  completedById String?   @map("completed_by_id")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  // Relações
+  tenant      Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  completedBy User?           @relation("CompletedChecklists", fields: [completedById], references: [id], onDelete: SetNull)
+  items       ChecklistItem[]
+
+  @@index([tenantId])
+  @@index([tenantId, entityType, entityId])
+  @@index([tenantId, checklistType])
+  @@index([entityType, entityId])
+  @@index([status])
+  @@map("checklists")
+}
+
+model ChecklistItem {
+  id          String    @id @default(uuid())
+  checklistId String    @map("checklist_id")
+  title       String
+  description String?   @db.Text
+  isRequired  Boolean   @default(false) @map("is_required")
+  isCompleted Boolean   @default(false) @map("is_completed")
+  completedAt DateTime? @map("completed_at")
+  notes       String?   @db.Text
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Relações
+  checklist Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+
+  @@index([checklistId])
+  @@index([checklistId, order])
+  @@map("checklist_items")
+}
+
+// Reports - Histórico de relatórios gerados
+model Report {
+  id          String    @id @default(uuid())
+  tenantId    String    @map("tenant_id")
+  type        String    @db.VarChar(50) // sales, services, financial, inventory, customers, mechanics, quotes, invoices, payments
+  format      String    @db.VarChar(10) // pdf, excel, csv, json
+  filename    String    @db.VarChar(255)
+  filePath    String?   @map("file_path") @db.VarChar(500) // Caminho do arquivo gerado
+  fileSize    Int?      @map("file_size") // Tamanho em bytes
+  startDate   DateTime? @map("start_date")
+  endDate     DateTime? @map("end_date")
+  filters     Json? // Filtros aplicados
+  summary     Json? // Resumo/estatísticas do relatório
+  generatedBy String?   @map("generated_by") // ID do usuário que gerou
+  status      String    @default("completed") @db.VarChar(50) // pending, processing, completed, failed
+  error       String?   @db.Text // Mensagem de erro se falhar
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  expiresAt   DateTime? @map("expires_at") // Data de expiração (para limpeza automática)
+
+  // Relações
+  tenant          Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  generatedByUser User?  @relation("GeneratedReports", fields: [generatedBy], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([tenantId, type])
+  @@index([tenantId, createdAt])
+  @@index([tenantId, status])
+  @@index([generatedBy])
+  @@index([expiresAt])
+  @@map("reports")
+}
+
+// ============================================================
+// SISTEMA DE REVISÃO/MANUTENÇÃO PROGRAMADA
+// ============================================================
+
+// Templates de manutenção (ex: "Revisão 10.000km", "Troca de Óleo")
+model MaintenanceTemplate {
+  id          String  @id @default(uuid())
+  tenantId    String  @map("tenant_id")
+  name        String  @db.VarChar(100) // "Revisão 10.000km", "Troca de Óleo"
+  description String? @db.Text
+  category    String  @db.VarChar(50) // preventive, corrective, inspection
+
+  // Intervalos de manutenção
+  intervalKm     Int? @map("interval_km") // A cada X km
+  intervalMonths Int? @map("interval_months") // A cada X meses
+
+  // Itens da revisão
+  items Json @default("[]") // Array de itens a verificar/trocar
+
+  // Custos estimados
+  estimatedCost  Decimal? @map("estimated_cost") @db.Decimal(10, 2)
+  estimatedHours Decimal? @map("estimated_hours") @db.Decimal(5, 2)
+
+  // Peças necessárias (IDs de peças típicas)
+  suggestedParts Json @default("[]") @map("suggested_parts") // [{partId, quantity, optional}]
+
+  isActive  Boolean  @default(true) @map("is_active")
+  isDefault Boolean  @default(false) @map("is_default") // Template padrão do sistema
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relações
+  tenant    Tenant                       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  schedules VehicleMaintenanceSchedule[]
+
+  @@index([tenantId])
+  @@index([tenantId, category])
+  @@index([tenantId, isActive])
+  @@map("maintenance_templates")
+}
+
+// Manutenções programadas para cada veículo
+model VehicleMaintenanceSchedule {
+  id         String  @id @default(uuid())
+  tenantId   String  @map("tenant_id")
+  vehicleId  String  @map("vehicle_id")
+  templateId String? @map("template_id")
+
+  // Detalhes da manutenção
+  name        String  @db.VarChar(100) // Nome da manutenção
+  description String? @db.Text
+  category    String  @db.VarChar(50) // preventive, corrective, inspection
+
+  // Próxima manutenção
+  nextDueKm   Int?      @map("next_due_km") // Quilometragem para próxima
+  nextDueDate DateTime? @map("next_due_date") // Data para próxima
+
+  // Status
+  status   String @default("pending") @db.VarChar(30) // pending, due, overdue, completed, cancelled
+  priority String @default("normal") @db.VarChar(20) // low, normal, high, urgent
+
+  // Alertas
+  alertSentAt    DateTime? @map("alert_sent_at") // Quando o alerta foi enviado
+  alertDismissed Boolean   @default(false) @map("alert_dismissed")
+
+  // Custo estimado
+  estimatedCost Decimal? @map("estimated_cost") @db.Decimal(10, 2)
+
+  // Notas
+  notes String? @db.Text
+
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  completedAt   DateTime? @map("completed_at")
+  completedById String?   @map("completed_by_id")
+
+  // Relações
+  tenant   Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  vehicle  CustomerVehicle      @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  template MaintenanceTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  history  MaintenanceHistory[]
+
+  @@index([tenantId])
+  @@index([vehicleId])
+  @@index([tenantId, status])
+  @@index([tenantId, nextDueDate])
+  @@index([tenantId, vehicleId, status])
+  @@map("vehicle_maintenance_schedules")
+}
+
+// Histórico de manutenções realizadas
+model MaintenanceHistory {
+  id             String  @id @default(uuid())
+  tenantId       String  @map("tenant_id")
+  vehicleId      String  @map("vehicle_id")
+  scheduleId     String? @map("schedule_id") // Pode ser null se foi manutenção avulsa
+  serviceOrderId String? @map("service_order_id") // OS relacionada
+
+  // Detalhes da manutenção realizada
+  name        String  @db.VarChar(100)
+  description String? @db.Text
+  category    String  @db.VarChar(50)
+
+  // Quando foi realizada
+  performedAt      DateTime @map("performed_at")
+  mileageAtService Int?     @map("mileage_at_service") // Km quando foi feita
+
+  // Custos reais
+  laborCost Decimal? @map("labor_cost") @db.Decimal(10, 2)
+  partsCost Decimal? @map("parts_cost") @db.Decimal(10, 2)
+  totalCost Decimal? @map("total_cost") @db.Decimal(10, 2)
+
+  // Peças utilizadas
+  partsUsed Json @default("[]") @map("parts_used") // [{partId, name, quantity, cost}]
+
+  // Serviços realizados
+  servicesPerformed Json @default("[]") @map("services_performed") // [{name, description, cost}]
+
+  // Próxima manutenção sugerida
+  nextDueKm   Int?      @map("next_due_km")
+  nextDueDate DateTime? @map("next_due_date")
+
+  // Quem realizou
+  performedById   String? @map("performed_by_id")
+  performedByName String? @map("performed_by_name") @db.VarChar(100)
+
+  notes     String?  @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relações
+  tenant       Tenant                      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  vehicle      CustomerVehicle             @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  schedule     VehicleMaintenanceSchedule? @relation(fields: [scheduleId], references: [id], onDelete: SetNull)
+  serviceOrder ServiceOrder?               @relation(fields: [serviceOrderId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([vehicleId])
+  @@index([tenantId, vehicleId])
+  @@index([tenantId, performedAt])
+  @@index([serviceOrderId])
+  @@map("maintenance_history")
+}
+
+// Problemas conhecidos por marca/modelo (para análise de padrões)
+model VehicleIssuePattern {
+  id       String @id @default(uuid())
+  tenantId String @map("tenant_id")
+
+  // Identificação do veículo
+  make     String  @db.VarChar(50) // Marca (Fiat, Ford, VW, etc)
+  model    String? @db.VarChar(50) // Modelo (Uno, Fiesta, Gol, etc)
+  yearFrom Int?    @map("year_from") // Ano inicial
+  yearTo   Int?    @map("year_to") // Ano final
+
+  // Problema
+  problemName        String  @map("problem_name") @db.VarChar(150)
+  problemDescription String? @map("problem_description") @db.Text
+  category           String  @db.VarChar(50) // motor, freios, suspensão, etc
+
+  // Estatísticas
+  occurrences Int      @default(1) // Quantas vezes foi relatado
+  avgMileage  Int?     @map("avg_mileage") // Km médio quando ocorre
+  avgCost     Decimal? @map("avg_cost") @db.Decimal(10, 2) // Custo médio do reparo
+
+  // Solução comum
+  commonSolution String?  @map("common_solution") @db.Text
+  commonParts    Json     @default("[]") @map("common_parts") // Peças mais usadas
+  avgRepairTime  Decimal? @map("avg_repair_time") @db.Decimal(5, 2) // Horas médias
+
+  // Metadados
+  isActive       Boolean   @default(true) @map("is_active")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  lastOccurrence DateTime? @map("last_occurrence")
+
+  // Relações
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, make])
+  @@index([tenantId, make, model])
+  @@index([tenantId, category])
+  @@map("vehicle_issue_patterns")
+}
+
+// Base de conhecimento colaborativa (soluções que funcionaram)
+model KnowledgeBase {
+  id       String @id @default(uuid())
+  tenantId String @map("tenant_id")
+
+  // Problema
+  problemTitle       String @map("problem_title") @db.VarChar(200)
+  problemDescription String @map("problem_description") @db.Text
+  symptoms           Json   @default("[]") // Array de sintomas
+  category           String @db.VarChar(50) // motor, freios, elétrica, etc
+
+  // Veículos afetados (opcional)
+  vehicleMakes  Json @default("[]") @map("vehicle_makes") // Marcas afetadas
+  vehicleModels Json @default("[]") @map("vehicle_models") // Modelos afetados
+
+  // Solução
+  solutionTitle       String @map("solution_title") @db.VarChar(200)
+  solutionDescription String @map("solution_description") @db.Text
+  solutionSteps       Json   @default("[]") @map("solution_steps") // Passo a passo
+
+  // Peças e custos
+  partsNeeded   Json     @default("[]") @map("parts_needed") // [{name, partNumber, avgCost}]
+  estimatedCost Decimal? @map("estimated_cost") @db.Decimal(10, 2)
+  estimatedTime Decimal? @map("estimated_time") @db.Decimal(5, 2) // Horas
+
+  // Ratings e uso
+  successCount Int      @default(0) @map("success_count") // Quantas vezes resolveu
+  failureCount Int      @default(0) @map("failure_count") // Quantas vezes não resolveu
+  rating       Decimal? @db.Decimal(3, 2) // 0.00 a 5.00
+  viewCount    Int      @default(0) @map("view_count")
+
+  // Autor
+  createdById   String @map("created_by_id")
+  createdByName String @map("created_by_name") @db.VarChar(100)
+
+  // Status
+  isVerified Boolean @default(false) @map("is_verified") // Verificado por admin
+  isActive   Boolean @default(true) @map("is_active")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relações
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, category])
+  @@index([tenantId, isActive])
+  @@index([tenantId, rating])
+  @@map("knowledge_base")
+}
+
+// Backup - Sistema de backup automatizado
+model Backup {
+  id                String             @id @default(uuid())
+  tenantId          String?            @map("tenant_id")
+  type              String             @db.VarChar(50) // full, incremental
+  status            String             @default("in_progress") @db.VarChar(50) // in_progress, success, failed
+  size              BigInt? // Tamanho em bytes
+  path              String?            @db.VarChar(500) // Caminho do arquivo local
+  s3Key             String?            @map("s3_key") @db.VarChar(500) // Chave S3 se armazenado no S3
+  encrypted         Boolean            @default(true)
+  startedAt         DateTime           @default(now()) @map("started_at")
+  completedAt       DateTime?          @map("completed_at")
+  expiresAt         DateTime?          @map("expires_at") // Data de expiração (retenção)
+  metadata          Json? // Metadados adicionais
+  error             String?            @db.Text
+  tenant            Tenant?            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  restoreOperations RestoreOperation[]
+
+  @@index([tenantId, startedAt])
+  @@index([status])
+  @@index([expiresAt])
+  @@index([type])
+  @@map("backups")
+}
+
+// RestoreOperation - Operações de restauração de backup
+model RestoreOperation {
+  id          String    @id @default(uuid())
+  backupId    String    @map("backup_id")
+  tenantId    String?   @map("tenant_id")
+  status      String    @default("pending") @db.VarChar(50) // pending, in_progress, success, failed
+  startedAt   DateTime  @default(now()) @map("started_at")
+  completedAt DateTime? @map("completed_at")
+  error       String?   @db.Text
+  backup      Backup    @relation(fields: [backupId], references: [id], onDelete: Cascade)
+  tenant      Tenant?   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, startedAt])
+  @@index([status])
+  @@index([backupId])
+  @@map("restore_operations")
+}
+
+// Admin Webhooks - Webhooks globais do sistema (sem tenant)
+model AdminWebhook {
+  id        String   @id @default(uuid())
+  url       String   @db.Text
+  events    String[]
+  secret    String?  @db.VarChar(255)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("admin_webhooks")
+}
+
+// Admin Integrations - Integrações globais do sistema
+model AdminIntegration {
+  id        String   @id @default(uuid())
+  name      String   @db.VarChar(255)
+  type      String   @db.VarChar(50)
+  apiUrl    String   @map("api_url") @db.Text
+  apiKey    String?  @map("api_key") @db.VarChar(255)
+  config    Json?
+  status    String   @default("active") @db.VarChar(50)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("admin_integrations")
+}
+
+// Admin Automations - Automações globais do sistema
+model AdminAutomation {
+  id             String    @id @default(uuid())
+  name           String    @db.VarChar(255)
+  description    String?   @db.Text
+  trigger        String    @db.VarChar(100)
+  actions        Json      @default("[]")
+  status         String    @default("active") @db.VarChar(50)
+  executionCount Int       @default(0) @map("execution_count")
+  lastExecutedAt DateTime? @map("last_executed_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  @@map("admin_automations")
+}
+
+// Affiliate System - Sistema modular de afiliados multi-SaaS
+
+// SaaS Product - Representa os diferentes sistemas disponíveis para venda
+model SaaSProduct {
+  id          String   @id @default(uuid())
+  code        String   @unique @db.VarChar(50) // mecanica365, crm_hub, etc.
+  name        String   @db.VarChar(100)
+  description String?  @db.Text
+  baseUrl     String   @map("base_url") @db.VarChar(255) // URL do sistema
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  affiliateLinks AffiliateLink[]
+
+  @@map("saas_products")
+}
+
+// Affiliate - Parceiros que revendem os sistemas
+model Affiliate {
+  id            String   @id @default(uuid())
+  userId        String?  @unique @map("user_id") // Opcional: Link para um usuário do sistema
+  name          String   @db.VarChar(255)
+  email         String   @unique @db.VarChar(255)
+  cpfCnpj       String?  @map("cpf_cnpj") @db.VarChar(20)
+  status        String   @default("pending") @db.VarChar(50) // pending, active, blocked
+  pixKey        String?  @map("pix_key") @db.VarChar(255)
+  password      String?  @db.VarChar(255)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  links         AffiliateLink[]
+  commissions   AffiliateCommission[]
+  visits        AffiliateVisit[]
+
+  @@map("affiliates")
+}
+
+// AffiliateLink - Links específicos de cada afiliado para cada produto
+model AffiliateLink {
+  id          String   @id @default(uuid())
+  affiliateId String   @map("affiliate_id")
+  productId   String   @map("product_id")
+  code        String   @unique @db.VarChar(50) // Código único de rastreio (ex: VINICIUS365)
+  targetUrl   String   @map("target_url") @db.Text // URL destino final
+  createdAt   DateTime @default(now()) @map("created_at")
+  
+  affiliate   Affiliate     @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  product     SaaSProduct   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  visits      AffiliateVisit[]
+  commissions AffiliateCommission[]
+
+  @@index([affiliateId])
+  @@index([productId])
+  @@index([code])
+  @@map("affiliate_links")
+}
+
+// AffiliateVisit - Rastreio de cliques
+model AffiliateVisit {
+  id            String   @id @default(uuid())
+  linkId        String   @map("link_id")
+  ip            String?  @db.VarChar(50)
+  userAgent     String?  @map("user_agent") @db.Text
+  referrer      String?  @db.Text
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  link          AffiliateLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  affiliateId   String?       @map("affiliate_id") // redundante para queries rápidas
+  affiliate     Affiliate?    @relation(fields: [affiliateId], references: [id])
+
+  @@index([linkId])
+  @@index([createdAt])
+  @@map("affiliate_visits")
+}
+
+// AffiliateCommission - Registro de ganhos
+model AffiliateCommission {
+  id          String   @id @default(uuid())
+  affiliateId String   @map("affiliate_id")
+  linkId      String   @map("link_id")
+  amount      Decimal  @db.Decimal(10, 2)
+  status      String   @default("pending") @db.VarChar(50) // pending, approved, paid, cancelled
+  description String?  @db.Text
+  orderId     String?  @map("order_id") @db.VarChar(255) // Referência externa da venda
+  createdAt   DateTime @default(now()) @map("created_at")
+  paidAt      DateTime? @map("paid_at")
+
+  affiliate   Affiliate     @relation(fields: [affiliateId], references: [id], onDelete: Cascade)
+  link        AffiliateLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+
+  @@index([affiliateId])
+  @@index([status])
+  @@map("affiliate_commissions")
+}
+

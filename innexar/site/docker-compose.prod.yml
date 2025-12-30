@@ -1,0 +1,67 @@
+# 🌐 INNEXAR Site - Docker Compose Production
+# Conecta-se ao Traefik existente para SSL automático
+
+version: '3.8'
+
+services:
+  innexar-site:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: innexar-site-prod
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - NEXT_TELEMETRY_DISABLED=1
+      # Email Configuration (Resend recomendado)
+      - RESEND_API_KEY=${RESEND_API_KEY:-}
+      - RESEND_FROM_EMAIL=${RESEND_FROM_EMAIL:-comercial@innexar.app}
+      - CONTACT_RECIPIENT_EMAIL=${CONTACT_RECIPIENT_EMAIL:-comercial@innexar.app}
+      - ENABLE_AUTO_REPLY=${ENABLE_AUTO_REPLY:-true}
+      # Umami Analytics (opcional - adicionar depois de configurar)
+      - NEXT_PUBLIC_UMAMI_WEBSITE_ID=${UMAMI_WEBSITE_ID:-}
+      - NEXT_PUBLIC_UMAMI_URL=https://analytics.innexar.app
+    env_file:
+      - .env.production
+    networks:
+      - mecanica365-workshops-prod_mecanica365-workshops-network-prod
+    labels:
+      - "traefik.enable=true"
+      # Roteamento para innexar.app
+      - "traefik.http.routers.innexar-site.rule=Host(`innexar.app`) || Host(`www.innexar.app`)"
+      - "traefik.http.routers.innexar-site.entrypoints=websecure"
+      - "traefik.http.routers.innexar-site.tls=true"
+      - "traefik.http.routers.innexar-site.tls.certresolver=cloudflare"
+      - "traefik.http.routers.innexar-site.service=innexar-site-service"
+      # Middleware de redirecionamento www -> não-www
+      - "traefik.http.routers.innexar-site.middlewares=redirect-to-non-www@docker"
+      - "traefik.http.middlewares.redirect-to-non-www.redirectregex.regex=^https://www\\.innexar\\.app/(.*)"
+      - "traefik.http.middlewares.redirect-to-non-www.redirectregex.replacement=https://innexar.app/$${1}"
+      - "traefik.http.middlewares.redirect-to-non-www.redirectregex.permanent=true"
+      # Serviço
+      - "traefik.http.services.innexar-site-service.loadbalancer.server.port=3000"
+      # Headers de segurança
+      - "traefik.http.middlewares.innexar-security.headers.browserXssFilter=true"
+      - "traefik.http.middlewares.innexar-security.headers.contentTypeNosniff=true"
+      - "traefik.http.middlewares.innexar-security.headers.frameDeny=true"
+      - "traefik.http.middlewares.innexar-security.headers.sslRedirect=true"
+      # Retry
+      - "traefik.http.middlewares.innexar-retry.retry.attempts=3"
+      - "traefik.http.routers.innexar-site.middlewares=innexar-retry,innexar-security"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+networks:
+  mecanica365-workshops-prod_mecanica365-workshops-network-prod:
+    external: true
+

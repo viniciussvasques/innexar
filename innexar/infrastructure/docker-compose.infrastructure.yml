@@ -1,0 +1,138 @@
+# 🏢 INNEXAR - Infrastructure Services
+# Docker Compose para serviços de infraestrutura da empresa
+# IMPORTANTE: Conecta-se ao Traefik existente (mecanica365-workshops-traefik-prod)
+
+version: '3.8'
+
+services:
+  # 📊 Uptime Kuma - Monitoramento de disponibilidade
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: innexar-uptime-kuma
+    restart: unless-stopped
+    volumes:
+      - uptime-kuma-data:/app/data
+    networks:
+      - mecanica365-workshops-network-prod
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.uptime.rule=Host(`status.innexar.app`)"
+      - "traefik.http.routers.uptime.entrypoints=websecure"
+      - "traefik.http.routers.uptime.tls=true"
+      - "traefik.http.routers.uptime.tls.certresolver=cloudflare"
+      - "traefik.http.services.uptime.loadbalancer.server.port=3001"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:3001 || exit 1"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # 📈 Umami - Analytics de código aberto (alternativa ao Google Analytics)
+  umami:
+    image: ghcr.io/umami-software/umami:postgresql-latest
+    container_name: innexar-umami
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${UMAMI_DB_USER:-umami}:${UMAMI_DB_PASSWORD}@umami-db:5432/${UMAMI_DB_NAME:-umami}
+      DATABASE_TYPE: postgresql
+      APP_SECRET: ${UMAMI_APP_SECRET}
+      DISABLE_TELEMETRY: "1"
+    depends_on:
+      umami-db:
+        condition: service_healthy
+    networks:
+      - mecanica365-workshops-network-prod
+      - umami-internal
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.analytics.rule=Host(`analytics.innexar.app`)"
+      - "traefik.http.routers.analytics.entrypoints=websecure"
+      - "traefik.http.routers.analytics.tls=true"
+      - "traefik.http.routers.analytics.tls.certresolver=cloudflare"
+      - "traefik.http.services.analytics.loadbalancer.server.port=3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:3000 || exit 1"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # 🗄️ PostgreSQL para Umami (banco isolado)
+  umami-db:
+    image: postgres:16-alpine
+    container_name: innexar-umami-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${UMAMI_DB_NAME:-umami}
+      POSTGRES_USER: ${UMAMI_DB_USER:-umami}
+      POSTGRES_PASSWORD: ${UMAMI_DB_PASSWORD}
+    volumes:
+      - umami-db-data:/var/lib/postgresql/data
+    networks:
+      - umami-internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${UMAMI_DB_USER:-umami}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # 💾 Backup automatizado (PostgreSQL dumps)
+  backup:
+    image: prodrigestivill/postgres-backup-local:16-alpine
+    container_name: innexar-backup
+    restart: unless-stopped
+    environment:
+      # Backup Mecânica365
+      POSTGRES_HOST: mecanica365-workshops-postgres-prod
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      # Configurações de backup
+      SCHEDULE: "@daily"  # Todos os dias à meia-noite
+      BACKUP_KEEP_DAYS: 7
+      BACKUP_KEEP_WEEKS: 4
+      BACKUP_KEEP_MONTHS: 6
+      HEALTHCHECK_PORT: 8080
+    volumes:
+      - ./backups:/backups
+    networks:
+      - mecanica365-workshops-network-prod
+    depends_on:
+      - mecanica365-workshops-postgres-prod
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  uptime-kuma-data:
+    name: innexar-uptime-kuma-data
+  umami-db-data:
+    name: innexar-umami-db-data
+
+networks:
+  # Conecta ao Traefik existente
+  mecanica365-workshops-network-prod:
+    external: true
+  # Rede interna para Umami + DB
+  umami-internal:
+    name: innexar-umami-internal
+    driver: bridge
+

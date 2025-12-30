@@ -1,0 +1,179 @@
+@import "tailwindcss";
+
+:root {
+  /* INNEXAR Color Palette */
+  --innexar-bg: #050b14;
+  --innexar-card: #0a1628;
+  --innexar-card-hover: #0d1d35;
+  --innexar-border: rgba(74, 168, 179, 0.12);
+  --innexar-border-hover: rgba(74, 168, 179, 0.25);
+  
+  /* Accent Colors */
+  --innexar-teal: #4aa8b3;
+  --innexar-teal-light: #5bc4cf;
+  --innexar-teal-dark: #2d7a85;
+  --innexar-blue: #1a3a4a;
+  --innexar-gradient-start: #1a3a4a;
+  --innexar-gradient-end: #2d8b96;
+  
+  /* Text Colors */
+  --innexar-text: #e5e7eb;
+  --innexar-text-muted: #6b7a8a;
+  --innexar-text-dark: #4a5568;
+  
+  /* Status Colors */
+  --innexar-success: #10b981;
+  --innexar-warning: #f59e0b;
+  --innexar-error: #ef4444;
+  
+  --background: var(--innexar-bg);
+  --foreground: var(--innexar-text);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--innexar-bg);
+  color: var(--innexar-text);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--innexar-card);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--innexar-teal-dark);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--innexar-teal);
+}
+
+/* INNEXAR Animations */
+@layer utilities {
+  .innexar-glow {
+    box-shadow: 0 0 30px rgba(74, 168, 179, 0.15);
+  }
+  
+  .innexar-glow-strong {
+    box-shadow: 0 0 40px rgba(74, 168, 179, 0.25);
+  }
+
+  .hud-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--innexar-teal), transparent);
+    animation: scan 3s linear infinite;
+  }
+  
+  .innexar-card {
+    background: var(--innexar-card);
+    border: 1px solid var(--innexar-border);
+    border-radius: 1rem;
+    transition: all 0.3s ease;
+  }
+  
+  .innexar-card:hover {
+    border-color: var(--innexar-border-hover);
+    box-shadow: 0 0 30px rgba(74, 168, 179, 0.1);
+  }
+  
+  .innexar-input {
+    background: rgba(10, 22, 40, 0.8);
+    border: 1px solid var(--innexar-border);
+    border-radius: 0.75rem;
+    color: var(--innexar-text);
+    transition: all 0.2s ease;
+  }
+  
+  .innexar-input:focus {
+    border-color: var(--innexar-teal);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(74, 168, 179, 0.1);
+  }
+  
+  .innexar-input::placeholder {
+    color: var(--innexar-text-muted);
+  }
+  
+  .innexar-btn {
+    background: linear-gradient(135deg, var(--innexar-teal), var(--innexar-teal-dark));
+    color: white;
+    font-weight: 600;
+    border-radius: 0.75rem;
+    transition: all 0.3s ease;
+  }
+  
+  .innexar-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(74, 168, 179, 0.3);
+  }
+  
+  .innexar-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+@keyframes scan {
+  0% { transform: translateY(-100%); opacity: 0; }
+  50% { opacity: 1; }
+  100% { transform: translateY(1000%); opacity: 0; }
+}
+
+@keyframes gradient {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(74, 168, 179, 0.2); }
+  50% { box-shadow: 0 0 40px rgba(74, 168, 179, 0.4); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 3s ease infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Geometric pattern overlay */
+.geometric-pattern {
+  background-image: 
+    linear-gradient(30deg, rgba(74, 168, 179, 0.03) 12%, transparent 12.5%, transparent 87%, rgba(74, 168, 179, 0.03) 87.5%),
+    linear-gradient(150deg, rgba(74, 168, 179, 0.03) 12%, transparent 12.5%, transparent 87%, rgba(74, 168, 179, 0.03) 87.5%),
+    linear-gradient(30deg, rgba(74, 168, 179, 0.03) 12%, transparent 12.5%, transparent 87%, rgba(74, 168, 179, 0.03) 87.5%),
+    linear-gradient(150deg, rgba(74, 168, 179, 0.03) 12%, transparent 12.5%, transparent 87%, rgba(74, 168, 179, 0.03) 87.5%);
+  background-size: 80px 140px;
+  background-position: 0 0, 0 0, 40px 70px, 40px 70px;
+}

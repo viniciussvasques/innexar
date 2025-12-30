@@ -1,0 +1,346 @@
+name: mecanica365-workshops-prod
+
+services:
+  traefik:
+    image: traefik:v2.10
+    container_name: mecanica365-workshops-traefik-prod
+    restart: always
+    env_file:
+      - .env.prod
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"  # Dashboard
+    environment:
+      - CF_API_EMAIL=${CLOUDFLARE_EMAIL}
+      - CF_API_KEY=${CLOUDFLARE_API_KEY}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
+      - traefik_letsencrypt:/letsencrypt
+    networks:
+      - mecanica365-workshops-network-prod
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik.rule=Host(`traefik.mecanica365.com`)"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.tls=true"
+      - "traefik.http.routers.traefik.tls.certresolver=cloudflare"
+      - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: mecanica365-workshops-postgres-prod
+    restart: always
+    env_file:
+      - .env.prod
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=pt_BR.UTF-8"
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - mecanica365_workshops_postgres_data_prod:/var/lib/postgresql/data
+      - ./backups:/backups
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    command:
+      - "postgres"
+      - "-c"
+      - "max_connections=200"
+      - "-c"
+      - "shared_buffers=512MB"
+      - "-c"
+      - "effective_cache_size=2GB"
+      - "-c"
+      - "maintenance_work_mem=128MB"
+      - "-c"
+      - "checkpoint_completion_target=0.9"
+      - "-c"
+      - "wal_buffers=16MB"
+      - "-c"
+      - "default_statistics_target=100"
+      - "-c"
+      - "random_page_cost=1.1"
+      - "-c"
+      - "effective_io_concurrency=200"
+      - "-c"
+      - "work_mem=8MB"
+      - "-c"
+      - "min_wal_size=1GB"
+      - "-c"
+      - "max_wal_size=4GB"
+      - "-c"
+      - "max_worker_processes=8"
+      - "-c"
+      - "max_parallel_workers_per_gather=4"
+      - "-c"
+      - "max_parallel_workers=8"
+      - "-c"
+      - "max_parallel_maintenance_workers=4"
+    networks:
+      - mecanica365-workshops-network-prod
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  redis:
+    image: redis:7-alpine
+    container_name: mecanica365-workshops-redis-prod
+    restart: always
+    env_file:
+      - .env.prod
+    command: sh -c 'redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru --requirepass "$$REDIS_PASSWORD"'
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - mecanica365_workshops_redis_data_prod:/data
+    healthcheck:
+      test: ["CMD", "sh", "-c", "redis-cli --no-auth-warning -a \"$$REDIS_PASSWORD\" ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    networks:
+      - mecanica365-workshops-network-prod
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mecanica365-workshops-backend-prod
+    restart: always
+    env_file:
+      - .env.prod
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`api.mecanica365.com`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls=true"
+      - "traefik.http.routers.backend.tls.certresolver=cloudflare"
+      - "traefik.http.routers.backend.priority=100"
+      - "traefik.http.services.backend.loadbalancer.server.port=3001"
+      # Removido middleware stripprefix pois o NestJS já tem global prefix /api
+    # Porta não exposta - acesso via Traefik
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - mecanica365-workshops-network-prod
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    container_name: mecanica365-workshops-frontend-prod
+    restart: always
+    env_file:
+      - .env.prod
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: https://api.mecanica365.com
+      API_URL: http://backend:3001
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.frontend-svc.loadbalancer.server.port=3001"
+      - "traefik.http.routers.frontend.rule=Host(`mecanica365.com`) || Host(`www.mecanica365.com`)"
+      - "traefik.http.routers.frontend.service=frontend-svc"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls=true"
+      - "traefik.http.routers.frontend.tls.certresolver=cloudflare"
+      # Wildcard para subdomínios (ex.: tenant1.mecanica365.com) servir o mesmo frontend
+      # Exclui subdomínios reservados: api, traefik, www, admin
+      - "traefik.http.routers.frontend-wildcard.rule=HostRegexp(`{subdomain:[a-z0-9-]+}.mecanica365.com`) && !Host(`api.mecanica365.com`) && !Host(`traefik.mecanica365.com`) && !Host(`www.mecanica365.com`) && !Host(`admin.mecanica365.com`) && !Host(`afiliados.mecanica365.com`)"
+      - "traefik.http.routers.frontend-wildcard.service=frontend-svc"
+      - "traefik.http.routers.frontend-wildcard.entrypoints=websecure"
+      - "traefik.http.routers.frontend-wildcard.tls=true"
+      - "traefik.http.routers.frontend-wildcard.tls.certresolver=cloudflare"
+      - "traefik.http.routers.frontend-wildcard.priority=90"
+    depends_on:
+      - backend
+    networks:
+      - mecanica365-workshops-network-prod
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://$(hostname -i | awk '{print $1}'):${PORT:-3000} >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  admin:
+    build:
+      context: ../admin
+      dockerfile: Dockerfile
+    container_name: mecanica365-workshops-admin-prod
+    restart: always
+    env_file:
+      - .env.prod
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: https://api.mecanica365.com
+      API_URL: http://backend:3001
+      PORT: 3002
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.admin-svc.loadbalancer.server.port=3000"
+      - "traefik.http.routers.admin.rule=Host(`admin.mecanica365.com`)"
+      - "traefik.http.routers.admin.service=admin-svc"
+      - "traefik.http.routers.admin.entrypoints=websecure"
+      - "traefik.http.routers.admin.tls=true"
+      - "traefik.http.routers.admin.tls.certresolver=cloudflare"
+      - "traefik.http.routers.admin.priority=100"
+    depends_on:
+      - backend
+    networks:
+      - mecanica365-workshops-network-prod
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3002 >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ===== INNEXAR - Sistema de Afiliados Independente =====
+  
+  # PostgreSQL separado para INNEXAR
+  postgres-innexar:
+    image: postgres:16-alpine
+    container_name: innexar-postgres-prod
+    restart: always
+    environment:
+      POSTGRES_USER: innexar
+      POSTGRES_PASSWORD: ${INNEXAR_DB_PASSWORD:-innexar_secure_2024}
+      POSTGRES_DB: innexar_db
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5433:5432"
+    volumes:
+      - innexar_postgres_data_prod:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U innexar -d innexar_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - mecanica365-workshops-network-prod
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  # Backend INNEXAR - Sistema de Afiliados
+  innexar-affiliate-backend:
+    build:
+      context: ../innexar-backend
+      dockerfile: Dockerfile
+    container_name: innexar-affiliate-backend-prod
+    restart: always
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://innexar:${INNEXAR_DB_PASSWORD:-innexar_secure_2024}@postgres-innexar:5432/innexar_db
+      JWT_SECRET: ${INNEXAR_JWT_SECRET:-innexar_jwt_secret_2024}
+      JWT_EXPIRES_IN: 7d
+      PORT: 3005
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.innexar-api-svc.loadbalancer.server.port=3005"
+      - "traefik.http.routers.innexar-api.rule=Host(`apiaf.innexar.app`)"
+      - "traefik.http.routers.innexar-api.service=innexar-api-svc"
+      - "traefik.http.routers.innexar-api.entrypoints=websecure"
+      - "traefik.http.routers.innexar-api.tls=true"
+      - "traefik.http.routers.innexar-api.tls.certresolver=cloudflare"
+      - "traefik.http.routers.innexar-api.priority=100"
+    depends_on:
+      postgres-innexar:
+        condition: service_healthy
+    networks:
+      - mecanica365-workshops-network-prod
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3005/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend INNEXAR (Painel de Afiliados)
+  innexar-frontend:
+    build:
+      context: ../affiliate
+      dockerfile: Dockerfile
+    container_name: innexar-frontend-prod
+    restart: always
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: https://apiaf.innexar.app
+      API_URL: http://innexar-affiliate-backend:3005
+      PORT: 3004
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.innexar-svc.loadbalancer.server.port=3004"
+      - "traefik.http.routers.innexar.rule=Host(`afiliado.innexar.app`) || Host(`afiliados.mecanica365.com`)"
+      - "traefik.http.routers.innexar.service=innexar-svc"
+      - "traefik.http.routers.innexar.entrypoints=websecure"
+      - "traefik.http.routers.innexar.tls=true"
+      - "traefik.http.routers.innexar.tls.certresolver=cloudflare"
+      - "traefik.http.routers.innexar.priority=100"
+    depends_on:
+      - innexar-affiliate-backend
+    networks:
+      - mecanica365-workshops-network-prod
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3004 >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  mecanica365_workshops_postgres_data_prod:
+    driver: local
+  mecanica365_workshops_redis_data_prod:
+    driver: local
+  traefik_letsencrypt:
+    driver: local
+  innexar_postgres_data_prod:
+    driver: local
+
+networks:
+  mecanica365-workshops-network-prod:
+    driver: bridge
+

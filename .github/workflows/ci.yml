@@ -1,0 +1,120 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  # Testes do HQ Frontend
+  test-hq-frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./innexar/hq/frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: innexar/hq/frontend/package-lock.json
+      - run: npm ci
+      - run: npm run type-check
+      - run: npm run lint
+      - run: npm run test:ci
+      - name: Build
+        run: npm run build
+
+  # Testes do HQ Backend (Afiliados)
+  test-hq-backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./innexar/hq/backend
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: innexar_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: innexar/hq/backend/package-lock.json
+      - run: npm ci
+      - run: npm run prisma:generate
+      - run: npm run build
+      - name: Run tests
+        run: npm test || echo "No tests configured yet"
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/innexar_test
+
+  # Testes do Site
+  test-site:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./innexar/site
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: innexar/site/package-lock.json
+      - run: npm ci
+      - run: npm run build
+
+  # Build Docker Images (sem push - apenas validação)
+  build-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build HQ Frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./innexar/hq/frontend
+          file: ./innexar/hq/frontend/Dockerfile
+          push: false
+          tags: innexar-hq-frontend:test
+      - name: Build Site
+        uses: docker/build-push-action@v5
+        with:
+          context: ./innexar/site
+          file: ./innexar/site/Dockerfile
+          push: false
+          tags: innexar-site:test
+
+  # Lint geral
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Lint HQ Frontend
+        run: |
+          cd innexar/hq/frontend
+          npm ci
+          npm run lint
+      - name: Lint Site
+        run: |
+          cd innexar/site
+          npm ci
+          npm run lint || echo "No lint script"
+

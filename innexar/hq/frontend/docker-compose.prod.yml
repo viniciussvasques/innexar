@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  innexar-hq-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: innexar-hq-frontend-prod
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3004
+      - NEXT_TELEMETRY_DISABLED=1
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:3005}
+    env_file:
+      - .env.production
+    networks:
+      - mecanica365-workshops-prod_mecanica365-workshops-network-prod
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.innexar-hq.rule=Host(`hq.innexar.app`)"
+      - "traefik.http.routers.innexar-hq.entrypoints=websecure"
+      - "traefik.http.routers.innexar-hq.tls=true"
+      - "traefik.http.routers.innexar-hq.tls.certresolver=cloudflare"
+      - "traefik.http.routers.innexar-hq.service=innexar-hq-service"
+      - "traefik.http.services.innexar-hq-service.loadbalancer.server.port=3004"
+      - "traefik.http.middlewares.innexar-hq-security.headers.browserXssFilter=true"
+      - "traefik.http.middlewares.innexar-hq-security.headers.contentTypeNosniff=true"
+      - "traefik.http.middlewares.innexar-hq-security.headers.frameDeny=true"
+      - "traefik.http.middlewares.innexar-hq-security.headers.sslRedirect=true"
+      - "traefik.http.routers.innexar-hq.middlewares=innexar-hq-security"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://127.0.0.1:3004"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+networks:
+  mecanica365-workshops-prod_mecanica365-workshops-network-prod:
+    external: true
+

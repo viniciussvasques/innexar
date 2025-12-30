@@ -1,0 +1,33 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'innexar/**'
+      - '.github/workflows/deploy.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    steps:
+      - name: Deploy Notification
+        run: |
+          echo "🚀 Deploy seria executado aqui"
+          echo "📦 Projetos atualizados serão deployados"
+          echo "⚠️ Configure seu servidor de deploy aqui"
+          
+      # Adicione seus steps de deploy aqui
+      # Exemplo com SSH:
+      # - name: Deploy via SSH
+      #   uses: appleboy/ssh-action@master
+      #   with:
+      #     host: ${{ secrets.SSH_HOST }}
+      #     username: ${{ secrets.SSH_USER }}
+      #     key: ${{ secrets.SSH_KEY }}
+      #     script: |
+      #       cd /projetos
+      #       git pull origin main
+      #       docker-compose -f docker-compose.prod.yml up -d --build
+
