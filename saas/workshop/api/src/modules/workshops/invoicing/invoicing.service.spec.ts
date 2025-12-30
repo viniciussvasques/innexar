@@ -1,7 +1,7 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { InvoicingService } from './invoicing.service';
-import { PrismaService } from '@database/prisma.service';
+import { Test, TestingModule } from "@nestjs/testing";
+import { NotFoundException, BadRequestException } from "@nestjs/common";
+import { InvoicingService } from "./invoicing.service";
+import { PrismaService } from "@database/prisma.service";
 import {
   CreateInvoiceDto,
   UpdateInvoiceDto,
@@ -9,28 +9,28 @@ import {
   PaymentStatus,
   InvoiceType,
   InvoiceItemType,
-} from './dto';
-import { Decimal } from '@prisma/client/runtime/library';
+} from "./dto";
+import { Decimal } from "@prisma/client/runtime/library";
 
-describe('InvoicingService', () => {
+describe("InvoicingService", () => {
   let service: InvoicingService;
 
-  const mockTenantId = 'tenant-id';
-  const mockInvoiceId = 'invoice-id';
-  const mockCustomerId = 'customer-id';
-  const mockServiceOrderId = 'service-order-id';
+  const mockTenantId = "tenant-id";
+  const mockInvoiceId = "invoice-id";
+  const mockCustomerId = "customer-id";
+  const mockServiceOrderId = "service-order-id";
 
   const mockInvoice = {
     id: mockInvoiceId,
     tenantId: mockTenantId,
-    invoiceNumber: 'FAT-001',
+    invoiceNumber: "FAT-001",
     serviceOrderId: mockServiceOrderId,
     customerId: mockCustomerId,
     type: InvoiceType.SERVICE,
     total: new Decimal(1000.0),
     discount: new Decimal(0),
     taxAmount: new Decimal(0),
-    paymentMethod: 'credit_card',
+    paymentMethod: "credit_card",
     paymentStatus: PaymentStatus.PENDING,
     status: InvoiceStatus.DRAFT,
     dueDate: null,
@@ -44,21 +44,21 @@ describe('InvoicingService', () => {
     updatedAt: new Date(),
     customer: {
       id: mockCustomerId,
-      name: 'Cliente Teste',
-      phone: '11999999999',
-      email: 'cliente@teste.com',
+      name: "Cliente Teste",
+      phone: "11999999999",
+      email: "cliente@teste.com",
     },
     serviceOrder: {
       id: mockServiceOrderId,
-      number: 'OS-001',
-      status: 'completed',
+      number: "OS-001",
+      status: "completed",
     },
     items: [
       {
-        id: 'item-id',
-        type: 'service',
-        name: 'Serviço Teste',
-        description: 'Descrição do serviço',
+        id: "item-id",
+        type: "service",
+        name: "Serviço Teste",
+        description: "Descrição do serviço",
         quantity: 1,
         unitPrice: new Decimal(1000.0),
         totalPrice: new Decimal(1000.0),
@@ -108,7 +108,7 @@ describe('InvoicingService', () => {
     jest.clearAllMocks();
   });
 
-  describe('create', () => {
+  describe("create", () => {
     const createInvoiceDto: CreateInvoiceDto = {
       serviceOrderId: mockServiceOrderId,
       customerId: mockCustomerId,
@@ -116,8 +116,8 @@ describe('InvoicingService', () => {
       items: [
         {
           type: InvoiceItemType.SERVICE,
-          name: 'Serviço Teste',
-          description: 'Descrição do serviço',
+          name: "Serviço Teste",
+          description: "Descrição do serviço",
           quantity: 1,
           unitPrice: 1000.0,
           totalPrice: 1000.0,
@@ -126,22 +126,22 @@ describe('InvoicingService', () => {
       total: 1000.0,
       discount: 0,
       taxAmount: 0,
-      paymentMethod: 'credit_card',
+      paymentMethod: "credit_card",
       paymentStatus: PaymentStatus.PENDING,
       status: InvoiceStatus.DRAFT,
     };
 
-    it('deve criar uma fatura com sucesso', async () => {
+    it("deve criar uma fatura com sucesso", async () => {
       // Mock: cliente existe
       mockPrismaService.customer.findFirst.mockResolvedValueOnce({
         id: mockCustomerId,
-        name: 'Cliente Teste',
+        name: "Cliente Teste",
       });
 
       // Mock: ordem de serviço existe
       mockPrismaService.serviceOrder.findFirst.mockResolvedValueOnce({
         id: mockServiceOrderId,
-        number: 'OS-001',
+        number: "OS-001",
       });
 
       // Mock: não existe fatura para esta OS
@@ -155,13 +155,13 @@ describe('InvoicingService', () => {
 
       const result = await service.create(mockTenantId, createInvoiceDto);
 
-      expect(result).toHaveProperty('id', mockInvoiceId);
-      expect(result).toHaveProperty('invoiceNumber', 'FAT-001');
-      expect(result).toHaveProperty('type', InvoiceType.SERVICE);
+      expect(result).toHaveProperty("id", mockInvoiceId);
+      expect(result).toHaveProperty("invoiceNumber", "FAT-001");
+      expect(result).toHaveProperty("type", InvoiceType.SERVICE);
       expect(mockPrismaService.invoice.create).toHaveBeenCalled();
     });
 
-    it('deve lançar erro se cliente não encontrado', async () => {
+    it("deve lançar erro se cliente não encontrado", async () => {
       mockPrismaService.customer.findFirst.mockResolvedValueOnce(null);
 
       await expect(
@@ -169,7 +169,7 @@ describe('InvoicingService', () => {
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('deve lançar erro se ordem de serviço não encontrada', async () => {
+    it("deve lançar erro se ordem de serviço não encontrada", async () => {
       mockPrismaService.customer.findFirst.mockResolvedValueOnce({
         id: mockCustomerId,
       });
@@ -180,7 +180,7 @@ describe('InvoicingService', () => {
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('deve lançar erro se já existe fatura para a OS', async () => {
+    it("deve lançar erro se já existe fatura para a OS", async () => {
       mockPrismaService.customer.findFirst.mockResolvedValueOnce({
         id: mockCustomerId,
       });
@@ -188,7 +188,7 @@ describe('InvoicingService', () => {
         id: mockServiceOrderId,
       });
       mockPrismaService.invoice.findFirst.mockResolvedValueOnce({
-        id: 'existing-invoice-id',
+        id: "existing-invoice-id",
       });
 
       await expect(
@@ -196,13 +196,13 @@ describe('InvoicingService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve lançar erro se fatura não tem itens', async () => {
+    it("deve lançar erro se fatura não tem itens", async () => {
       const dtoWithoutItems = { ...createInvoiceDto, items: [] };
 
       // Mock: cliente existe (para não falhar antes)
       mockPrismaService.customer.findFirst.mockResolvedValueOnce({
         id: mockCustomerId,
-        name: 'Cliente Teste',
+        name: "Cliente Teste",
       });
       // Mock: serviceOrder existe (para não falhar antes)
       mockPrismaService.serviceOrder.findFirst.mockResolvedValueOnce({
@@ -217,8 +217,8 @@ describe('InvoicingService', () => {
     });
   });
 
-  describe('findAll', () => {
-    it('deve listar faturas com sucesso', async () => {
+  describe("findAll", () => {
+    it("deve listar faturas com sucesso", async () => {
       mockPrismaService.$transaction.mockResolvedValue([[mockInvoice], 1]);
 
       const result = await service.findAll(mockTenantId, {
@@ -233,17 +233,17 @@ describe('InvoicingService', () => {
     });
   });
 
-  describe('findOne', () => {
-    it('deve buscar fatura por ID com sucesso', async () => {
+  describe("findOne", () => {
+    it("deve buscar fatura por ID com sucesso", async () => {
       mockPrismaService.invoice.findFirst.mockResolvedValue(mockInvoice);
 
       const result = await service.findOne(mockTenantId, mockInvoiceId);
 
-      expect(result).toHaveProperty('id', mockInvoiceId);
-      expect(result).toHaveProperty('invoiceNumber', 'FAT-001');
+      expect(result).toHaveProperty("id", mockInvoiceId);
+      expect(result).toHaveProperty("invoiceNumber", "FAT-001");
     });
 
-    it('deve lançar erro se fatura não encontrada', async () => {
+    it("deve lançar erro se fatura não encontrada", async () => {
       mockPrismaService.invoice.findFirst.mockResolvedValue(null);
 
       await expect(
@@ -252,13 +252,13 @@ describe('InvoicingService', () => {
     });
   });
 
-  describe('update', () => {
+  describe("update", () => {
     const updateInvoiceDto: UpdateInvoiceDto = {
       total: 1200.0,
       discount: 100.0,
     };
 
-    it('deve atualizar fatura com sucesso', async () => {
+    it("deve atualizar fatura com sucesso", async () => {
       mockPrismaService.invoice.findFirst.mockResolvedValueOnce({
         ...mockInvoice,
         status: InvoiceStatus.DRAFT,
@@ -275,11 +275,11 @@ describe('InvoicingService', () => {
         updateInvoiceDto,
       );
 
-      expect(result).toHaveProperty('id', mockInvoiceId);
+      expect(result).toHaveProperty("id", mockInvoiceId);
       expect(mockPrismaService.invoice.update).toHaveBeenCalled();
     });
 
-    it('deve lançar erro se fatura não encontrada', async () => {
+    it("deve lançar erro se fatura não encontrada", async () => {
       mockPrismaService.invoice.findFirst.mockResolvedValue(null);
 
       await expect(
@@ -287,7 +287,7 @@ describe('InvoicingService', () => {
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('deve lançar erro se tentar atualizar fatura emitida', async () => {
+    it("deve lançar erro se tentar atualizar fatura emitida", async () => {
       mockPrismaService.invoice.findFirst.mockResolvedValue({
         ...mockInvoice,
         status: InvoiceStatus.ISSUED,
@@ -299,8 +299,8 @@ describe('InvoicingService', () => {
     });
   });
 
-  describe('remove', () => {
-    it('deve remover fatura com sucesso', async () => {
+  describe("remove", () => {
+    it("deve remover fatura com sucesso", async () => {
       mockPrismaService.invoice.findFirst.mockResolvedValue({
         ...mockInvoice,
         status: InvoiceStatus.DRAFT,
@@ -312,7 +312,7 @@ describe('InvoicingService', () => {
       expect(mockPrismaService.invoice.delete).toHaveBeenCalled();
     });
 
-    it('deve lançar erro se tentar remover fatura emitida', async () => {
+    it("deve lançar erro se tentar remover fatura emitida", async () => {
       mockPrismaService.invoice.findFirst.mockResolvedValue({
         ...mockInvoice,
         status: InvoiceStatus.ISSUED,
@@ -324,8 +324,8 @@ describe('InvoicingService', () => {
     });
   });
 
-  describe('issue', () => {
-    it('deve emitir fatura com sucesso', async () => {
+  describe("issue", () => {
+    it("deve emitir fatura com sucesso", async () => {
       mockPrismaService.invoice.findFirst.mockResolvedValue({
         ...mockInvoice,
         status: InvoiceStatus.DRAFT,
@@ -342,7 +342,7 @@ describe('InvoicingService', () => {
       expect(mockPrismaService.invoice.update).toHaveBeenCalled();
     });
 
-    it('deve lançar erro se fatura já foi emitida', async () => {
+    it("deve lançar erro se fatura já foi emitida", async () => {
       mockPrismaService.invoice.findFirst.mockResolvedValue({
         ...mockInvoice,
         status: InvoiceStatus.ISSUED,
@@ -354,8 +354,8 @@ describe('InvoicingService', () => {
     });
   });
 
-  describe('cancel', () => {
-    it('deve cancelar fatura com sucesso', async () => {
+  describe("cancel", () => {
+    it("deve cancelar fatura com sucesso", async () => {
       mockPrismaService.invoice.findFirst.mockResolvedValue({
         ...mockInvoice,
         status: InvoiceStatus.DRAFT,
@@ -372,7 +372,7 @@ describe('InvoicingService', () => {
       expect(mockPrismaService.invoice.update).toHaveBeenCalled();
     });
 
-    it('deve lançar erro se fatura já está paga', async () => {
+    it("deve lançar erro se fatura já está paga", async () => {
       mockPrismaService.invoice.findFirst.mockResolvedValue({
         ...mockInvoice,
         paymentStatus: PaymentStatus.PAID,
@@ -384,7 +384,7 @@ describe('InvoicingService', () => {
     });
   });
 
-  describe('create - casos adicionais', () => {
+  describe("create - casos adicionais", () => {
     const createInvoiceDto: CreateInvoiceDto = {
       serviceOrderId: mockServiceOrderId,
       customerId: mockCustomerId,
@@ -392,8 +392,8 @@ describe('InvoicingService', () => {
       items: [
         {
           type: InvoiceItemType.SERVICE,
-          name: 'Serviço Teste',
-          description: 'Descrição do serviço',
+          name: "Serviço Teste",
+          description: "Descrição do serviço",
           quantity: 1,
           unitPrice: 1000.0,
           totalPrice: 1000.0,
@@ -402,12 +402,12 @@ describe('InvoicingService', () => {
       total: 1000.0,
       discount: 0,
       taxAmount: 0,
-      paymentMethod: 'credit_card',
+      paymentMethod: "credit_card",
       paymentStatus: PaymentStatus.PENDING,
       status: InvoiceStatus.DRAFT,
     };
 
-    it('deve criar fatura sem cliente e sem ordem de serviço', async () => {
+    it("deve criar fatura sem cliente e sem ordem de serviço", async () => {
       const dtoWithoutCustomerAndOS = {
         ...createInvoiceDto,
         customerId: undefined,
@@ -423,7 +423,7 @@ describe('InvoicingService', () => {
         ...mockInvoice,
         customerId: null,
         serviceOrderId: null,
-        invoiceNumber: 'FAT-001',
+        invoiceNumber: "FAT-001",
       });
 
       const result = await service.create(
@@ -431,14 +431,14 @@ describe('InvoicingService', () => {
         dtoWithoutCustomerAndOS,
       );
 
-      expect(result).toHaveProperty('id');
+      expect(result).toHaveProperty("id");
       expect(mockPrismaService.invoice.create).toHaveBeenCalled();
     });
 
-    it('deve criar fatura com número fornecido', async () => {
+    it("deve criar fatura com número fornecido", async () => {
       const dtoWithNumber = {
         ...createInvoiceDto,
-        invoiceNumber: 'FAT-CUSTOM-001',
+        invoiceNumber: "FAT-CUSTOM-001",
       };
 
       mockPrismaService.customer.findFirst.mockResolvedValueOnce({
@@ -451,18 +451,18 @@ describe('InvoicingService', () => {
       mockPrismaService.invoice.findUnique.mockResolvedValueOnce(null);
       mockPrismaService.invoice.create.mockResolvedValue({
         ...mockInvoice,
-        invoiceNumber: 'FAT-CUSTOM-001',
+        invoiceNumber: "FAT-CUSTOM-001",
       });
 
       const result = await service.create(mockTenantId, dtoWithNumber);
 
-      expect(result.invoiceNumber).toBe('FAT-CUSTOM-001');
+      expect(result.invoiceNumber).toBe("FAT-CUSTOM-001");
     });
 
-    it('deve lançar erro se número de fatura já existe', async () => {
+    it("deve lançar erro se número de fatura já existe", async () => {
       const dtoWithNumber = {
         ...createInvoiceDto,
-        invoiceNumber: 'FAT-EXISTING',
+        invoiceNumber: "FAT-EXISTING",
       };
 
       mockPrismaService.customer.findFirst.mockResolvedValueOnce({
@@ -473,7 +473,7 @@ describe('InvoicingService', () => {
       });
       mockPrismaService.invoice.findFirst.mockResolvedValueOnce(null);
       mockPrismaService.invoice.findUnique.mockResolvedValueOnce({
-        id: 'existing-id',
+        id: "existing-id",
       });
 
       await expect(service.create(mockTenantId, dtoWithNumber)).rejects.toThrow(
@@ -481,7 +481,7 @@ describe('InvoicingService', () => {
       );
     });
 
-    it('deve calcular total automaticamente se não fornecido', async () => {
+    it("deve calcular total automaticamente se não fornecido", async () => {
       const dtoWithoutTotal = {
         ...createInvoiceDto,
         total: undefined,
@@ -504,7 +504,7 @@ describe('InvoicingService', () => {
       expect(mockPrismaService.invoice.create).toHaveBeenCalled();
     });
 
-    it('deve lançar erro se valor total final for negativo', async () => {
+    it("deve lançar erro se valor total final for negativo", async () => {
       const dtoWithNegativeTotal = {
         ...createInvoiceDto,
         total: 100.0,
@@ -525,12 +525,12 @@ describe('InvoicingService', () => {
     });
   });
 
-  describe('findAll - casos adicionais', () => {
-    it('deve filtrar faturas por número', async () => {
+  describe("findAll - casos adicionais", () => {
+    it("deve filtrar faturas por número", async () => {
       mockPrismaService.$transaction.mockResolvedValue([[mockInvoice], 1]);
 
       const result = await service.findAll(mockTenantId, {
-        invoiceNumber: 'FAT-001',
+        invoiceNumber: "FAT-001",
         page: 1,
         limit: 20,
       });
@@ -538,7 +538,7 @@ describe('InvoicingService', () => {
       expect(result.data).toHaveLength(1);
     });
 
-    it('deve filtrar faturas por status', async () => {
+    it("deve filtrar faturas por status", async () => {
       mockPrismaService.$transaction.mockResolvedValue([[mockInvoice], 1]);
 
       const result = await service.findAll(mockTenantId, {
@@ -550,12 +550,12 @@ describe('InvoicingService', () => {
       expect(result.data).toHaveLength(1);
     });
 
-    it('deve filtrar faturas por período', async () => {
+    it("deve filtrar faturas por período", async () => {
       mockPrismaService.$transaction.mockResolvedValue([[mockInvoice], 1]);
 
       const result = await service.findAll(mockTenantId, {
-        startDate: '2024-01-01',
-        endDate: '2024-12-31',
+        startDate: "2024-01-01",
+        endDate: "2024-12-31",
         page: 1,
         limit: 20,
       });
@@ -564,13 +564,13 @@ describe('InvoicingService', () => {
     });
   });
 
-  describe('update - casos adicionais', () => {
-    it('deve atualizar fatura com novos itens', async () => {
+  describe("update - casos adicionais", () => {
+    it("deve atualizar fatura com novos itens", async () => {
       const updateDto: UpdateInvoiceDto = {
         items: [
           {
             type: InvoiceItemType.SERVICE,
-            name: 'Novo Serviço',
+            name: "Novo Serviço",
             quantity: 2,
             unitPrice: 500.0,
             totalPrice: 1000.0,
@@ -590,9 +590,9 @@ describe('InvoicingService', () => {
         total: new Decimal(1000.0),
         items: [
           {
-            id: 'new-item-id',
-            type: 'service',
-            name: 'Novo Serviço',
+            id: "new-item-id",
+            type: "service",
+            name: "Novo Serviço",
             quantity: 2,
             unitPrice: new Decimal(500.0),
             totalPrice: new Decimal(1000.0),
@@ -606,15 +606,15 @@ describe('InvoicingService', () => {
         updateDto,
       );
 
-      expect(result).toHaveProperty('id', mockInvoiceId);
+      expect(result).toHaveProperty("id", mockInvoiceId);
       expect(mockPrismaService.invoiceItem.deleteMany).toHaveBeenCalledWith({
         where: { invoiceId: mockInvoiceId },
       });
     });
 
-    it('deve atualizar cliente da fatura', async () => {
+    it("deve atualizar cliente da fatura", async () => {
       const updateDto: UpdateInvoiceDto = {
-        customerId: 'new-customer-id',
+        customerId: "new-customer-id",
       };
 
       mockPrismaService.invoice.findFirst.mockResolvedValueOnce({
@@ -622,11 +622,11 @@ describe('InvoicingService', () => {
         status: InvoiceStatus.DRAFT,
       });
       mockPrismaService.customer.findFirst.mockResolvedValueOnce({
-        id: 'new-customer-id',
+        id: "new-customer-id",
       });
       mockPrismaService.invoice.update.mockResolvedValue({
         ...mockInvoice,
-        customerId: 'new-customer-id',
+        customerId: "new-customer-id",
       });
 
       const result = await service.update(
@@ -635,12 +635,12 @@ describe('InvoicingService', () => {
         updateDto,
       );
 
-      expect(result).toHaveProperty('id', mockInvoiceId);
+      expect(result).toHaveProperty("id", mockInvoiceId);
     });
   });
 
-  describe('remove - casos adicionais', () => {
-    it('deve lançar erro se tentar remover fatura paga', async () => {
+  describe("remove - casos adicionais", () => {
+    it("deve lançar erro se tentar remover fatura paga", async () => {
       mockPrismaService.invoice.findFirst.mockResolvedValue({
         ...mockInvoice,
         status: InvoiceStatus.PAID,
@@ -652,8 +652,8 @@ describe('InvoicingService', () => {
     });
   });
 
-  describe('issue - casos adicionais', () => {
-    it('deve lançar erro se fatura já está cancelada', async () => {
+  describe("issue - casos adicionais", () => {
+    it("deve lançar erro se fatura já está cancelada", async () => {
       mockPrismaService.invoice.findFirst.mockResolvedValueOnce({
         ...mockInvoice,
         status: InvoiceStatus.CANCELLED,

@@ -1,17 +1,17 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsBoolean, IsOptional } from 'class-validator';
+import { ApiProperty } from "@nestjs/swagger";
+import { IsString, IsNotEmpty, IsBoolean, IsOptional } from "class-validator";
 
 export class CreateSupportReplyDto {
   @ApiProperty({
-    description: 'Conteúdo da resposta',
-    example: 'Obrigado pelo contato. Vamos verificar o problema.',
+    description: "Conteúdo da resposta",
+    example: "Obrigado pelo contato. Vamos verificar o problema.",
   })
   @IsString()
   @IsNotEmpty()
   message: string;
 
   @ApiProperty({
-    description: 'Resposta interna (visível apenas para admins)',
+    description: "Resposta interna (visível apenas para admins)",
     default: false,
     required: false,
   })
@@ -20,7 +20,7 @@ export class CreateSupportReplyDto {
   isInternal?: boolean = false;
 
   @ApiProperty({
-    description: 'Anexos (URLs ou IDs de arquivos)',
+    description: "Anexos (URLs ou IDs de arquivos)",
     type: [String],
     required: false,
   })

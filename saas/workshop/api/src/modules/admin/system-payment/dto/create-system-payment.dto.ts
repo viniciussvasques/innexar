@@ -1,5 +1,12 @@
-import { IsBoolean, IsNotEmpty, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsObject,
+  IsOptional,
+  IsString,
+  ValidateNested,
+} from "class-validator";
+import { Type } from "class-transformer";
 
 class CredentialsDto {
   @IsString()
@@ -31,7 +38,7 @@ export class CreateSystemPaymentDto {
 
   @IsObject()
   @IsOptional()
-  settings?: Record<string, any>;
+  settings?: Record<string, unknown>;
 
   @IsBoolean()
   @IsOptional()

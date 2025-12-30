@@ -3,8 +3,8 @@ import {
   NotFoundException,
   BadRequestException,
   Logger,
-} from '@nestjs/common';
-import { PrismaService } from '@database/prisma.service';
+} from "@nestjs/common";
+import { PrismaService } from "@database/prisma.service";
 import {
   CreatePaymentDto,
   UpdatePaymentDto,
@@ -12,11 +12,11 @@ import {
   PaymentFiltersDto,
   PaymentStatus,
   PaymentMethod,
-} from './dto';
-import { Prisma } from '@prisma/client';
-import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
-import { toNumber as toNumberUtil } from '@common/utils/dto-mapper.util';
-import { Decimal } from '@prisma/client/runtime/library';
+} from "./dto";
+import { Prisma } from "@prisma/client";
+import { getErrorMessage, getErrorStack } from "@common/utils/error.utils";
+import { toNumber as toNumberUtil } from "@common/utils/dto-mapper.util";
+import { Decimal } from "@prisma/client/runtime/library";
 
 @Injectable()
 export class PaymentsService {
@@ -42,7 +42,7 @@ export class PaymentsService {
         });
 
         if (!invoice) {
-          throw new NotFoundException('Fatura não encontrada');
+          throw new NotFoundException("Fatura não encontrada");
         }
 
         // Verificar se o valor do pagamento não excede o valor da fatura
@@ -61,7 +61,7 @@ export class PaymentsService {
 
         if (totalPaid + createPaymentDto.amount > invoiceTotal) {
           throw new BadRequestException(
-            'O valor do pagamento excede o valor da fatura',
+            "O valor do pagamento excede o valor da fatura",
           );
         }
       }
@@ -117,7 +117,7 @@ export class PaymentsService {
         throw error;
       }
 
-      throw new BadRequestException('Erro ao criar pagamento');
+      throw new BadRequestException("Erro ao criar pagamento");
     }
   }
 
@@ -154,18 +154,18 @@ export class PaymentsService {
 
     let paymentStatus: string;
     if (totalPaid >= invoiceTotal) {
-      paymentStatus = 'paid';
+      paymentStatus = "paid";
     } else if (totalPaid > 0) {
-      paymentStatus = 'partial';
+      paymentStatus = "partial";
     } else {
-      paymentStatus = 'pending';
+      paymentStatus = "pending";
     }
 
     await this.prisma.invoice.update({
       where: { id: invoiceId },
       data: {
         paymentStatus,
-        paidAt: paymentStatus === 'paid' ? new Date() : invoice.paidAt,
+        paidAt: paymentStatus === "paid" ? new Date() : invoice.paidAt,
       },
     });
   }
@@ -223,7 +223,7 @@ export class PaymentsService {
           where,
           skip,
           take: limit,
-          orderBy: { createdAt: 'desc' },
+          orderBy: { createdAt: "desc" },
           include: {
             invoice: {
               select: {
@@ -252,7 +252,7 @@ export class PaymentsService {
         `Erro ao listar pagamentos: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new BadRequestException('Erro ao listar pagamentos');
+      throw new BadRequestException("Erro ao listar pagamentos");
     }
   }
 
@@ -279,7 +279,7 @@ export class PaymentsService {
       });
 
       if (!payment) {
-        throw new NotFoundException('Pagamento não encontrado');
+        throw new NotFoundException("Pagamento não encontrado");
       }
 
       return this.toResponseDto(payment);
@@ -293,7 +293,7 @@ export class PaymentsService {
         throw error;
       }
 
-      throw new BadRequestException('Erro ao buscar pagamento');
+      throw new BadRequestException("Erro ao buscar pagamento");
     }
   }
 
@@ -354,7 +354,7 @@ export class PaymentsService {
         throw error;
       }
 
-      throw new BadRequestException('Erro ao atualizar pagamento');
+      throw new BadRequestException("Erro ao atualizar pagamento");
     }
   }
 
@@ -393,7 +393,7 @@ export class PaymentsService {
     });
 
     if (!payment) {
-      throw new NotFoundException('Pagamento não encontrado');
+      throw new NotFoundException("Pagamento não encontrado");
     }
 
     return payment;
@@ -416,7 +416,7 @@ export class PaymentsService {
     const paymentStatus = payment.status as PaymentStatus;
     if (paymentStatus === PaymentStatus.REFUNDED) {
       throw new BadRequestException(
-        'Não é possível atualizar um pagamento reembolsado',
+        "Não é possível atualizar um pagamento reembolsado",
       );
     }
   }
@@ -468,7 +468,7 @@ export class PaymentsService {
       });
 
       if (!payment) {
-        throw new NotFoundException('Pagamento não encontrado');
+        throw new NotFoundException("Pagamento não encontrado");
       }
 
       // Não permitir remover pagamento completo ou reembolsado
@@ -478,7 +478,7 @@ export class PaymentsService {
         paymentStatus === PaymentStatus.REFUNDED
       ) {
         throw new BadRequestException(
-          'Não é possível remover um pagamento completo ou reembolsado',
+          "Não é possível remover um pagamento completo ou reembolsado",
         );
       }
 
@@ -505,7 +505,7 @@ export class PaymentsService {
         throw error;
       }
 
-      throw new BadRequestException('Erro ao remover pagamento');
+      throw new BadRequestException("Erro ao remover pagamento");
     }
   }
 

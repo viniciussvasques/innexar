@@ -3,18 +3,18 @@ import {
   NotFoundException,
   BadRequestException,
   Logger,
-} from '@nestjs/common';
-import { PrismaService } from '@database/prisma.service';
+} from "@nestjs/common";
+import { PrismaService } from "@database/prisma.service";
 import {
   CreateIntegrationDto,
   UpdateIntegrationDto,
   IntegrationResponseDto,
   TestIntegrationDto,
   IntegrationStatus,
-} from './dto';
-import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
-import axios, { AxiosError } from 'axios';
-import { Prisma } from '@prisma/client';
+} from "./dto";
+import { getErrorMessage, getErrorStack } from "@common/utils/error.utils";
+import axios, { AxiosError } from "axios";
+import { Prisma } from "@prisma/client";
 
 /**
  * IntegrationsService - Serviço para gerenciamento de integrações externas
@@ -70,7 +70,7 @@ export class IntegrationsService {
     try {
       const integrations = await this.prisma.integration.findMany({
         where: { tenantId },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
       });
 
       return integrations.map((integration) => this.toResponseDto(integration));
@@ -96,7 +96,7 @@ export class IntegrationsService {
       });
 
       if (!integration) {
-        throw new NotFoundException('Integração não encontrada');
+        throw new NotFoundException("Integração não encontrada");
       }
 
       return this.toResponseDto(integration);
@@ -188,7 +188,7 @@ export class IntegrationsService {
       const integration = await this.findOne(tenantId, id);
 
       if (!integration.isActive) {
-        throw new BadRequestException('Integração não está ativa');
+        throw new BadRequestException("Integração não está ativa");
       }
 
       // Testar conexão com a API
@@ -198,8 +198,8 @@ export class IntegrationsService {
           testData.testData,
           {
             headers: {
-              ...(integration.apiKey && { 'X-API-Key': integration.apiKey }),
-              'Content-Type': 'application/json',
+              ...(integration.apiKey && { "X-API-Key": integration.apiKey }),
+              "Content-Type": "application/json",
             },
             timeout: 10000,
           },
@@ -207,7 +207,7 @@ export class IntegrationsService {
 
         return {
           success: true,
-          message: 'Integração testada com sucesso',
+          message: "Integração testada com sucesso",
           data: response.data,
         };
       } catch (error: unknown) {
@@ -247,7 +247,7 @@ export class IntegrationsService {
       name: integration.name,
       type: integration.type as never,
       apiUrl: integration.apiUrl,
-      apiKey: integration.apiKey ? '***' : undefined, // Ocultar API key na resposta
+      apiKey: integration.apiKey ? "***" : undefined, // Ocultar API key na resposta
       config: integration.config as Record<string, unknown> | undefined,
       status: integration.status as IntegrationStatus,
       isActive: integration.isActive,

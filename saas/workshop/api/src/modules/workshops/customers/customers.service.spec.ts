@@ -1,28 +1,28 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test, TestingModule } from "@nestjs/testing";
 import {
   NotFoundException,
   ConflictException,
   BadRequestException,
-} from '@nestjs/common';
-import { CustomersService } from './customers.service';
-import { PrismaService } from '@database/prisma.service';
-import { CreateCustomerDto, UpdateCustomerDto, DocumentType } from './dto';
+} from "@nestjs/common";
+import { CustomersService } from "./customers.service";
+import { PrismaService } from "@database/prisma.service";
+import { CreateCustomerDto, UpdateCustomerDto, DocumentType } from "./dto";
 
-describe('CustomersService', () => {
+describe("CustomersService", () => {
   let service: CustomersService;
 
-  const mockTenantId = 'tenant-id';
+  const mockTenantId = "tenant-id";
   const mockCustomer = {
-    id: 'customer-id',
+    id: "customer-id",
     tenantId: mockTenantId,
-    name: 'João Silva',
-    email: 'joao.silva@email.com',
-    phone: '(11) 98765-4321',
-    documentType: 'cpf',
-    cpf: '11144477735', // CPF válido para testes
+    name: "João Silva",
+    email: "joao.silva@email.com",
+    phone: "(11) 98765-4321",
+    documentType: "cpf",
+    cpf: "11144477735", // CPF válido para testes
     cnpj: null,
-    address: 'Rua das Flores, 123',
-    notes: 'Cliente preferencial',
+    address: "Rua das Flores, 123",
+    notes: "Cliente preferencial",
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -56,17 +56,17 @@ describe('CustomersService', () => {
     jest.clearAllMocks();
   });
 
-  describe('create', () => {
+  describe("create", () => {
     const createCustomerDto: CreateCustomerDto = {
-      name: 'João Silva',
-      email: 'joao.silva@email.com',
-      phone: '(11) 98765-4321',
-      cpf: '11144477735', // CPF válido para testes
-      address: 'Rua das Flores, 123',
-      notes: 'Cliente preferencial',
+      name: "João Silva",
+      email: "joao.silva@email.com",
+      phone: "(11) 98765-4321",
+      cpf: "11144477735", // CPF válido para testes
+      address: "Rua das Flores, 123",
+      notes: "Cliente preferencial",
     };
 
-    it('deve criar um cliente com sucesso', async () => {
+    it("deve criar um cliente com sucesso", async () => {
       // Mock das verificações: telefone e CPF não existem
       mockPrismaService.customer.findFirst
         .mockResolvedValueOnce(null) // Telefone não existe
@@ -75,9 +75,9 @@ describe('CustomersService', () => {
 
       const result = await service.create(mockTenantId, createCustomerDto);
 
-      expect(result).toHaveProperty('id', 'customer-id');
-      expect(result).toHaveProperty('name', 'João Silva');
-      expect(result).toHaveProperty('email', 'joao.silva@email.com');
+      expect(result).toHaveProperty("id", "customer-id");
+      expect(result).toHaveProperty("name", "João Silva");
+      expect(result).toHaveProperty("email", "joao.silva@email.com");
       expect(mockPrismaService.customer.findFirst).toHaveBeenCalledTimes(2);
       expect(mockPrismaService.customer.findFirst).toHaveBeenNthCalledWith(1, {
         where: {
@@ -97,7 +97,7 @@ describe('CustomersService', () => {
           name: createCustomerDto.name.trim(),
           email: createCustomerDto.email?.trim() || null,
           phone: createCustomerDto.phone.trim(),
-          documentType: 'cpf',
+          documentType: "cpf",
           cpf: createCustomerDto.cpf?.trim() || null,
           cnpj: null,
           address: createCustomerDto.address?.trim() || null,
@@ -106,13 +106,13 @@ describe('CustomersService', () => {
       });
     });
 
-    it('deve criar cliente sem CPF quando documentType não for CPF', async () => {
+    it("deve criar cliente sem CPF quando documentType não for CPF", async () => {
       const dtoWithoutCpf: CreateCustomerDto = {
-        name: 'Maria Santos',
-        phone: '(11) 98765-4322',
-        email: 'maria@email.com',
+        name: "Maria Santos",
+        phone: "(11) 98765-4322",
+        email: "maria@email.com",
         documentType: DocumentType.CNPJ,
-        cnpj: '11222333000181', // CNPJ válido
+        cnpj: "11222333000181", // CNPJ válido
       };
 
       // Mock das verificações: telefone e CNPJ não existem
@@ -122,20 +122,20 @@ describe('CustomersService', () => {
       mockPrismaService.customer.create.mockResolvedValue({
         ...mockCustomer,
         cpf: null,
-        cnpj: '11222333000181',
-        documentType: 'cnpj',
+        cnpj: "11222333000181",
+        documentType: "cnpj",
       });
 
       const result = await service.create(mockTenantId, dtoWithoutCpf);
 
-      expect(result).toHaveProperty('id');
+      expect(result).toHaveProperty("id");
       expect(mockPrismaService.customer.create).toHaveBeenCalledWith({
         data: {
           tenantId: mockTenantId,
           name: dtoWithoutCpf.name.trim(),
           email: dtoWithoutCpf.email?.trim() || null,
           phone: dtoWithoutCpf.phone.trim(),
-          documentType: 'cnpj',
+          documentType: "cnpj",
           cpf: null,
           cnpj: dtoWithoutCpf.cnpj?.trim() || null,
           address: null,
@@ -144,7 +144,7 @@ describe('CustomersService', () => {
       });
     });
 
-    it('deve lançar ConflictException se telefone já existe', async () => {
+    it("deve lançar ConflictException se telefone já existe", async () => {
       mockPrismaService.customer.findFirst.mockResolvedValue(mockCustomer);
 
       await expect(
@@ -153,7 +153,7 @@ describe('CustomersService', () => {
       expect(mockPrismaService.customer.create).not.toHaveBeenCalled();
     });
 
-    it('deve lançar ConflictException se CPF já existe', async () => {
+    it("deve lançar ConflictException se CPF já existe", async () => {
       mockPrismaService.customer.findFirst
         .mockResolvedValueOnce(null) // Telefone não existe
         .mockResolvedValueOnce(mockCustomer); // CPF existe
@@ -164,10 +164,10 @@ describe('CustomersService', () => {
       expect(mockPrismaService.customer.create).not.toHaveBeenCalled();
     });
 
-    it('deve lançar BadRequestException se CPF inválido', async () => {
+    it("deve lançar BadRequestException se CPF inválido", async () => {
       const dtoWithInvalidCpf: CreateCustomerDto = {
         ...createCustomerDto,
-        cpf: '12345678900', // CPF inválido (dígitos verificadores incorretos)
+        cpf: "12345678900", // CPF inválido (dígitos verificadores incorretos)
       };
 
       await expect(
@@ -176,10 +176,10 @@ describe('CustomersService', () => {
       expect(mockPrismaService.customer.create).not.toHaveBeenCalled();
     });
 
-    it('deve lançar BadRequestException se CPF com todos dígitos iguais', async () => {
+    it("deve lançar BadRequestException se CPF com todos dígitos iguais", async () => {
       const dtoWithInvalidCpf: CreateCustomerDto = {
         ...createCustomerDto,
-        cpf: '11111111111', // Todos dígitos iguais
+        cpf: "11111111111", // Todos dígitos iguais
       };
 
       await expect(
@@ -188,8 +188,8 @@ describe('CustomersService', () => {
     });
   });
 
-  describe('findAll', () => {
-    it('deve listar clientes com sucesso', async () => {
+  describe("findAll", () => {
+    it("deve listar clientes com sucesso", async () => {
       const filters = { page: 1, limit: 20 };
       const mockCustomers = [mockCustomer];
 
@@ -198,22 +198,22 @@ describe('CustomersService', () => {
 
       const result = await service.findAll(mockTenantId, filters);
 
-      expect(result).toHaveProperty('data');
-      expect(result).toHaveProperty('total', 1);
-      expect(result).toHaveProperty('page', 1);
-      expect(result).toHaveProperty('limit', 20);
-      expect(result).toHaveProperty('totalPages', 1);
+      expect(result).toHaveProperty("data");
+      expect(result).toHaveProperty("total", 1);
+      expect(result).toHaveProperty("page", 1);
+      expect(result).toHaveProperty("limit", 20);
+      expect(result).toHaveProperty("totalPages", 1);
       expect(result.data).toHaveLength(1);
       expect(mockPrismaService.customer.findMany).toHaveBeenCalledWith({
         where: { tenantId: mockTenantId },
         skip: 0,
         take: 20,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
       });
     });
 
-    it('deve aplicar filtro por nome', async () => {
-      const filters = { name: 'João', page: 1, limit: 20 };
+    it("deve aplicar filtro por nome", async () => {
+      const filters = { name: "João", page: 1, limit: 20 };
 
       mockPrismaService.customer.findMany.mockResolvedValue([mockCustomer]);
       mockPrismaService.customer.count.mockResolvedValue(1);
@@ -224,18 +224,18 @@ describe('CustomersService', () => {
         where: {
           tenantId: mockTenantId,
           name: {
-            contains: 'João',
-            mode: 'insensitive',
+            contains: "João",
+            mode: "insensitive",
           },
         },
         skip: 0,
         take: 20,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
       });
     });
 
-    it('deve aplicar filtro por telefone', async () => {
-      const filters = { phone: '98765', page: 1, limit: 20 };
+    it("deve aplicar filtro por telefone", async () => {
+      const filters = { phone: "98765", page: 1, limit: 20 };
 
       mockPrismaService.customer.findMany.mockResolvedValue([mockCustomer]);
       mockPrismaService.customer.count.mockResolvedValue(1);
@@ -246,17 +246,17 @@ describe('CustomersService', () => {
         where: {
           tenantId: mockTenantId,
           phone: {
-            contains: '98765',
-            mode: 'insensitive',
+            contains: "98765",
+            mode: "insensitive",
           },
         },
         skip: 0,
         take: 20,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
       });
     });
 
-    it('deve aplicar paginação corretamente', async () => {
+    it("deve aplicar paginação corretamente", async () => {
       const filters = { page: 2, limit: 10 };
 
       mockPrismaService.customer.findMany.mockResolvedValue([]);
@@ -271,43 +271,43 @@ describe('CustomersService', () => {
         where: { tenantId: mockTenantId },
         skip: 10, // (page - 1) * limit
         take: 10,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
       });
     });
   });
 
-  describe('findOne', () => {
-    it('deve buscar cliente por ID com sucesso', async () => {
+  describe("findOne", () => {
+    it("deve buscar cliente por ID com sucesso", async () => {
       mockPrismaService.customer.findFirst.mockResolvedValue(mockCustomer);
 
-      const result = await service.findOne(mockTenantId, 'customer-id');
+      const result = await service.findOne(mockTenantId, "customer-id");
 
-      expect(result).toHaveProperty('id', 'customer-id');
-      expect(result).toHaveProperty('name', 'João Silva');
+      expect(result).toHaveProperty("id", "customer-id");
+      expect(result).toHaveProperty("name", "João Silva");
       expect(mockPrismaService.customer.findFirst).toHaveBeenCalledWith({
         where: {
-          id: 'customer-id',
+          id: "customer-id",
           tenantId: mockTenantId,
         },
       });
     });
 
-    it('deve lançar NotFoundException se cliente não encontrado', async () => {
+    it("deve lançar NotFoundException se cliente não encontrado", async () => {
       mockPrismaService.customer.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.findOne(mockTenantId, 'non-existent-id'),
+        service.findOne(mockTenantId, "non-existent-id"),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('update', () => {
+  describe("update", () => {
     const updateCustomerDto: UpdateCustomerDto = {
-      name: 'João Silva Santos',
-      email: 'joao.santos@email.com',
+      name: "João Silva Santos",
+      email: "joao.santos@email.com",
     };
 
-    it('deve atualizar cliente com sucesso', async () => {
+    it("deve atualizar cliente com sucesso", async () => {
       mockPrismaService.customer.findFirst
         .mockResolvedValueOnce(mockCustomer) // Cliente existe
         .mockResolvedValueOnce(null); // Telefone não conflita
@@ -318,53 +318,53 @@ describe('CustomersService', () => {
 
       const result = await service.update(
         mockTenantId,
-        'customer-id',
+        "customer-id",
         updateCustomerDto,
       );
 
-      expect(result).toHaveProperty('name', 'João Silva Santos');
+      expect(result).toHaveProperty("name", "João Silva Santos");
       expect(mockPrismaService.customer.update).toHaveBeenCalled();
     });
 
-    it('deve lançar NotFoundException se cliente não encontrado', async () => {
+    it("deve lançar NotFoundException se cliente não encontrado", async () => {
       mockPrismaService.customer.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.update(mockTenantId, 'non-existent-id', updateCustomerDto),
+        service.update(mockTenantId, "non-existent-id", updateCustomerDto),
       ).rejects.toThrow(NotFoundException);
       expect(mockPrismaService.customer.update).not.toHaveBeenCalled();
     });
 
-    it('deve lançar ConflictException se telefone já existe em outro cliente', async () => {
+    it("deve lançar ConflictException se telefone já existe em outro cliente", async () => {
       const updateDto: UpdateCustomerDto = {
-        phone: '(11) 98765-9999',
+        phone: "(11) 98765-9999",
       };
 
       mockPrismaService.customer.findFirst
         .mockResolvedValueOnce(mockCustomer) // Cliente existe
-        .mockResolvedValueOnce({ ...mockCustomer, id: 'other-id' }); // Telefone já existe
+        .mockResolvedValueOnce({ ...mockCustomer, id: "other-id" }); // Telefone já existe
 
       await expect(
-        service.update(mockTenantId, 'customer-id', updateDto),
+        service.update(mockTenantId, "customer-id", updateDto),
       ).rejects.toThrow(ConflictException);
       expect(mockPrismaService.customer.update).not.toHaveBeenCalled();
     });
 
-    it('deve lançar BadRequestException se CPF inválido', async () => {
+    it("deve lançar BadRequestException se CPF inválido", async () => {
       const updateDto: UpdateCustomerDto = {
-        cpf: '12345678900', // CPF inválido
+        cpf: "12345678900", // CPF inválido
       };
 
       mockPrismaService.customer.findFirst.mockResolvedValue(mockCustomer);
 
       await expect(
-        service.update(mockTenantId, 'customer-id', updateDto),
+        service.update(mockTenantId, "customer-id", updateDto),
       ).rejects.toThrow(BadRequestException);
     });
   });
 
-  describe('remove', () => {
-    it('deve remover cliente com sucesso', async () => {
+  describe("remove", () => {
+    it("deve remover cliente com sucesso", async () => {
       mockPrismaService.customer.findFirst.mockResolvedValue({
         ...mockCustomer,
         serviceOrders: [],
@@ -373,72 +373,72 @@ describe('CustomersService', () => {
       });
       mockPrismaService.customer.delete.mockResolvedValue(mockCustomer);
 
-      await service.remove(mockTenantId, 'customer-id');
+      await service.remove(mockTenantId, "customer-id");
 
       expect(mockPrismaService.customer.delete).toHaveBeenCalledWith({
-        where: { id: 'customer-id' },
+        where: { id: "customer-id" },
       });
     });
 
-    it('deve lançar NotFoundException se cliente não encontrado', async () => {
+    it("deve lançar NotFoundException se cliente não encontrado", async () => {
       mockPrismaService.customer.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.remove(mockTenantId, 'non-existent-id'),
+        service.remove(mockTenantId, "non-existent-id"),
       ).rejects.toThrow(NotFoundException);
       expect(mockPrismaService.customer.delete).not.toHaveBeenCalled();
     });
 
-    it('deve lançar BadRequestException se cliente tem ordens de serviço', async () => {
+    it("deve lançar BadRequestException se cliente tem ordens de serviço", async () => {
       mockPrismaService.customer.findFirst.mockResolvedValue({
         ...mockCustomer,
-        serviceOrders: [{ id: 'os-id' }],
+        serviceOrders: [{ id: "os-id" }],
         invoices: [],
         appointments: [],
       });
 
-      await expect(service.remove(mockTenantId, 'customer-id')).rejects.toThrow(
+      await expect(service.remove(mockTenantId, "customer-id")).rejects.toThrow(
         BadRequestException,
       );
       expect(mockPrismaService.customer.delete).not.toHaveBeenCalled();
     });
 
-    it('deve lançar BadRequestException se cliente tem faturas', async () => {
+    it("deve lançar BadRequestException se cliente tem faturas", async () => {
       mockPrismaService.customer.findFirst.mockResolvedValue({
         ...mockCustomer,
         serviceOrders: [],
-        invoices: [{ id: 'invoice-id' }],
+        invoices: [{ id: "invoice-id" }],
         appointments: [],
       });
 
-      await expect(service.remove(mockTenantId, 'customer-id')).rejects.toThrow(
+      await expect(service.remove(mockTenantId, "customer-id")).rejects.toThrow(
         BadRequestException,
       );
       expect(mockPrismaService.customer.delete).not.toHaveBeenCalled();
     });
 
-    it('deve lançar BadRequestException se cliente tem agendamentos', async () => {
+    it("deve lançar BadRequestException se cliente tem agendamentos", async () => {
       mockPrismaService.customer.findFirst.mockResolvedValue({
         ...mockCustomer,
         serviceOrders: [],
         invoices: [],
-        appointments: [{ id: 'appointment-id' }],
+        appointments: [{ id: "appointment-id" }],
       });
 
-      await expect(service.remove(mockTenantId, 'customer-id')).rejects.toThrow(
+      await expect(service.remove(mockTenantId, "customer-id")).rejects.toThrow(
         BadRequestException,
       );
       expect(mockPrismaService.customer.delete).not.toHaveBeenCalled();
     });
   });
 
-  describe('isValidCPF', () => {
-    it('deve validar CPF válido', async () => {
+  describe("isValidCPF", () => {
+    it("deve validar CPF válido", async () => {
       // CPF válido: 11144477735 (dígitos verificadores corretos)
-      const validCpf = '11144477735';
+      const validCpf = "11144477735";
       const dto: CreateCustomerDto = {
-        name: 'Test',
-        phone: '(11) 98765-4321',
+        name: "Test",
+        phone: "(11) 98765-4321",
         cpf: validCpf,
       };
 
@@ -449,15 +449,15 @@ describe('CustomersService', () => {
       });
 
       const result = await service.create(mockTenantId, dto);
-      expect(result).toHaveProperty('id');
+      expect(result).toHaveProperty("id");
       expect(mockPrismaService.customer.create).toHaveBeenCalled();
     });
 
-    it('deve rejeitar CPF com dígitos verificadores incorretos', async () => {
-      const invalidCpf = '11144477700'; // Dígitos verificadores incorretos
+    it("deve rejeitar CPF com dígitos verificadores incorretos", async () => {
+      const invalidCpf = "11144477700"; // Dígitos verificadores incorretos
       const dto: CreateCustomerDto = {
-        name: 'Test',
-        phone: '(11) 98765-4321',
+        name: "Test",
+        phone: "(11) 98765-4321",
         cpf: invalidCpf,
       };
 
@@ -467,12 +467,12 @@ describe('CustomersService', () => {
     });
   });
 
-  describe('CNPJ validation', () => {
-    it('deve validar CNPJ válido', async () => {
-      const validCnpj = '11222333000181';
+  describe("CNPJ validation", () => {
+    it("deve validar CNPJ válido", async () => {
+      const validCnpj = "11222333000181";
       const dto: CreateCustomerDto = {
-        name: 'Empresa Teste',
-        phone: '(11) 98765-4321',
+        name: "Empresa Teste",
+        phone: "(11) 98765-4321",
         documentType: DocumentType.CNPJ,
         cnpj: validCnpj,
       };
@@ -484,18 +484,18 @@ describe('CustomersService', () => {
         ...mockCustomer,
         cnpj: validCnpj,
         cpf: null,
-        documentType: 'cnpj',
+        documentType: "cnpj",
       });
 
       const result = await service.create(mockTenantId, dto);
-      expect(result).toHaveProperty('id');
+      expect(result).toHaveProperty("id");
     });
 
-    it('deve rejeitar CNPJ inválido', async () => {
-      const invalidCnpj = '11222333000100';
+    it("deve rejeitar CNPJ inválido", async () => {
+      const invalidCnpj = "11222333000100";
       const dto: CreateCustomerDto = {
-        name: 'Empresa Teste',
-        phone: '(11) 98765-4321',
+        name: "Empresa Teste",
+        phone: "(11) 98765-4321",
         documentType: DocumentType.CNPJ,
         cnpj: invalidCnpj,
       };
@@ -505,17 +505,17 @@ describe('CustomersService', () => {
       );
     });
 
-    it('deve lançar ConflictException se CNPJ já existe', async () => {
+    it("deve lançar ConflictException se CNPJ já existe", async () => {
       const dto: CreateCustomerDto = {
-        name: 'Empresa Teste',
-        phone: '(11) 98765-4321',
+        name: "Empresa Teste",
+        phone: "(11) 98765-4321",
         documentType: DocumentType.CNPJ,
-        cnpj: '11222333000181',
+        cnpj: "11222333000181",
       };
 
       mockPrismaService.customer.findFirst
         .mockResolvedValueOnce(null)
-        .mockResolvedValueOnce({ ...mockCustomer, cnpj: '11222333000181' });
+        .mockResolvedValueOnce({ ...mockCustomer, cnpj: "11222333000181" });
 
       await expect(service.create(mockTenantId, dto)).rejects.toThrow(
         ConflictException,
@@ -523,9 +523,9 @@ describe('CustomersService', () => {
     });
   });
 
-  describe('findAll - filtros adicionais', () => {
-    it('deve aplicar filtro por email', async () => {
-      const filters = { email: 'joao', page: 1, limit: 20 };
+  describe("findAll - filtros adicionais", () => {
+    it("deve aplicar filtro por email", async () => {
+      const filters = { email: "joao", page: 1, limit: 20 };
 
       mockPrismaService.customer.findMany.mockResolvedValue([mockCustomer]);
       mockPrismaService.customer.count.mockResolvedValue(1);
@@ -535,8 +535,8 @@ describe('CustomersService', () => {
       expect(mockPrismaService.customer.findMany).toHaveBeenCalled();
     });
 
-    it('deve aplicar filtro por CPF', async () => {
-      const filters = { cpf: '11144477735', page: 1, limit: 20 };
+    it("deve aplicar filtro por CPF", async () => {
+      const filters = { cpf: "11144477735", page: 1, limit: 20 };
 
       mockPrismaService.customer.findMany.mockResolvedValue([mockCustomer]);
       mockPrismaService.customer.count.mockResolvedValue(1);
@@ -547,10 +547,10 @@ describe('CustomersService', () => {
     });
   });
 
-  describe('update - casos adicionais', () => {
-    it('deve atualizar CNPJ com validação', async () => {
+  describe("update - casos adicionais", () => {
+    it("deve atualizar CNPJ com validação", async () => {
       const updateDto: UpdateCustomerDto = {
-        cnpj: '11222333000181',
+        cnpj: "11222333000181",
         documentType: DocumentType.CNPJ,
       };
 
@@ -558,33 +558,33 @@ describe('CustomersService', () => {
         .mockResolvedValueOnce({
           ...mockCustomer,
           cnpj: null,
-          documentType: 'cpf',
+          documentType: "cpf",
         })
         .mockResolvedValueOnce(null);
       mockPrismaService.customer.update.mockResolvedValue({
         ...mockCustomer,
-        cnpj: '11222333000181',
-        documentType: 'cnpj',
+        cnpj: "11222333000181",
+        documentType: "cnpj",
       });
 
       const result = await service.update(
         mockTenantId,
-        'customer-id',
+        "customer-id",
         updateDto,
       );
 
       expect(result).toBeDefined();
     });
 
-    it('deve lançar erro se CNPJ inválido ao atualizar', async () => {
+    it("deve lançar erro se CNPJ inválido ao atualizar", async () => {
       const updateDto: UpdateCustomerDto = {
-        cnpj: '11222333000100',
+        cnpj: "11222333000100",
       };
 
       mockPrismaService.customer.findFirst.mockResolvedValue(mockCustomer);
 
       await expect(
-        service.update(mockTenantId, 'customer-id', updateDto),
+        service.update(mockTenantId, "customer-id", updateDto),
       ).rejects.toThrow(BadRequestException);
     });
   });

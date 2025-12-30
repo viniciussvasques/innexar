@@ -1,34 +1,34 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { AutomationTrigger, AutomationAction } from './create-automation.dto';
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { AutomationTrigger, AutomationAction } from "./create-automation.dto";
 
 export class AutomationResponseDto {
-  @ApiProperty({ description: 'ID da automação' })
+  @ApiProperty({ description: "ID da automação" })
   id: string;
 
-  @ApiProperty({ description: 'Nome da automação' })
+  @ApiProperty({ description: "Nome da automação" })
   name: string;
 
-  @ApiProperty({ description: 'Descrição' })
+  @ApiProperty({ description: "Descrição" })
   description: string;
 
-  @ApiProperty({ description: 'Trigger', enum: AutomationTrigger })
+  @ApiProperty({ description: "Trigger", enum: AutomationTrigger })
   trigger: AutomationTrigger;
 
-  @ApiProperty({ description: 'Ação', enum: AutomationAction })
+  @ApiProperty({ description: "Ação", enum: AutomationAction })
   action: AutomationAction;
 
-  @ApiPropertyOptional({ description: 'Condições' })
+  @ApiPropertyOptional({ description: "Condições" })
   conditions?: Record<string, unknown>;
 
-  @ApiProperty({ description: 'Configuração da ação' })
+  @ApiProperty({ description: "Configuração da ação" })
   actionConfig: Record<string, unknown>;
 
-  @ApiProperty({ description: 'Status ativo' })
+  @ApiProperty({ description: "Status ativo" })
   isActive: boolean;
 
-  @ApiProperty({ description: 'Data de criação' })
+  @ApiProperty({ description: "Data de criação" })
   createdAt: Date;
 
-  @ApiProperty({ description: 'Data de atualização' })
+  @ApiProperty({ description: "Data de atualização" })
   updatedAt: Date;
 }

@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import {
   IsString,
   IsOptional,
@@ -8,33 +8,33 @@ import {
   IsNumber,
   Min,
   IsDateString,
-} from 'class-validator';
-import { Type } from 'class-transformer';
+} from "class-validator";
+import { Type } from "class-transformer";
 import {
   InvoiceType,
   InvoiceStatus,
   PaymentStatus,
   PaymentPreference,
-} from './invoice-status.enum';
-import { InvoiceItemDto } from './invoice-item.dto';
+} from "./invoice-status.enum";
+import { InvoiceItemDto } from "./invoice-item.dto";
 
 export class CreateInvoiceDto {
   @ApiPropertyOptional({
-    description: 'ID da ordem de serviço vinculada',
+    description: "ID da ordem de serviço vinculada",
   })
   @IsOptional()
   @IsString()
   serviceOrderId?: string;
 
   @ApiPropertyOptional({
-    description: 'ID do cliente',
+    description: "ID do cliente",
   })
   @IsOptional()
   @IsString()
   customerId?: string;
 
   @ApiProperty({
-    description: 'Tipo de fatura',
+    description: "Tipo de fatura",
     enum: InvoiceType,
     example: InvoiceType.SERVICE,
   })
@@ -42,7 +42,7 @@ export class CreateInvoiceDto {
   type: InvoiceType;
 
   @ApiProperty({
-    description: 'Número da fatura (gerado automaticamente se não informado)',
+    description: "Número da fatura (gerado automaticamente se não informado)",
     required: false,
   })
   @IsOptional()
@@ -50,7 +50,7 @@ export class CreateInvoiceDto {
   invoiceNumber?: string;
 
   @ApiProperty({
-    description: 'Itens da fatura',
+    description: "Itens da fatura",
     type: [InvoiceItemDto],
   })
   @IsArray()
@@ -59,7 +59,7 @@ export class CreateInvoiceDto {
   items: InvoiceItemDto[];
 
   @ApiPropertyOptional({
-    description: 'Valor total (calculado automaticamente se não informado)',
+    description: "Valor total (calculado automaticamente se não informado)",
     minimum: 0,
   })
   @IsOptional()
@@ -69,7 +69,7 @@ export class CreateInvoiceDto {
   total?: number;
 
   @ApiPropertyOptional({
-    description: 'Valor do desconto',
+    description: "Valor do desconto",
     minimum: 0,
     default: 0,
   })
@@ -80,7 +80,7 @@ export class CreateInvoiceDto {
   discount?: number;
 
   @ApiPropertyOptional({
-    description: 'Valor do imposto',
+    description: "Valor do imposto",
     minimum: 0,
     default: 0,
   })
@@ -91,14 +91,14 @@ export class CreateInvoiceDto {
   taxAmount?: number;
 
   @ApiPropertyOptional({
-    description: 'Método de pagamento',
+    description: "Método de pagamento",
   })
   @IsOptional()
   @IsString()
   paymentMethod?: string;
 
   @ApiPropertyOptional({
-    description: 'Preferência de pagamento',
+    description: "Preferência de pagamento",
     enum: PaymentPreference,
   })
   @IsOptional()
@@ -106,14 +106,14 @@ export class CreateInvoiceDto {
   paymentPreference?: PaymentPreference;
 
   @ApiPropertyOptional({
-    description: 'Gateway selecionado',
+    description: "Gateway selecionado",
   })
   @IsOptional()
   @IsString()
   paymentGatewayId?: string;
 
   @ApiPropertyOptional({
-    description: 'Status do pagamento',
+    description: "Status do pagamento",
     enum: PaymentStatus,
     default: PaymentStatus.PENDING,
   })
@@ -122,7 +122,7 @@ export class CreateInvoiceDto {
   paymentStatus?: PaymentStatus;
 
   @ApiPropertyOptional({
-    description: 'Status da fatura',
+    description: "Status da fatura",
     enum: InvoiceStatus,
     default: InvoiceStatus.DRAFT,
   })
@@ -131,35 +131,35 @@ export class CreateInvoiceDto {
   status?: InvoiceStatus;
 
   @ApiPropertyOptional({
-    description: 'Data de vencimento',
+    description: "Data de vencimento",
   })
   @IsOptional()
   @IsDateString()
   dueDate?: string;
 
   @ApiPropertyOptional({
-    description: 'Chave da NFe (Nota Fiscal Eletrônica)',
+    description: "Chave da NFe (Nota Fiscal Eletrônica)",
   })
   @IsOptional()
   @IsString()
   nfeKey?: string;
 
   @ApiPropertyOptional({
-    description: 'URL do XML da NFe',
+    description: "URL do XML da NFe",
   })
   @IsOptional()
   @IsString()
   nfeXmlUrl?: string;
 
   @ApiPropertyOptional({
-    description: 'URL do PDF da NFe',
+    description: "URL do PDF da NFe",
   })
   @IsOptional()
   @IsString()
   nfePdfUrl?: string;
 
   @ApiPropertyOptional({
-    description: 'Status da NFe',
+    description: "Status da NFe",
   })
   @IsOptional()
   @IsString()

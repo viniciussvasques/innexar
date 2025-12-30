@@ -4,11 +4,11 @@ import {
   ConflictException,
   Logger,
   BadRequestException,
-} from '@nestjs/common';
-import { PrismaService } from '@database/prisma.service';
-import { CreatePlanDto, UpdatePlanDto, PlanResponseDto } from './dto';
-import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
-import { Prisma } from '@prisma/client';
+} from "@nestjs/common";
+import { PrismaService } from "@database/prisma.service";
+import { CreatePlanDto, UpdatePlanDto, PlanResponseDto } from "./dto";
+import { getErrorMessage, getErrorStack } from "@common/utils/error.utils";
+import { Prisma } from "@prisma/client";
 
 @Injectable()
 export class PlansService {
@@ -76,7 +76,7 @@ export class PlansService {
     try {
       const plans = await this.prisma.plan.findMany({
         where: includeInactive ? {} : { isActive: true },
-        orderBy: { sortOrder: 'asc' },
+        orderBy: { sortOrder: "asc" },
       });
 
       return plans.map((plan) => this.toResponseDto(plan));
@@ -293,7 +293,7 @@ export class PlansService {
       // Verificar se há assinaturas usando este plano
       if (plan.subscriptions.length > 0) {
         throw new BadRequestException(
-          'Não é possível excluir um plano que possui assinaturas ativas. Desative o plano ou migre as assinaturas primeiro.',
+          "Não é possível excluir um plano que possui assinaturas ativas. Desative o plano ou migre as assinaturas primeiro.",
         );
       }
 
@@ -337,7 +337,7 @@ export class PlansService {
               select: { subscriptions: true },
             },
           },
-          orderBy: { sortOrder: 'asc' },
+          orderBy: { sortOrder: "asc" },
         }),
       ]);
 

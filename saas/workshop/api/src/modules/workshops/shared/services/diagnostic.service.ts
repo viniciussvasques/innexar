@@ -1,6 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '@database/prisma.service';
-import { ProblemCategory } from '../enums/problem-category.enum';
+import { Injectable, Logger } from "@nestjs/common";
+import { PrismaService } from "@database/prisma.service";
+import { ProblemCategory } from "../enums/problem-category.enum";
 
 export interface DiagnosticSuggestion {
   problemId: string;
@@ -54,8 +54,8 @@ export class DiagnosticService {
       const problems = await this.prisma.commonProblem.findMany({
         where,
         orderBy: [
-          { severity: 'desc' }, // Priorizar problemas de alta severidade
-          { name: 'asc' },
+          { severity: "desc" }, // Priorizar problemas de alta severidade
+          { name: "asc" },
         ],
       });
 
@@ -66,7 +66,7 @@ export class DiagnosticService {
             normalizedSymptoms,
             problem.symptoms || [],
             problem.name,
-            problem.description || '',
+            problem.description || "",
           );
 
           return {
@@ -92,7 +92,7 @@ export class DiagnosticService {
       return suggestions;
     } catch (error: unknown) {
       this.logger.error(
-        `Erro ao sugerir problemas: ${error instanceof Error ? error.message : 'Erro desconhecido'}`,
+        `Erro ao sugerir problemas: ${error instanceof Error ? error.message : "Erro desconhecido"}`,
       );
       throw error;
     }
@@ -154,7 +154,7 @@ export class DiagnosticService {
     texts: string[],
   ): number {
     let matchCount = 0;
-    const allText = texts.join(' ').toLowerCase();
+    const allText = texts.join(" ").toLowerCase();
 
     for (const symptom of reportedSymptoms) {
       const normalizedSymptom = this.normalizeText(symptom);
@@ -178,8 +178,8 @@ export class DiagnosticService {
    */
   private normalizeText(text: string): string {
     return text
-      .normalize('NFD')
-      .replaceAll(/[\u0300-\u036f]/g, '')
+      .normalize("NFD")
+      .replaceAll(/[\u0300-\u036f]/g, "")
       .toLowerCase();
   }
 
@@ -195,7 +195,7 @@ export class DiagnosticService {
           category,
           isActive: true,
         },
-        orderBy: [{ severity: 'desc' }, { name: 'asc' }],
+        orderBy: [{ severity: "desc" }, { name: "asc" }],
       });
 
       return problems.map((problem) => ({
@@ -212,7 +212,7 @@ export class DiagnosticService {
       }));
     } catch (error: unknown) {
       this.logger.error(
-        `Erro ao buscar problemas por categoria: ${error instanceof Error ? error.message : 'Erro desconhecido'}`,
+        `Erro ao buscar problemas por categoria: ${error instanceof Error ? error.message : "Erro desconhecido"}`,
       );
       throw error;
     }

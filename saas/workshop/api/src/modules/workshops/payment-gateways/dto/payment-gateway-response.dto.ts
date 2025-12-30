@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { PaymentGatewayType } from './payment-gateway-types.enum';
+import { ApiProperty } from "@nestjs/swagger";
+import { PaymentGatewayType } from "./payment-gateway-types.enum";
 
 export class PaymentGatewayResponseDto {
   @ApiProperty()

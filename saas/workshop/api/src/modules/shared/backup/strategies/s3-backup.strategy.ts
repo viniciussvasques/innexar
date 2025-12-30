@@ -1,9 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { BackupStrategy, BackupResult } from './backup-strategy.interface';
-import { BackupType } from '../dto';
-import { LocalBackupStrategy } from './local-backup.strategy';
-import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
+import { Injectable, Logger } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { BackupStrategy, BackupResult } from "./backup-strategy.interface";
+import { BackupType } from "../dto";
+import { LocalBackupStrategy } from "./local-backup.strategy";
+import { getErrorMessage, getErrorStack } from "@common/utils/error.utils";
 
 /**
  * Estratégia de backup para S3
@@ -35,8 +35,8 @@ export class S3BackupStrategy implements BackupStrategy {
       );
 
       // Tentar fazer upload para S3 se configurado
-      const s3Bucket = this.configService.get<string>('AWS_S3_BACKUP_BUCKET');
-      const s3Region = this.configService.get<string>('AWS_REGION');
+      const s3Bucket = this.configService.get<string>("AWS_S3_BACKUP_BUCKET");
+      const s3Region = this.configService.get<string>("AWS_REGION");
 
       if (s3Bucket && s3Region) {
         try {
@@ -47,8 +47,8 @@ export class S3BackupStrategy implements BackupStrategy {
           );
 
           // Gerar chave S3
-          const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-          const s3Key = `backups/${tenantId || 'all'}/${type}/${timestamp}.dump`;
+          const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+          const s3Key = `backups/${tenantId || "all"}/${type}/${timestamp}.dump`;
 
           return {
             ...localResult,

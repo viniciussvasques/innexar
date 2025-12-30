@@ -4,19 +4,19 @@ import {
   Logger,
   Inject,
   forwardRef,
-} from '@nestjs/common';
-import { PrismaService } from '@database/prisma.service';
+} from "@nestjs/common";
+import { PrismaService } from "@database/prisma.service";
 import {
   CreateAutomationDto,
   UpdateAutomationDto,
   AutomationResponseDto,
   AutomationAction,
-} from './dto';
-import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
-import { Prisma } from '@prisma/client';
-import { EmailService } from '../email/email.service';
-import { NotificationsService } from '@modules/core/notifications/notifications.service';
-import { JobsService } from '../jobs/jobs.service';
+} from "./dto";
+import { getErrorMessage, getErrorStack } from "@common/utils/error.utils";
+import { Prisma } from "@prisma/client";
+import { EmailService } from "../email/email.service";
+import { NotificationsService } from "@modules/core/notifications/notifications.service";
+import { JobsService } from "../jobs/jobs.service";
 
 /**
  * AutomationsService - Serviço para gerenciamento de automações
@@ -82,7 +82,7 @@ export class AutomationsService {
     try {
       const automations = await this.prisma.automation.findMany({
         where: { tenantId },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
       });
 
       return automations.map((automation) => this.toResponseDto(automation));
@@ -108,7 +108,7 @@ export class AutomationsService {
       });
 
       if (!automation) {
-        throw new NotFoundException('Automação não encontrada');
+        throw new NotFoundException("Automação não encontrada");
       }
 
       return this.toResponseDto(automation);
@@ -206,7 +206,7 @@ export class AutomationsService {
       if (!automation.isActive) {
         return {
           success: false,
-          message: 'Automação não está ativa',
+          message: "Automação não está ativa",
         };
       }
 
@@ -245,7 +245,7 @@ export class AutomationsService {
         try {
           // Verificar condições
           const conditions =
-            automation.conditions && typeof automation.conditions === 'object'
+            automation.conditions && typeof automation.conditions === "object"
               ? (automation.conditions as Record<string, unknown>)
               : undefined;
           if (!this.evaluateConditions(conditions, payload)) {
@@ -328,7 +328,7 @@ export class AutomationsService {
 
       return {
         success: true,
-        message: 'Automação executada com sucesso',
+        message: "Automação executada com sucesso",
       };
     } catch (error: unknown) {
       this.logger.error(
@@ -404,7 +404,7 @@ export class AutomationsService {
     payload: Record<string, unknown>,
   ): boolean {
     for (const [, condition] of Object.entries(conditions)) {
-      if (typeof condition === 'object' && condition !== null) {
+      if (typeof condition === "object" && condition !== null) {
         const cond = condition as {
           field?: string;
           operator?: string;
@@ -426,8 +426,8 @@ export class AutomationsService {
    * Obtém valor aninhado de um objeto
    */
   private getNestedValue(obj: Record<string, unknown>, path: string): unknown {
-    return path.split('.').reduce((current, key) => {
-      return current && typeof current === 'object' && key in current
+    return path.split(".").reduce((current, key) => {
+      return current && typeof current === "object" && key in current
         ? (current as Record<string, unknown>)[key]
         : undefined;
     }, obj as unknown);
@@ -442,33 +442,33 @@ export class AutomationsService {
     expectedValue: unknown,
   ): boolean {
     switch (operator) {
-      case 'equals':
-      case '==':
+      case "equals":
+      case "==":
         return fieldValue === expectedValue;
-      case 'not_equals':
-      case '!=':
+      case "not_equals":
+      case "!=":
         return fieldValue !== expectedValue;
-      case 'greater_than':
-      case '>':
+      case "greater_than":
+      case ">":
         return (
-          typeof fieldValue === 'number' &&
-          typeof expectedValue === 'number' &&
+          typeof fieldValue === "number" &&
+          typeof expectedValue === "number" &&
           fieldValue > expectedValue
         );
-      case 'less_than':
-      case '<':
+      case "less_than":
+      case "<":
         return (
-          typeof fieldValue === 'number' &&
-          typeof expectedValue === 'number' &&
+          typeof fieldValue === "number" &&
+          typeof expectedValue === "number" &&
           fieldValue < expectedValue
         );
-      case 'contains':
+      case "contains":
         return (
-          typeof fieldValue === 'string' &&
-          typeof expectedValue === 'string' &&
+          typeof fieldValue === "string" &&
+          typeof expectedValue === "string" &&
           fieldValue.includes(expectedValue)
         );
-      case 'in':
+      case "in":
         return (
           Array.isArray(expectedValue) && expectedValue.includes(fieldValue)
         );
@@ -493,7 +493,7 @@ export class AutomationsService {
     };
 
     if (!config.to || !config.subject) {
-      throw new Error('Configuração de email incompleta (to, subject)');
+      throw new Error("Configuração de email incompleta (to, subject)");
     }
 
     // Usar template se fornecido, senão usar mensagem simples
@@ -521,18 +521,18 @@ export class AutomationsService {
 
     if (!config.title || !config.message) {
       throw new Error(
-        'Configuração de notificação incompleta (title, message)',
+        "Configuração de notificação incompleta (title, message)",
       );
     }
 
     // Extrair tenantId do payload ou da automação
     const tenantId =
-      (payload.tenantId as string) || automation.id.split('-')[0];
+      (payload.tenantId as string) || automation.id.split("-")[0];
 
     await this.notificationsService.create({
       tenantId,
       userId: config.userId,
-      type: (config.type as never) || 'custom',
+      type: (config.type as never) || "custom",
       title: config.title,
       message: config.message,
       data: payload,
@@ -553,11 +553,11 @@ export class AutomationsService {
     };
 
     if (!config.type) {
-      throw new Error('Configuração de job incompleta (type)');
+      throw new Error("Configuração de job incompleta (type)");
     }
 
     const tenantId =
-      (payload.tenantId as string) || automation.id.split('-')[0];
+      (payload.tenantId as string) || automation.id.split("-")[0];
 
     await this.jobsService.create(tenantId, {
       type: config.type as never,
@@ -582,7 +582,7 @@ export class AutomationsService {
 
     if (!config.entity || !config.entityId || !config.status) {
       throw new Error(
-        'Configuração de atualização de status incompleta (entity, entityId, status)',
+        "Configuração de atualização de status incompleta (entity, entityId, status)",
       );
     }
 
@@ -610,7 +610,7 @@ export class AutomationsService {
     };
 
     this.logger.log(
-      `Executando ação customizada: ${config.handler || 'unknown'}`,
+      `Executando ação customizada: ${config.handler || "unknown"}`,
     );
 
     // Ações customizadas podem ser implementadas via plugins ou extensões
@@ -639,7 +639,7 @@ export class AutomationsService {
       trigger: automation.trigger as never,
       action: automation.action as never,
       conditions:
-        automation.conditions && typeof automation.conditions === 'object'
+        automation.conditions && typeof automation.conditions === "object"
           ? (automation.conditions as Record<string, unknown>)
           : undefined,
       actionConfig: automation.actionConfig as Record<string, unknown>,

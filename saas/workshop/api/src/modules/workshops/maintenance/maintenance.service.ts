@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
-import { PrismaService } from '@database/prisma.service';
-import { Prisma, Prisma as PrismaTypes } from '@prisma/client';
+import { Injectable, NotFoundException, Logger } from "@nestjs/common";
+import { PrismaService } from "@database/prisma.service";
+import { Prisma, Prisma as PrismaTypes } from "@prisma/client";
 import {
   CreateMaintenanceTemplateDto,
   CreateVehicleScheduleDto,
@@ -12,8 +12,8 @@ import {
   MaintenanceStatus,
   MaintenanceCategory,
   MaintenancePriority,
-} from './dto';
-import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
+} from "./dto";
+import { getErrorMessage, getErrorStack } from "@common/utils/error.utils";
 
 @Injectable()
 export class MaintenanceService {
@@ -72,7 +72,7 @@ export class MaintenanceService {
 
     const templates = await this.prisma.maintenanceTemplate.findMany({
       where,
-      orderBy: { name: 'asc' },
+      orderBy: { name: "asc" },
     });
 
     return templates.map((t) => this.toTemplateResponse(t));
@@ -87,7 +87,7 @@ export class MaintenanceService {
     });
 
     if (!template) {
-      throw new NotFoundException('Template não encontrado');
+      throw new NotFoundException("Template não encontrado");
     }
 
     return this.toTemplateResponse(template);
@@ -154,7 +154,7 @@ export class MaintenanceService {
       });
 
       if (!vehicle) {
-        throw new NotFoundException('Veículo não encontrado');
+        throw new NotFoundException("Veículo não encontrado");
       }
 
       const schedule = await this.prisma.vehicleMaintenanceSchedule.create({
@@ -168,7 +168,7 @@ export class MaintenanceService {
           nextDueKm: dto.nextDueKm,
           nextDueDate: dto.nextDueDate ? new Date(dto.nextDueDate) : null,
           status: dto.status || MaintenanceStatus.PENDING,
-          priority: dto.priority || 'normal',
+          priority: dto.priority || "normal",
           estimatedCost: dto.estimatedCost,
           notes: dto.notes,
         },
@@ -208,7 +208,7 @@ export class MaintenanceService {
         vehicle: true,
         template: true,
       },
-      orderBy: [{ nextDueDate: 'asc' }, { nextDueKm: 'asc' }],
+      orderBy: [{ nextDueDate: "asc" }, { nextDueKm: "asc" }],
     });
 
     return schedules.map((s) => this.toScheduleResponse(s));
@@ -227,7 +227,7 @@ export class MaintenanceService {
     });
 
     if (!schedule) {
-      throw new NotFoundException('Manutenção programada não encontrada');
+      throw new NotFoundException("Manutenção programada não encontrada");
     }
 
     return this.toScheduleResponse(schedule);
@@ -385,7 +385,7 @@ export class MaintenanceService {
         vehicle: true,
         serviceOrder: true,
       },
-      orderBy: { performedAt: 'desc' },
+      orderBy: { performedAt: "desc" },
       take: limit,
     });
 
@@ -442,7 +442,7 @@ export class MaintenanceService {
           },
         },
       },
-      orderBy: [{ nextDueDate: 'asc' }],
+      orderBy: [{ nextDueDate: "asc" }],
     });
 
     return schedules.map((s): MaintenanceAlertDto => {
@@ -519,7 +519,7 @@ export class MaintenanceService {
     });
 
     if (!vehicle) {
-      throw new NotFoundException('Veículo não encontrado');
+      throw new NotFoundException("Veículo não encontrado");
     }
 
     const [pendingSchedules, history] = await Promise.all([
@@ -536,12 +536,12 @@ export class MaintenanceService {
           },
         },
         include: { vehicle: true, template: true },
-        orderBy: { nextDueDate: 'asc' },
+        orderBy: { nextDueDate: "asc" },
       }),
       this.prisma.maintenanceHistory.findMany({
         where: { tenantId, vehicleId },
         include: { vehicle: true, serviceOrder: true },
-        orderBy: { performedAt: 'desc' },
+        orderBy: { performedAt: "desc" },
         take: 10,
       }),
     ]);
@@ -597,7 +597,7 @@ export class MaintenanceService {
     });
 
     if (!vehicle) {
-      throw new NotFoundException('Veículo não encontrado');
+      throw new NotFoundException("Veículo não encontrado");
     }
 
     const mileage = currentMileage || vehicle.mileage || 0;

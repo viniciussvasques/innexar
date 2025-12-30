@@ -1,10 +1,10 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { ConfigService } from '@nestjs/config';
-import { UnauthorizedException } from '@nestjs/common';
-import { JwtStrategy } from './jwt.strategy';
-import { PrismaService } from '../../../../database/prisma.service';
+import { Test, TestingModule } from "@nestjs/testing";
+import { ConfigService } from "@nestjs/config";
+import { UnauthorizedException } from "@nestjs/common";
+import { JwtStrategy } from "./jwt.strategy";
+import { PrismaService } from "../../../../database/prisma.service";
 
-describe('JwtStrategy', () => {
+describe("JwtStrategy", () => {
   let strategy: JwtStrategy;
 
   const mockPrismaService = {
@@ -19,7 +19,7 @@ describe('JwtStrategy', () => {
 
   beforeEach(async () => {
     mockConfigService.get.mockImplementation((key: string) => {
-      if (key === 'jwt.secret') return 'test-secret';
+      if (key === "jwt.secret") return "test-secret";
       return null;
     });
 
@@ -44,35 +44,35 @@ describe('JwtStrategy', () => {
     jest.clearAllMocks();
   });
 
-  describe('validate', () => {
+  describe("validate", () => {
     const mockPayload = {
-      sub: 'user-id',
-      email: 'test@example.com',
-      role: 'admin',
-      tenantId: 'tenant-id',
+      sub: "user-id",
+      email: "test@example.com",
+      role: "admin",
+      tenantId: "tenant-id",
     };
 
     const mockUser = {
-      id: 'user-id',
-      email: 'test@example.com',
-      name: 'Test User',
-      role: 'admin',
-      tenantId: 'tenant-id',
+      id: "user-id",
+      email: "test@example.com",
+      name: "Test User",
+      role: "admin",
+      tenantId: "tenant-id",
       isActive: true,
     };
 
-    it('deve retornar dados do usuário quando válido', async () => {
+    it("deve retornar dados do usuário quando válido", async () => {
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
 
       const result = await strategy.validate(mockPayload);
 
-      expect(result).toHaveProperty('id', 'user-id');
-      expect(result).toHaveProperty('email', 'test@example.com');
-      expect(result).toHaveProperty('name', 'Test User');
-      expect(result).toHaveProperty('role', 'admin');
-      expect(result).toHaveProperty('tenantId', 'tenant-id');
+      expect(result).toHaveProperty("id", "user-id");
+      expect(result).toHaveProperty("email", "test@example.com");
+      expect(result).toHaveProperty("name", "Test User");
+      expect(result).toHaveProperty("role", "admin");
+      expect(result).toHaveProperty("tenantId", "tenant-id");
       expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
-        where: { id: 'user-id' },
+        where: { id: "user-id" },
         select: {
           id: true,
           email: true,
@@ -84,7 +84,7 @@ describe('JwtStrategy', () => {
       });
     });
 
-    it('deve lançar UnauthorizedException quando usuário não existe', async () => {
+    it("deve lançar UnauthorizedException quando usuário não existe", async () => {
       mockPrismaService.user.findUnique.mockResolvedValue(null);
 
       await expect(strategy.validate(mockPayload)).rejects.toThrow(
@@ -92,7 +92,7 @@ describe('JwtStrategy', () => {
       );
     });
 
-    it('deve lançar UnauthorizedException quando usuário está inativo', async () => {
+    it("deve lançar UnauthorizedException quando usuário está inativo", async () => {
       mockPrismaService.user.findUnique.mockResolvedValue({
         ...mockUser,
         isActive: false,

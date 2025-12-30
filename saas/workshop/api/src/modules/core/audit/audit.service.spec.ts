@@ -1,30 +1,30 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException } from '@nestjs/common';
-import { AuditService } from './audit.service';
-import { PrismaService } from '../../../database/prisma.service';
-import { CreateAuditLogDto, AuditLogFiltersDto, AuditAction } from './dto';
+import { Test, TestingModule } from "@nestjs/testing";
+import { NotFoundException } from "@nestjs/common";
+import { AuditService } from "./audit.service";
+import { PrismaService } from "../../../database/prisma.service";
+import { CreateAuditLogDto, AuditLogFiltersDto, AuditAction } from "./dto";
 
-describe('AuditService', () => {
+describe("AuditService", () => {
   let service: AuditService;
 
-  const mockTenantId = 'tenant-id';
-  const mockUserId = 'user-id';
+  const mockTenantId = "tenant-id";
+  const mockUserId = "user-id";
   const mockAuditLog = {
-    id: 'audit-log-id',
+    id: "audit-log-id",
     tenantId: mockTenantId,
     userId: mockUserId,
     action: AuditAction.CREATE,
-    resourceType: 'customer',
-    resourceId: 'customer-id',
-    changes: { name: 'John Doe' },
-    ipAddress: '127.0.0.1',
-    userAgent: 'Mozilla/5.0',
-    metadata: { method: 'POST', url: '/api/customers' },
+    resourceType: "customer",
+    resourceId: "customer-id",
+    changes: { name: "John Doe" },
+    ipAddress: "127.0.0.1",
+    userAgent: "Mozilla/5.0",
+    metadata: { method: "POST", url: "/api/customers" },
     createdAt: new Date(),
     user: {
       id: mockUserId,
-      name: 'Test User',
-      email: 'test@example.com',
+      name: "Test User",
+      email: "test@example.com",
     },
   };
 
@@ -55,30 +55,30 @@ describe('AuditService', () => {
     jest.clearAllMocks();
   });
 
-  describe('create', () => {
+  describe("create", () => {
     const createDto: CreateAuditLogDto = {
       action: AuditAction.CREATE,
-      resourceType: 'customer',
-      resourceId: 'customer-id',
-      changes: { name: 'John Doe' },
-      metadata: { method: 'POST', url: '/api/customers' },
+      resourceType: "customer",
+      resourceId: "customer-id",
+      changes: { name: "John Doe" },
+      metadata: { method: "POST", url: "/api/customers" },
     };
 
-    it('deve criar um log de auditoria com sucesso', async () => {
+    it("deve criar um log de auditoria com sucesso", async () => {
       mockPrismaService.auditLog.create.mockResolvedValue(mockAuditLog);
 
       const result = await service.create(
         mockTenantId,
         mockUserId,
         createDto,
-        '127.0.0.1',
-        'Mozilla/5.0',
+        "127.0.0.1",
+        "Mozilla/5.0",
       );
 
       expect(result).toBeDefined();
       expect(result.id).toBe(mockAuditLog.id);
       expect(result.action).toBe(AuditAction.CREATE);
-      expect(result.resourceType).toBe('customer');
+      expect(result.resourceType).toBe("customer");
       expect(mockPrismaService.auditLog.create).toHaveBeenCalledWith({
         data: {
           tenantId: mockTenantId,
@@ -88,8 +88,8 @@ describe('AuditService', () => {
           resourceId: createDto.resourceId,
           changes: createDto.changes,
           metadata: createDto.metadata,
-          ipAddress: '127.0.0.1',
-          userAgent: 'Mozilla/5.0',
+          ipAddress: "127.0.0.1",
+          userAgent: "Mozilla/5.0",
         },
         include: {
           user: {
@@ -103,7 +103,7 @@ describe('AuditService', () => {
       });
     });
 
-    it('deve criar um log de auditoria com valores opcionais nulos', async () => {
+    it("deve criar um log de auditoria com valores opcionais nulos", async () => {
       const auditLogWithoutOptional = {
         ...mockAuditLog,
         tenantId: null,
@@ -125,23 +125,23 @@ describe('AuditService', () => {
       expect(result.userId).toBeUndefined();
     });
 
-    it('deve lançar erro se a criação falhar', async () => {
-      const error = new Error('Database error');
+    it("deve lançar erro se a criação falhar", async () => {
+      const error = new Error("Database error");
       mockPrismaService.auditLog.create.mockRejectedValue(error);
 
       await expect(
         service.create(mockTenantId, mockUserId, createDto),
-      ).rejects.toThrow('Database error');
+      ).rejects.toThrow("Database error");
     });
   });
 
-  describe('findAll', () => {
+  describe("findAll", () => {
     const filters: AuditLogFiltersDto = {
       page: 1,
       limit: 20,
     };
 
-    it('deve retornar lista de logs de auditoria com paginação', async () => {
+    it("deve retornar lista de logs de auditoria com paginação", async () => {
       const mockData = [mockAuditLog];
       const mockTotal = 1;
 
@@ -160,7 +160,7 @@ describe('AuditService', () => {
         where: { tenantId: mockTenantId },
         skip: 0,
         take: 20,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         include: {
           user: {
             select: {
@@ -173,14 +173,14 @@ describe('AuditService', () => {
       });
     });
 
-    it('deve aplicar filtros corretamente', async () => {
+    it("deve aplicar filtros corretamente", async () => {
       const filtersWithAll: AuditLogFiltersDto = {
         userId: mockUserId,
         action: AuditAction.UPDATE,
-        resourceType: 'customer',
-        resourceId: 'customer-id',
-        startDate: '2024-01-01',
-        endDate: '2024-12-31',
+        resourceType: "customer",
+        resourceId: "customer-id",
+        startDate: "2024-01-01",
+        endDate: "2024-12-31",
         page: 1,
         limit: 10,
       };
@@ -197,11 +197,11 @@ describe('AuditService', () => {
             tenantId: mockTenantId,
             userId: mockUserId,
             action: AuditAction.UPDATE,
-            resourceType: 'customer',
-            resourceId: 'customer-id',
+            resourceType: "customer",
+            resourceId: "customer-id",
             createdAt: {
-              gte: new Date('2024-01-01'),
-              lte: new Date('2024-12-31'),
+              gte: new Date("2024-01-01"),
+              lte: new Date("2024-12-31"),
             },
           }),
           skip: 0,
@@ -210,7 +210,7 @@ describe('AuditService', () => {
       );
     });
 
-    it('deve calcular paginação corretamente', async () => {
+    it("deve calcular paginação corretamente", async () => {
       const filtersPage2: AuditLogFiltersDto = {
         page: 2,
         limit: 10,
@@ -232,8 +232,8 @@ describe('AuditService', () => {
     });
   });
 
-  describe('findOne', () => {
-    it('deve retornar um log de auditoria por ID', async () => {
+  describe("findOne", () => {
+    it("deve retornar um log de auditoria por ID", async () => {
       mockPrismaService.auditLog.findFirst.mockResolvedValue(mockAuditLog);
 
       const result = await service.findOne(mockTenantId, mockAuditLog.id);
@@ -257,23 +257,23 @@ describe('AuditService', () => {
       });
     });
 
-    it('deve lançar NotFoundException se o log não for encontrado', async () => {
+    it("deve lançar NotFoundException se o log não for encontrado", async () => {
       mockPrismaService.auditLog.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.findOne(mockTenantId, 'non-existent-id'),
+        service.findOne(mockTenantId, "non-existent-id"),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('toResponseDto', () => {
-    it('deve converter corretamente os dados do Prisma para DTO', async () => {
+  describe("toResponseDto", () => {
+    it("deve converter corretamente os dados do Prisma para DTO", async () => {
       mockPrismaService.auditLog.create.mockResolvedValue(mockAuditLog);
 
       const result = await service.create(mockTenantId, mockUserId, {
         action: AuditAction.CREATE,
-        resourceType: 'customer',
-        resourceId: 'customer-id',
+        resourceType: "customer",
+        resourceId: "customer-id",
       });
 
       expect(result).toMatchObject({
@@ -291,7 +291,7 @@ describe('AuditService', () => {
       });
     });
 
-    it('deve tratar valores nulos corretamente', async () => {
+    it("deve tratar valores nulos corretamente", async () => {
       const auditLogWithNulls = {
         ...mockAuditLog,
         tenantId: null,

@@ -1,16 +1,16 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { PrismaService } from './prisma.service';
+import { Test, TestingModule } from "@nestjs/testing";
+import { PrismaService } from "./prisma.service";
 
-jest.mock('@prisma/client', () => {
+jest.mock("@prisma/client", () => {
   return {
     PrismaClient: class {
       $connect = jest.fn();
       $disconnect = jest.fn();
-    } as any
-  }
+    } as unknown,
+  };
 });
 
-describe('PrismaService', () => {
+describe("PrismaService", () => {
   let service: PrismaService;
   let mockConnect: jest.SpyInstance;
   let mockDisconnect: jest.SpyInstance;
@@ -23,16 +23,16 @@ describe('PrismaService', () => {
     service = module.get<PrismaService>(PrismaService);
 
     // Criar spies nos métodos do PrismaClient
-    mockConnect = jest.spyOn(service, '$connect');
-    mockDisconnect = jest.spyOn(service, '$disconnect');
+    mockConnect = jest.spyOn(service, "$connect");
+    mockDisconnect = jest.spyOn(service, "$disconnect");
   });
 
   afterEach(() => {
     jest.clearAllMocks();
   });
 
-  describe('onModuleInit', () => {
-    it('deve conectar ao banco de dados com sucesso', async () => {
+  describe("onModuleInit", () => {
+    it("deve conectar ao banco de dados com sucesso", async () => {
       mockConnect.mockResolvedValue(undefined);
 
       await service.onModuleInit();
@@ -40,8 +40,8 @@ describe('PrismaService', () => {
       expect(mockConnect).toHaveBeenCalledTimes(1);
     });
 
-    it('deve ignorar erros de conexão durante inicialização', async () => {
-      const error = new Error('Connection failed');
+    it("deve ignorar erros de conexão durante inicialização", async () => {
+      const error = new Error("Connection failed");
       mockConnect.mockRejectedValue(error);
 
       // Não deve lançar erro
@@ -50,8 +50,8 @@ describe('PrismaService', () => {
       expect(mockConnect).toHaveBeenCalledTimes(1);
     });
 
-    it('deve ignorar diferentes tipos de erros', async () => {
-      mockConnect.mockRejectedValue('String error');
+    it("deve ignorar diferentes tipos de erros", async () => {
+      mockConnect.mockRejectedValue("String error");
 
       await expect(service.onModuleInit()).resolves.toBeUndefined();
 
@@ -59,8 +59,8 @@ describe('PrismaService', () => {
     });
   });
 
-  describe('onModuleDestroy', () => {
-    it('deve desconectar do banco de dados com sucesso', async () => {
+  describe("onModuleDestroy", () => {
+    it("deve desconectar do banco de dados com sucesso", async () => {
       mockDisconnect.mockResolvedValue(undefined);
 
       await service.onModuleDestroy();
@@ -68,8 +68,8 @@ describe('PrismaService', () => {
       expect(mockDisconnect).toHaveBeenCalledTimes(1);
     });
 
-    it('deve ignorar erros de desconexão', async () => {
-      const error = new Error('Disconnection failed');
+    it("deve ignorar erros de desconexão", async () => {
+      const error = new Error("Disconnection failed");
       mockDisconnect.mockRejectedValue(error);
 
       // Não deve lançar erro
@@ -78,8 +78,8 @@ describe('PrismaService', () => {
       expect(mockDisconnect).toHaveBeenCalledTimes(1);
     });
 
-    it('deve ignorar diferentes tipos de erros na desconexão', async () => {
-      mockDisconnect.mockRejectedValue('String error');
+    it("deve ignorar diferentes tipos de erros na desconexão", async () => {
+      mockDisconnect.mockRejectedValue("String error");
 
       await expect(service.onModuleDestroy()).resolves.toBeUndefined();
 

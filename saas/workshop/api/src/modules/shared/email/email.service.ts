@@ -1,10 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
-import * as nodemailer from 'nodemailer';
-import type { Transporter } from 'nodemailer';
-import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '@database/prisma.service';
-import { EmailTemplatesService } from './email-templates.service';
-import * as crypto from 'crypto';
+import { Injectable, Logger } from "@nestjs/common";
+import * as nodemailer from "nodemailer";
+import type { Transporter } from "nodemailer";
+import { ConfigService } from "@nestjs/config";
+import { PrismaService } from "@database/prisma.service";
+import { EmailTemplatesService } from "./email-templates.service";
+import * as crypto from "crypto";
 import {
   WelcomeEmailData,
   PaymentFailedEmailData,
@@ -14,7 +14,7 @@ import {
   InvoiceUpcomingEmailData,
   TrialEndingEmailData,
   AccountSuspendedEmailData,
-} from './interfaces/email-data.interfaces';
+} from "./interfaces/email-data.interfaces";
 
 interface SmtpConfig {
   host: string;
@@ -36,8 +36,9 @@ export class EmailService {
   private readonly logger = new Logger(EmailService.name);
   private readonly transporter: Transporter;
   private readonly templatesService: EmailTemplatesService;
-  private readonly ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'default-encryption-key-change-in-production';
-  private readonly ALGORITHM = 'aes-256-cbc';
+  private readonly ENCRYPTION_KEY =
+    process.env.ENCRYPTION_KEY || "default-encryption-key-change-in-production";
+  private readonly ALGORITHM = "aes-256-cbc";
 
   constructor(
     private readonly configService: ConfigService,
@@ -50,28 +51,29 @@ export class EmailService {
 
   private decrypt(text: string): string {
     try {
-      const parts = text.split(':');
-      const iv = Buffer.from(parts[0], 'hex');
+      const parts = text.split(":");
+      const iv = Buffer.from(parts[0], "hex");
       const encrypted = parts[1];
-      const key = crypto.scryptSync(this.ENCRYPTION_KEY, 'salt', 32);
+      const key = crypto.scryptSync(this.ENCRYPTION_KEY, "salt", 32);
       const decipher = crypto.createDecipheriv(this.ALGORITHM, key, iv);
-      let decrypted = decipher.update(encrypted, 'hex', 'utf8');
-      decrypted += decipher.final('utf8');
+      let decrypted = decipher.update(encrypted, "hex", "utf8");
+      decrypted += decipher.final("utf8");
       return decrypted;
     } catch (error) {
-      this.logger.error('Failed to decrypt password', error);
+      this.logger.error("Failed to decrypt password", error);
       throw error;
     }
   }
 
   private async getSystemEmailConfig() {
     try {
-      const systemEmailSettings = await this.prisma.systemEmailSettings.findFirst({
-        where: {
-          isActive: true,
-          isDefault: true,
-        },
-      });
+      const systemEmailSettings =
+        await this.prisma.systemEmailSettings.findFirst({
+          where: {
+            isActive: true,
+            isDefault: true,
+          },
+        });
 
       if (!systemEmailSettings) {
         return null;
@@ -89,7 +91,7 @@ export class EmailService {
         fromName: systemEmailSettings.fromName,
       };
     } catch (error) {
-      this.logger.error('Failed to get system email settings', error);
+      this.logger.error("Failed to get system email settings", error);
       return null;
     }
   }
@@ -99,7 +101,7 @@ export class EmailService {
       // Primeiro tenta buscar configuração global do sistema
       const systemConfig = await this.getSystemEmailConfig();
       if (systemConfig) {
-        this.logger.log('Using system email configuration (global)');
+        this.logger.log("Using system email configuration (global)");
         return systemConfig;
       }
 
@@ -128,16 +130,16 @@ export class EmailService {
         fromName: emailSettings.fromName,
       };
     } catch (error) {
-      this.logger.error('Failed to get email settings from database', error);
+      this.logger.error("Failed to get email settings from database", error);
       return null;
     }
   }
 
   private createTransporter(): Transporter {
     const smtpConfig: SmtpConfig = {
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: Number.parseInt(process.env.SMTP_PORT || '587', 10),
-      secure: process.env.SMTP_SECURE === 'true',
+      host: process.env.SMTP_HOST || "smtp.gmail.com",
+      port: Number.parseInt(process.env.SMTP_PORT || "587", 10),
+      secure: process.env.SMTP_SECURE === "true",
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
@@ -152,7 +154,7 @@ export class EmailService {
     // Configurações TLS mais permissivas
     smtpConfig.tls = {
       rejectUnauthorized: false,
-      minVersion: 'TLSv1.2',
+      minVersion: "TLSv1.2",
     };
 
     return nodemailer.createTransport(
@@ -161,7 +163,7 @@ export class EmailService {
   }
 
   private initializeConnection(): void {
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV === "development") {
       // Verificar conexão de forma assíncrona sem bloquear o construtor
       setImmediate(() => {
         void this.verifyConnection();
@@ -172,10 +174,10 @@ export class EmailService {
   private async verifyConnection() {
     try {
       await this.transporter.verify();
-      this.logger.log('✅ SMTP connection verified successfully');
+      this.logger.log("✅ SMTP connection verified successfully");
     } catch (error: unknown) {
       const err = error as { message?: string; code?: string };
-      this.logger.warn('❌ SMTP connection failed. Emails will not be sent.');
+      this.logger.warn("❌ SMTP connection failed. Emails will not be sent.");
       this.logger.warn(`Error: ${err.message || String(error)}`);
       if (err.code) {
         this.logger.warn(`Error code: ${err.code}`);
@@ -184,7 +186,7 @@ export class EmailService {
         `Host: ${process.env.SMTP_HOST}, Port: ${process.env.SMTP_PORT}`,
       );
       this.logger.warn(
-        'Configure SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS in .env',
+        "Configure SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS in .env",
       );
     }
   }
@@ -202,8 +204,8 @@ export class EmailService {
   ): Promise<void> {
     try {
       let transporterToUse = this.transporter;
-      let fromEmail = process.env.SMTP_USER || 'noreply@mecanica365.com';
-      let fromName = 'Mecânica365';
+      let fromEmail = process.env.SMTP_USER || "noreply@mecanica365.com";
+      let fromName = "Mecânica365";
 
       // Tentar buscar configuração do banco se tenantId fornecido
       if (tenantId) {
@@ -227,13 +229,15 @@ export class EmailService {
           // Configurações TLS mais permissivas para servidores self-hosted
           smtpConfig.tls = {
             rejectUnauthorized: false,
-            minVersion: 'TLSv1.2',
+            minVersion: "TLSv1.2",
           };
 
-          transporterToUse = nodemailer.createTransport(smtpConfig as nodemailer.TransportOptions);
+          transporterToUse = nodemailer.createTransport(
+            smtpConfig as nodemailer.TransportOptions,
+          );
           fromEmail = emailConfig.fromEmail;
           fromName = emailConfig.fromName;
-          
+
           this.logger.log(`Using database email config for tenant ${tenantId}`);
         }
       }
@@ -252,16 +256,16 @@ export class EmailService {
         this.logger.log(`=== EMAIL (SMTP não configurado) ===`);
         this.logger.log(`Para: ${to}`);
         this.logger.log(`Assunto: ${subject}`);
-        this.logger.log('==================================================');
+        this.logger.log("==================================================");
         return;
       }
 
       const info: unknown = await transporterToUse.sendMail(mailOptions);
       // Verificação segura do messageId
-      let messageId = 'unknown';
-      if (info && typeof info === 'object') {
+      let messageId = "unknown";
+      if (info && typeof info === "object") {
         const infoObj = info as Record<string, unknown>;
-        if ('messageId' in infoObj && typeof infoObj.messageId === 'string') {
+        if ("messageId" in infoObj && typeof infoObj.messageId === "string") {
           messageId = infoObj.messageId;
         }
       }
@@ -276,13 +280,16 @@ export class EmailService {
     }
   }
 
-  async sendWelcomeEmail(data: WelcomeEmailData, tenantId?: string): Promise<void> {
+  async sendWelcomeEmail(
+    data: WelcomeEmailData,
+    tenantId?: string,
+  ): Promise<void> {
     try {
       const html = this.templatesService.getWelcomeEmailTemplate(data);
       const text = this.templatesService.getWelcomeEmailTextVersion(data);
       await this.sendEmail(
         data.to,
-        'Bem-vindo ao Mecânica365! Suas credenciais de acesso',
+        "Bem-vindo ao Mecânica365! Suas credenciais de acesso",
         html,
         text,
         tenantId,
@@ -303,7 +310,7 @@ export class EmailService {
       const text = this.templatesService.getPaymentFailedEmailTextVersion(data);
       await this.sendEmail(
         data.to,
-        'Pagamento Não Processado - Ação Necessária',
+        "Pagamento Não Processado - Ação Necessária",
         html,
         text,
       );
@@ -322,7 +329,7 @@ export class EmailService {
     try {
       const html =
         this.templatesService.getSubscriptionCancelledEmailTemplate(data);
-      await this.sendEmail(data.to, 'Assinatura Cancelada', html);
+      await this.sendEmail(data.to, "Assinatura Cancelada", html);
     } catch (error: unknown) {
       const err = error as { message?: string; stack?: string };
       this.logger.error(
@@ -338,7 +345,7 @@ export class EmailService {
     try {
       const html =
         this.templatesService.getSubscriptionUpdatedEmailTemplate(data);
-      await this.sendEmail(data.to, 'Assinatura Atualizada', html);
+      await this.sendEmail(data.to, "Assinatura Atualizada", html);
     } catch (error: unknown) {
       const err = error as { message?: string; stack?: string };
       this.logger.error(
@@ -418,12 +425,7 @@ export class EmailService {
         Se você não solicitou esta alteração, entre em contato com o suporte imediatamente.
       `;
 
-      await this.sendEmail(
-        data.to,
-        'Senha Resetada - Mecânica365',
-        html,
-        text,
-      );
+      await this.sendEmail(data.to, "Senha Resetada - Mecânica365", html, text);
     } catch (error: unknown) {
       const err = error as { message?: string; stack?: string };
       this.logger.error(
@@ -464,7 +466,7 @@ export class EmailService {
     try {
       const html =
         this.templatesService.getInvoicePaymentSucceededEmailTemplate(data);
-      await this.sendEmail(data.to, 'Pagamento Confirmado', html);
+      await this.sendEmail(data.to, "Pagamento Confirmado", html);
     } catch (error: unknown) {
       const err = error as { message?: string; stack?: string };
       this.logger.error(
@@ -479,7 +481,7 @@ export class EmailService {
   ): Promise<void> {
     try {
       const html = this.templatesService.getInvoiceUpcomingEmailTemplate(data);
-      await this.sendEmail(data.to, 'Próxima Cobrança Programada', html);
+      await this.sendEmail(data.to, "Próxima Cobrança Programada", html);
     } catch (error: unknown) {
       const err = error as { message?: string; stack?: string };
       this.logger.error(
@@ -494,7 +496,7 @@ export class EmailService {
       const html = this.templatesService.getTrialEndingEmailTemplate(data);
       await this.sendEmail(
         data.to,
-        'Seu Período de Teste Está Terminando',
+        "Seu Período de Teste Está Terminando",
         html,
       );
     } catch (error: unknown) {
@@ -511,7 +513,7 @@ export class EmailService {
   ): Promise<void> {
     try {
       const html = this.templatesService.getAccountSuspendedEmailTemplate(data);
-      await this.sendEmail(data.to, 'Conta Suspensa - Ação Necessária', html);
+      await this.sendEmail(data.to, "Conta Suspensa - Ação Necessária", html);
     } catch (error: unknown) {
       const err = error as { message?: string; stack?: string };
       this.logger.error(
@@ -540,7 +542,7 @@ export class EmailService {
       });
       await this.sendEmail(
         data.email,
-        '🔐 Recuperação de Senha - Mecânica365',
+        "🔐 Recuperação de Senha - Mecânica365",
         html,
       );
       this.logger.log(
@@ -571,7 +573,7 @@ export class EmailService {
         changedAt: data.changedAt,
         workshopName: data.workshopName,
       });
-      await this.sendEmail(data.email, '🔐 Senha Alterada - Mecânica365', html);
+      await this.sendEmail(data.email, "🔐 Senha Alterada - Mecânica365", html);
       this.logger.log(
         `Email de confirmação de alteração de senha enviado para ${data.email}`,
       );

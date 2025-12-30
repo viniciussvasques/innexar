@@ -4,8 +4,8 @@ import {
   BadRequestException,
   ConflictException,
   Logger,
-} from '@nestjs/common';
-import { PrismaService } from '@database/prisma.service';
+} from "@nestjs/common";
+import { PrismaService } from "@database/prisma.service";
 import {
   CreateAppointmentDto,
   UpdateAppointmentDto,
@@ -14,11 +14,11 @@ import {
   AppointmentStatus,
   CheckAvailabilityDto,
   GetAvailableSlotsDto,
-} from './dto';
-import { Prisma } from '@prisma/client';
-import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
-import { ElevatorsService } from '../elevators/elevators.service';
-import { ServiceOrderStatus } from '../service-orders/dto/service-order-status.enum';
+} from "./dto";
+import { Prisma } from "@prisma/client";
+import { getErrorMessage, getErrorStack } from "@common/utils/error.utils";
+import { ElevatorsService } from "../elevators/elevators.service";
+import { ServiceOrderStatus } from "../service-orders/dto/service-order-status.enum";
 
 @Injectable()
 export class AppointmentsService {
@@ -118,7 +118,7 @@ export class AppointmentsService {
         `Erro ao criar agendamento: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new BadRequestException('Erro ao criar agendamento');
+      throw new BadRequestException("Erro ao criar agendamento");
     }
   }
 
@@ -197,7 +197,7 @@ export class AppointmentsService {
               },
             },
           },
-          orderBy: { date: 'asc' },
+          orderBy: { date: "asc" },
           skip,
           take: limit,
         }),
@@ -218,7 +218,7 @@ export class AppointmentsService {
         `Erro ao listar agendamentos: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new BadRequestException('Erro ao listar agendamentos');
+      throw new BadRequestException("Erro ao listar agendamentos");
     }
   }
 
@@ -259,7 +259,7 @@ export class AppointmentsService {
       });
 
       if (!appointment) {
-        throw new NotFoundException('Agendamento não encontrado');
+        throw new NotFoundException("Agendamento não encontrado");
       }
 
       return this.toResponseDto(appointment);
@@ -271,7 +271,7 @@ export class AppointmentsService {
         `Erro ao buscar agendamento: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new BadRequestException('Erro ao buscar agendamento');
+      throw new BadRequestException("Erro ao buscar agendamento");
     }
   }
 
@@ -357,7 +357,7 @@ export class AppointmentsService {
         `Erro ao atualizar agendamento: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new BadRequestException('Erro ao atualizar agendamento');
+      throw new BadRequestException("Erro ao atualizar agendamento");
     }
   }
 
@@ -374,7 +374,7 @@ export class AppointmentsService {
       });
 
       if (!appointment) {
-        throw new NotFoundException('Agendamento não encontrado');
+        throw new NotFoundException("Agendamento não encontrado");
       }
 
       // Não permitir remover agendamentos em progresso ou completos
@@ -384,7 +384,7 @@ export class AppointmentsService {
         appointmentStatus === AppointmentStatus.COMPLETED
       ) {
         throw new BadRequestException(
-          'Não é possível remover agendamentos em progresso ou completos',
+          "Não é possível remover agendamentos em progresso ou completos",
         );
       }
 
@@ -404,7 +404,7 @@ export class AppointmentsService {
         `Erro ao remover agendamento: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new BadRequestException('Erro ao remover agendamento');
+      throw new BadRequestException("Erro ao remover agendamento");
     }
   }
 
@@ -421,14 +421,14 @@ export class AppointmentsService {
       });
 
       if (!appointment) {
-        throw new NotFoundException('Agendamento não encontrado');
+        throw new NotFoundException("Agendamento não encontrado");
       }
 
       // Não permitir cancelar agendamentos já completos
       const appointmentStatus = appointment.status as AppointmentStatus;
       if (appointmentStatus === AppointmentStatus.COMPLETED) {
         throw new BadRequestException(
-          'Não é possível cancelar agendamentos já completos',
+          "Não é possível cancelar agendamentos já completos",
         );
       }
 
@@ -477,7 +477,7 @@ export class AppointmentsService {
         `Erro ao cancelar agendamento: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new BadRequestException('Erro ao cancelar agendamento');
+      throw new BadRequestException("Erro ao cancelar agendamento");
     }
   }
 
@@ -509,7 +509,7 @@ export class AppointmentsService {
       });
 
       if (!appointment) {
-        throw new NotFoundException('Agendamento não encontrado');
+        throw new NotFoundException("Agendamento não encontrado");
       }
 
       // Validar que o status permite atribuição
@@ -523,7 +523,7 @@ export class AppointmentsService {
       // Validar que não tem mecânico atribuído
       if (appointment.assignedToId) {
         throw new BadRequestException(
-          'Este agendamento já foi atribuído a outro mecânico',
+          "Este agendamento já foi atribuído a outro mecânico",
         );
       }
 
@@ -532,13 +532,13 @@ export class AppointmentsService {
         where: {
           id: mechanicId,
           tenantId,
-          role: 'mechanic',
+          role: "mechanic",
           isActive: true,
         },
       });
 
       if (!mechanic) {
-        throw new NotFoundException('Mecânico não encontrado ou inativo');
+        throw new NotFoundException("Mecânico não encontrado ou inativo");
       }
 
       // Verificar conflito de horário para o mecânico
@@ -563,7 +563,7 @@ export class AppointmentsService {
 
       if (conflict) {
         throw new ConflictException(
-          'Você já possui um agendamento neste horário',
+          "Você já possui um agendamento neste horário",
         );
       }
 
@@ -615,7 +615,7 @@ export class AppointmentsService {
   ): Promise<{
     available: boolean;
     conflicts: Array<{
-      type: 'mechanic' | 'elevator';
+      type: "mechanic" | "elevator";
       id: string;
       name: string;
       startTime: Date;
@@ -630,7 +630,7 @@ export class AppointmentsService {
       );
 
       const conflicts: Array<{
-        type: 'mechanic' | 'elevator';
+        type: "mechanic" | "elevator";
         id: string;
         name: string;
         startTime: Date;
@@ -676,12 +676,12 @@ export class AppointmentsService {
                   },
                 ],
               },
-              orderBy: { startTime: 'desc' },
+              orderBy: { startTime: "desc" },
             });
 
             if (elevatorUsage) {
               conflicts.push({
-                type: 'elevator',
+                type: "elevator",
                 id: elevator.id,
                 name: elevator.name,
                 startTime: elevatorUsage.startTime,
@@ -701,7 +701,7 @@ export class AppointmentsService {
         `Erro ao verificar disponibilidade: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new BadRequestException('Erro ao verificar disponibilidade');
+      throw new BadRequestException("Erro ao verificar disponibilidade");
     }
   }
 
@@ -775,7 +775,7 @@ export class AppointmentsService {
       }
 
       // Elevador em manutenção não está disponível
-      if (elevator.status === 'maintenance') {
+      if (elevator.status === "maintenance") {
         return false;
       }
 
@@ -866,7 +866,7 @@ export class AppointmentsService {
           assignedToId: true,
         },
         orderBy: {
-          date: 'asc',
+          date: "asc",
         },
       });
 
@@ -903,7 +903,7 @@ export class AppointmentsService {
       const hasAvailability = slots.some((slot) => slot.available);
 
       return {
-        date: targetDate.toISOString().split('T')[0],
+        date: targetDate.toISOString().split("T")[0],
         availableSlots: slots,
         hasAvailability,
       };
@@ -912,7 +912,7 @@ export class AppointmentsService {
         `Erro ao buscar horários disponíveis: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new BadRequestException('Erro ao buscar horários disponíveis');
+      throw new BadRequestException("Erro ao buscar horários disponíveis");
     }
   }
 
@@ -920,7 +920,7 @@ export class AppointmentsService {
     const now = new Date();
     if (appointmentDate < now) {
       throw new BadRequestException(
-        'Não é possível agendar para uma data no passado',
+        "Não é possível agendar para uma data no passado",
       );
     }
   }
@@ -940,7 +940,7 @@ export class AppointmentsService {
 
     if (hasConflict) {
       throw new ConflictException(
-        'Mecânico já possui agendamento neste horário',
+        "Mecânico já possui agendamento neste horário",
       );
     }
   }
@@ -962,7 +962,7 @@ export class AppointmentsService {
 
     if (hasConflict) {
       throw new ConflictException(
-        'Mecânico já possui agendamento neste horário',
+        "Mecânico já possui agendamento neste horário",
       );
     }
   }
@@ -983,7 +983,7 @@ export class AppointmentsService {
     });
 
     if (!customer) {
-      throw new NotFoundException('Cliente não encontrado');
+      throw new NotFoundException("Cliente não encontrado");
     }
   }
 
@@ -999,12 +999,12 @@ export class AppointmentsService {
       where: {
         id: mechanicId,
         tenantId,
-        role: 'mechanic',
+        role: "mechanic",
       },
     });
 
     if (!mechanic) {
-      throw new NotFoundException('Mecânico não encontrado');
+      throw new NotFoundException("Mecânico não encontrado");
     }
   }
 
@@ -1071,7 +1071,7 @@ export class AppointmentsService {
     });
 
     if (!appointment) {
-      throw new NotFoundException('Agendamento não encontrado');
+      throw new NotFoundException("Agendamento não encontrado");
     }
 
     return appointment;
@@ -1223,7 +1223,7 @@ export class AppointmentsService {
       );
 
       if (slotStart < appointmentEnd && slotEnd > appointment.date) {
-        return { hasConflict: true, reason: 'Agendamento existente' };
+        return { hasConflict: true, reason: "Agendamento existente" };
       }
     }
 
@@ -1254,7 +1254,7 @@ export class AppointmentsService {
       );
 
       if (slotStart < soEnd && slotEnd > soStart) {
-        return { hasConflict: true, reason: 'OS em andamento' };
+        return { hasConflict: true, reason: "OS em andamento" };
       }
     }
 
@@ -1275,7 +1275,7 @@ export class AppointmentsService {
     );
 
     if (!isElevatorAvailable) {
-      return { hasConflict: true, reason: 'Elevador ocupado' };
+      return { hasConflict: true, reason: "Elevador ocupado" };
     }
 
     return { hasConflict: false };

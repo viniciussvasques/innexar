@@ -4,8 +4,8 @@ import {
   ConflictException,
   BadRequestException,
   Logger,
-} from '@nestjs/common';
-import { PrismaService } from '@database/prisma.service';
+} from "@nestjs/common";
+import { PrismaService } from "@database/prisma.service";
 import {
   CreateElevatorDto,
   UpdateElevatorDto,
@@ -17,9 +17,9 @@ import {
   EndUsageDto,
   ReserveElevatorDto,
   UsageResponseDto,
-} from './dto';
-import { Prisma } from '@prisma/client';
-import { getErrorMessage } from '@common/utils/error.utils';
+} from "./dto";
+import { Prisma } from "@prisma/client";
+import { getErrorMessage } from "@common/utils/error.utils";
 
 @Injectable()
 export class ElevatorsService {
@@ -45,7 +45,7 @@ export class ElevatorsService {
 
       if (existingElevator) {
         throw new ConflictException(
-          'Já existe um elevador cadastrado com este número',
+          "Já existe um elevador cadastrado com este número",
         );
       }
 
@@ -55,9 +55,9 @@ export class ElevatorsService {
           tenantId,
           name: createElevatorDto.name.trim(),
           number: createElevatorDto.number.trim(),
-          type: createElevatorDto.type || 'hydraulic',
+          type: createElevatorDto.type || "hydraulic",
           capacity: createElevatorDto.capacity,
-          status: createElevatorDto.status || 'free',
+          status: createElevatorDto.status || "free",
           location: createElevatorDto.location?.trim() || null,
           notes: createElevatorDto.notes?.trim() || null,
         },
@@ -74,7 +74,7 @@ export class ElevatorsService {
         throw error;
       }
       this.logger.error(`Erro ao criar elevador: ${getErrorMessage(error)}`);
-      throw new BadRequestException('Erro ao criar elevador');
+      throw new BadRequestException("Erro ao criar elevador");
     }
   }
 
@@ -100,13 +100,13 @@ export class ElevatorsService {
         ...(filters.name && {
           name: {
             contains: filters.name,
-            mode: 'insensitive',
+            mode: "insensitive",
           },
         }),
         ...(filters.number && {
           number: {
             contains: filters.number,
-            mode: 'insensitive',
+            mode: "insensitive",
           },
         }),
         ...(filters.type && {
@@ -123,7 +123,7 @@ export class ElevatorsService {
           skip,
           take: limit,
           orderBy: {
-            createdAt: 'desc',
+            createdAt: "desc",
           },
         }),
         this.prisma.elevator.count({ where }),
@@ -137,7 +137,7 @@ export class ElevatorsService {
       };
     } catch (error: unknown) {
       this.logger.error(`Erro ao listar elevadores: ${getErrorMessage(error)}`);
-      throw new BadRequestException('Erro ao listar elevadores');
+      throw new BadRequestException("Erro ao listar elevadores");
     }
   }
 
@@ -154,7 +154,7 @@ export class ElevatorsService {
       });
 
       if (!elevator) {
-        throw new NotFoundException('Elevador não encontrado');
+        throw new NotFoundException("Elevador não encontrado");
       }
 
       return this.toResponseDto(elevator);
@@ -163,7 +163,7 @@ export class ElevatorsService {
         throw error;
       }
       this.logger.error(`Erro ao buscar elevador: ${getErrorMessage(error)}`);
-      throw new BadRequestException('Erro ao buscar elevador');
+      throw new BadRequestException("Erro ao buscar elevador");
     }
   }
 
@@ -185,7 +185,7 @@ export class ElevatorsService {
       });
 
       if (!existingElevator) {
-        throw new NotFoundException('Elevador não encontrado');
+        throw new NotFoundException("Elevador não encontrado");
       }
 
       // Se número foi alterado, verificar se não existe outro com mesmo número
@@ -203,7 +203,7 @@ export class ElevatorsService {
 
         if (existingByNumber) {
           throw new ConflictException(
-            'Já existe outro elevador com este número',
+            "Já existe outro elevador com este número",
           );
         }
       }
@@ -259,7 +259,7 @@ export class ElevatorsService {
       this.logger.error(
         `Erro ao atualizar elevador: ${getErrorMessage(error)}`,
       );
-      throw new BadRequestException('Erro ao atualizar elevador');
+      throw new BadRequestException("Erro ao atualizar elevador");
     }
   }
 
@@ -277,7 +277,7 @@ export class ElevatorsService {
       });
 
       if (!existingElevator) {
-        throw new NotFoundException('Elevador não encontrado');
+        throw new NotFoundException("Elevador não encontrado");
       }
 
       // Verificar se há usos ativos (endTime null)
@@ -290,7 +290,7 @@ export class ElevatorsService {
 
       if (activeUsage) {
         throw new BadRequestException(
-          'Não é possível remover elevador com uso ativo',
+          "Não é possível remover elevador com uso ativo",
         );
       }
 
@@ -308,7 +308,7 @@ export class ElevatorsService {
         throw error;
       }
       this.logger.error(`Erro ao remover elevador: ${getErrorMessage(error)}`);
-      throw new BadRequestException('Erro ao remover elevador');
+      throw new BadRequestException("Erro ao remover elevador");
     }
   }
 
@@ -330,13 +330,13 @@ export class ElevatorsService {
       });
 
       if (!elevator) {
-        throw new NotFoundException('Elevador não encontrado');
+        throw new NotFoundException("Elevador não encontrado");
       }
 
       // Verificar se elevador está disponível (free ou scheduled)
-      if (elevator.status !== 'free' && elevator.status !== 'scheduled') {
+      if (elevator.status !== "free" && elevator.status !== "scheduled") {
         throw new BadRequestException(
-          `Elevador está ${elevator.status === 'occupied' ? 'ocupado' : 'em manutenção'}. Não é possível iniciar uso.`,
+          `Elevador está ${elevator.status === "occupied" ? "ocupado" : "em manutenção"}. Não é possível iniciar uso.`,
         );
       }
 
@@ -349,7 +349,7 @@ export class ElevatorsService {
       });
 
       if (activeUsage) {
-        throw new ConflictException('Elevador já está em uso');
+        throw new ConflictException("Elevador já está em uso");
       }
 
       // Verificar se veículo existe (se fornecido)
@@ -364,7 +364,7 @@ export class ElevatorsService {
         });
 
         if (!vehicle) {
-          throw new NotFoundException('Veículo não encontrado');
+          throw new NotFoundException("Veículo não encontrado");
         }
       }
 
@@ -378,7 +378,7 @@ export class ElevatorsService {
         });
 
         if (!serviceOrder) {
-          throw new NotFoundException('Ordem de Serviço não encontrada');
+          throw new NotFoundException("Ordem de Serviço não encontrada");
         }
       }
 
@@ -425,7 +425,7 @@ export class ElevatorsService {
       // Atualizar status do elevador para occupied
       await this.prisma.elevator.update({
         where: { id: elevatorId },
-        data: { status: 'occupied' },
+        data: { status: "occupied" },
       });
 
       this.logger.log(`Uso do elevador iniciado: ${elevatorId}`);
@@ -442,7 +442,7 @@ export class ElevatorsService {
       this.logger.error(
         `Erro ao iniciar uso do elevador: ${getErrorMessage(error)}`,
       );
-      throw new BadRequestException('Erro ao iniciar uso do elevador');
+      throw new BadRequestException("Erro ao iniciar uso do elevador");
     }
   }
 
@@ -464,7 +464,7 @@ export class ElevatorsService {
       });
 
       if (!elevator) {
-        throw new NotFoundException('Elevador não encontrado');
+        throw new NotFoundException("Elevador não encontrado");
       }
 
       // Buscar uso ativo
@@ -500,7 +500,7 @@ export class ElevatorsService {
 
       if (!activeUsage) {
         throw new NotFoundException(
-          'Nenhum uso ativo encontrado para este elevador',
+          "Nenhum uso ativo encontrado para este elevador",
         );
       }
 
@@ -508,7 +508,7 @@ export class ElevatorsService {
       const endTime = new Date();
       const currentNotes: string | null = activeUsage.notes;
       const notesValue: string | null = endUsageDto.notes
-        ? `${currentNotes || ''}\n${endUsageDto.notes}`.trim()
+        ? `${currentNotes || ""}\n${endUsageDto.notes}`.trim()
         : currentNotes;
       const usageId: string = activeUsage.id;
       const updatedUsage = await this.prisma.elevatorUsage.update({
@@ -551,7 +551,7 @@ export class ElevatorsService {
       // Atualizar status do elevador para free
       await this.prisma.elevator.update({
         where: { id: elevatorId },
-        data: { status: 'free' },
+        data: { status: "free" },
       });
 
       this.logger.log(`Uso do elevador finalizado: ${elevatorId}`);
@@ -567,7 +567,7 @@ export class ElevatorsService {
       this.logger.error(
         `Erro ao finalizar uso do elevador: ${getErrorMessage(error)}`,
       );
-      throw new BadRequestException('Erro ao finalizar uso do elevador');
+      throw new BadRequestException("Erro ao finalizar uso do elevador");
     }
   }
 
@@ -589,16 +589,16 @@ export class ElevatorsService {
       });
 
       if (!elevator) {
-        throw new NotFoundException('Elevador não encontrado');
+        throw new NotFoundException("Elevador não encontrado");
       }
 
       // Verificar se elevador está disponível
-      if (elevator.status === 'occupied') {
-        throw new ConflictException('Elevador está ocupado');
+      if (elevator.status === "occupied") {
+        throw new ConflictException("Elevador está ocupado");
       }
 
-      if (elevator.status === 'maintenance') {
-        throw new BadRequestException('Elevador está em manutenção');
+      if (elevator.status === "maintenance") {
+        throw new BadRequestException("Elevador está em manutenção");
       }
 
       // Verificar se veículo existe (se fornecido)
@@ -613,7 +613,7 @@ export class ElevatorsService {
         });
 
         if (!vehicle) {
-          throw new NotFoundException('Veículo não encontrado');
+          throw new NotFoundException("Veículo não encontrado");
         }
       }
 
@@ -627,7 +627,7 @@ export class ElevatorsService {
         });
 
         if (!serviceOrder) {
-          throw new NotFoundException('Ordem de Serviço não encontrada');
+          throw new NotFoundException("Ordem de Serviço não encontrada");
         }
       }
 
@@ -678,7 +678,7 @@ export class ElevatorsService {
       // Atualizar status do elevador para scheduled
       await this.prisma.elevator.update({
         where: { id: elevatorId },
-        data: { status: 'scheduled' },
+        data: { status: "scheduled" },
       });
 
       this.logger.log(`Elevador reservado: ${elevatorId}`);
@@ -693,7 +693,7 @@ export class ElevatorsService {
         throw error;
       }
       this.logger.error(`Erro ao reservar elevador: ${getErrorMessage(error)}`);
-      throw new BadRequestException('Erro ao reservar elevador');
+      throw new BadRequestException("Erro ao reservar elevador");
     }
   }
 
@@ -712,7 +712,7 @@ export class ElevatorsService {
     });
 
     if (!elevator) {
-      throw new NotFoundException('Elevador não encontrado');
+      throw new NotFoundException("Elevador não encontrado");
     }
 
     const activeUsage = await this.prisma.elevatorUsage.findFirst({
@@ -785,7 +785,7 @@ export class ElevatorsService {
     });
 
     if (!elevator) {
-      throw new NotFoundException('Elevador não encontrado');
+      throw new NotFoundException("Elevador não encontrado");
     }
 
     const { startDate, endDate, page = 1, limit = 10 } = filters || {};
@@ -803,7 +803,7 @@ export class ElevatorsService {
         skip,
         take: limit,
         orderBy: {
-          startTime: 'desc',
+          startTime: "desc",
         },
         include: {
           elevator: true,

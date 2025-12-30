@@ -8,19 +8,19 @@ import {
   Delete,
   Query,
   UseGuards,
-} from '@nestjs/common';
+} from "@nestjs/common";
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
   ApiQuery,
-} from '@nestjs/swagger';
-import { JwtAuthGuard } from '@core/auth/guards/jwt-auth.guard';
-import { TenantGuard } from '@common/guards/tenant.guard';
-import { TenantId } from '@common/decorators/tenant.decorator';
-import { UserId, CurrentUser } from '@common/decorators/user.decorator';
-import { KnowledgeService } from './knowledge.service';
+} from "@nestjs/swagger";
+import { JwtAuthGuard } from "@core/auth/guards/jwt-auth.guard";
+import { TenantGuard } from "@common/guards/tenant.guard";
+import { TenantId } from "@common/decorators/tenant.decorator";
+import { UserId, CurrentUser } from "@common/decorators/user.decorator";
+import { KnowledgeService } from "./knowledge.service";
 import {
   CreateKnowledgeDto,
   UpdateKnowledgeDto,
@@ -28,24 +28,24 @@ import {
   KnowledgeSummaryDto,
   KnowledgeFiltersDto,
   RateKnowledgeDto,
-} from './dto';
+} from "./dto";
 
-@ApiTags('Knowledge Base')
+@ApiTags("Knowledge Base")
 @ApiBearerAuth()
-@Controller('knowledge')
+@Controller("knowledge")
 @UseGuards(JwtAuthGuard, TenantGuard)
 export class KnowledgeController {
   constructor(private readonly knowledgeService: KnowledgeService) {}
 
   @Post()
   @ApiOperation({
-    summary: 'Criar entrada na base de conhecimento',
+    summary: "Criar entrada na base de conhecimento",
     description:
-      'Adiciona uma nova solução à base de conhecimento colaborativa',
+      "Adiciona uma nova solução à base de conhecimento colaborativa",
   })
   @ApiResponse({
     status: 201,
-    description: 'Entrada criada com sucesso',
+    description: "Entrada criada com sucesso",
     type: KnowledgeResponseDto,
   })
   async create(
@@ -54,7 +54,7 @@ export class KnowledgeController {
     @CurrentUser() user: { name?: string; email?: string },
     @Body() createKnowledgeDto: CreateKnowledgeDto,
   ): Promise<KnowledgeResponseDto> {
-    const userName = user.name || user.email || 'Usuário';
+    const userName = user.name || user.email || "Usuário";
     return this.knowledgeService.create(
       tenantId,
       userId,
@@ -65,44 +65,44 @@ export class KnowledgeController {
 
   @Get()
   @ApiOperation({
-    summary: 'Listar entradas da base de conhecimento',
-    description: 'Retorna lista de soluções com filtros opcionais',
+    summary: "Listar entradas da base de conhecimento",
+    description: "Retorna lista de soluções com filtros opcionais",
   })
   @ApiResponse({
     status: 200,
-    description: 'Lista de entradas',
+    description: "Lista de entradas",
     type: [KnowledgeSummaryDto],
   })
   @ApiQuery({
-    name: 'search',
+    name: "search",
     required: false,
-    description: 'Buscar por texto',
+    description: "Buscar por texto",
   })
   @ApiQuery({
-    name: 'category',
+    name: "category",
     required: false,
-    description: 'Filtrar por categoria',
+    description: "Filtrar por categoria",
   })
   @ApiQuery({
-    name: 'vehicleMake',
+    name: "vehicleMake",
     required: false,
-    description: 'Filtrar por marca',
+    description: "Filtrar por marca",
   })
   @ApiQuery({
-    name: 'vehicleModel',
+    name: "vehicleModel",
     required: false,
-    description: 'Filtrar por modelo',
+    description: "Filtrar por modelo",
   })
   @ApiQuery({
-    name: 'isVerified',
+    name: "isVerified",
     required: false,
-    description: 'Apenas verificadas',
+    description: "Apenas verificadas",
   })
-  @ApiQuery({ name: 'sortBy', required: false, description: 'Ordenar por' })
+  @ApiQuery({ name: "sortBy", required: false, description: "Ordenar por" })
   @ApiQuery({
-    name: 'sortOrder',
+    name: "sortOrder",
     required: false,
-    description: 'Direção da ordenação',
+    description: "Direção da ordenação",
   })
   async findMany(
     @TenantId() tenantId: string,
@@ -111,110 +111,110 @@ export class KnowledgeController {
     return this.knowledgeService.findMany(tenantId, filters);
   }
 
-  @Get('similar')
+  @Get("similar")
   @ApiOperation({
-    summary: 'Buscar soluções similares',
-    description: 'Encontra soluções similares baseadas em sintomas',
+    summary: "Buscar soluções similares",
+    description: "Encontra soluções similares baseadas em sintomas",
   })
   @ApiResponse({
     status: 200,
-    description: 'Soluções similares encontradas',
+    description: "Soluções similares encontradas",
     type: [KnowledgeSummaryDto],
   })
   @ApiQuery({
-    name: 'symptoms',
+    name: "symptoms",
     required: true,
-    description: 'Sintomas separados por vírgula',
+    description: "Sintomas separados por vírgula",
   })
   async findSimilar(
     @TenantId() tenantId: string,
-    @Query('symptoms') symptomsQuery: string,
+    @Query("symptoms") symptomsQuery: string,
   ): Promise<KnowledgeSummaryDto[]> {
     const symptoms = symptomsQuery
-      .split(',')
+      .split(",")
       .map((s) => s.trim())
       .filter(Boolean);
     return this.knowledgeService.findSimilarSolutions(tenantId, symptoms);
   }
 
-  @Get(':id')
+  @Get(":id")
   @ApiOperation({
-    summary: 'Buscar entrada específica',
+    summary: "Buscar entrada específica",
     description:
-      'Retorna detalhes completos de uma entrada da base de conhecimento',
+      "Retorna detalhes completos de uma entrada da base de conhecimento",
   })
   @ApiResponse({
     status: 200,
-    description: 'Entrada encontrada',
+    description: "Entrada encontrada",
     type: KnowledgeResponseDto,
   })
   @ApiResponse({
     status: 404,
-    description: 'Entrada não encontrada',
+    description: "Entrada não encontrada",
   })
   async findOne(
     @TenantId() tenantId: string,
-    @Param('id') id: string,
+    @Param("id") id: string,
   ): Promise<KnowledgeResponseDto> {
     return this.knowledgeService.findOne(tenantId, id);
   }
 
-  @Patch(':id')
+  @Patch(":id")
   @ApiOperation({
-    summary: 'Atualizar entrada',
-    description: 'Atualiza uma entrada da base de conhecimento',
+    summary: "Atualizar entrada",
+    description: "Atualiza uma entrada da base de conhecimento",
   })
   @ApiResponse({
     status: 200,
-    description: 'Entrada atualizada',
+    description: "Entrada atualizada",
     type: KnowledgeResponseDto,
   })
   @ApiResponse({
     status: 404,
-    description: 'Entrada não encontrada',
+    description: "Entrada não encontrada",
   })
   async update(
     @TenantId() tenantId: string,
-    @Param('id') id: string,
+    @Param("id") id: string,
     @Body() updateKnowledgeDto: UpdateKnowledgeDto,
   ): Promise<KnowledgeResponseDto> {
     return this.knowledgeService.update(tenantId, id, updateKnowledgeDto);
   }
 
-  @Post(':id/rate')
+  @Post(":id/rate")
   @ApiOperation({
-    summary: 'Avaliar solução',
-    description: 'Avalia se uma solução funcionou ou não',
+    summary: "Avaliar solução",
+    description: "Avalia se uma solução funcionou ou não",
   })
   @ApiResponse({
     status: 200,
-    description: 'Avaliação registrada',
+    description: "Avaliação registrada",
     type: KnowledgeResponseDto,
   })
   async rate(
     @TenantId() tenantId: string,
-    @Param('id') id: string,
+    @Param("id") id: string,
     @Body() rateKnowledgeDto: RateKnowledgeDto,
   ): Promise<KnowledgeResponseDto> {
     return this.knowledgeService.rate(tenantId, id, rateKnowledgeDto);
   }
 
-  @Delete(':id')
+  @Delete(":id")
   @ApiOperation({
-    summary: 'Remover entrada',
-    description: 'Remove uma entrada da base de conhecimento (soft delete)',
+    summary: "Remover entrada",
+    description: "Remove uma entrada da base de conhecimento (soft delete)",
   })
   @ApiResponse({
     status: 200,
-    description: 'Entrada removida',
+    description: "Entrada removida",
   })
   @ApiResponse({
     status: 404,
-    description: 'Entrada não encontrada',
+    description: "Entrada não encontrada",
   })
   async remove(
     @TenantId() tenantId: string,
-    @Param('id') id: string,
+    @Param("id") id: string,
   ): Promise<void> {
     return this.knowledgeService.remove(tenantId, id);
   }

@@ -1,4 +1,4 @@
-import { BackupType, BackupStatus } from './backup-config.dto';
+import { BackupType, BackupStatus } from "./backup-config.dto";
 
 export class BackupResponseDto {
   id: string;

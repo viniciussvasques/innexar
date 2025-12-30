@@ -4,17 +4,17 @@ import {
   IsOptional,
   IsNumber,
   IsBoolean,
-} from 'class-validator';
+} from "class-validator";
 
 export enum BackupType {
-  FULL = 'full',
-  INCREMENTAL = 'incremental',
+  FULL = "full",
+  INCREMENTAL = "incremental",
 }
 
 export enum BackupStatus {
-  IN_PROGRESS = 'in_progress',
-  SUCCESS = 'success',
-  FAILED = 'failed',
+  IN_PROGRESS = "in_progress",
+  SUCCESS = "success",
+  FAILED = "failed",
 }
 
 export class BackupConfigDto {

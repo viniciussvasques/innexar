@@ -1,8 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../../../database/prisma.service';
-import { CreateSupportTicketDto } from './dto/create-support-ticket.dto';
-import { UpdateSupportTicketDto } from './dto/update-support-ticket.dto';
-import { AddReplyDto } from './dto/add-reply.dto';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { PrismaService } from "../../../database/prisma.service";
+import { CreateSupportTicketDto } from "./dto/create-support-ticket.dto";
+import { UpdateSupportTicketDto } from "./dto/update-support-ticket.dto";
+import { AddReplyDto } from "./dto/add-reply.dto";
 
 interface SupportFilters {
   page: number;
@@ -15,7 +15,7 @@ interface SupportFilters {
 
 @Injectable()
 export class AdminSupportService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async findAll(filters: SupportFilters) {
     const { page, limit, status, priority, category, tenantId } = filters;
@@ -32,7 +32,7 @@ export class AdminSupportService {
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         include: {
           tenant: {
             select: {
@@ -64,7 +64,7 @@ export class AdminSupportService {
     });
 
     if (!ticket) {
-      throw new NotFoundException('Ticket não encontrado');
+      throw new NotFoundException("Ticket não encontrado");
     }
 
     return ticket;
@@ -101,27 +101,28 @@ export class AdminSupportService {
       where: { id },
       data: {
         lastReplyAt: new Date(),
-        status: replyDto.closeTicket ? 'resolved' : undefined,
+        status: replyDto.closeTicket ? "resolved" : undefined,
       },
     });
 
-    return { success: true, message: 'Resposta adicionada com sucesso' };
+    return { success: true, message: "Resposta adicionada com sucesso" };
   }
 
   async getStats() {
     const now = new Date();
     const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-    const [total, open, inProgress, resolved, closed, today] = await Promise.all([
-      this.prisma.supportTicket.count(),
-      this.prisma.supportTicket.count({ where: { status: 'open' } }),
-      this.prisma.supportTicket.count({ where: { status: 'in_progress' } }),
-      this.prisma.supportTicket.count({ where: { status: 'resolved' } }),
-      this.prisma.supportTicket.count({ where: { status: 'closed' } }),
-      this.prisma.supportTicket.count({
-        where: { createdAt: { gte: last24h } },
-      }),
-    ]);
+    const [total, open, inProgress, resolved, closed, today] =
+      await Promise.all([
+        this.prisma.supportTicket.count(),
+        this.prisma.supportTicket.count({ where: { status: "open" } }),
+        this.prisma.supportTicket.count({ where: { status: "in_progress" } }),
+        this.prisma.supportTicket.count({ where: { status: "resolved" } }),
+        this.prisma.supportTicket.count({ where: { status: "closed" } }),
+        this.prisma.supportTicket.count({
+          where: { createdAt: { gte: last24h } },
+        }),
+      ]);
 
     // Calcular tempo médio de resposta (simplificado)
     const avgResponseTime = 3.5; // horas (placeholder)

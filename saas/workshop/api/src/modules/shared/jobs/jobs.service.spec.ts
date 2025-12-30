@@ -1,13 +1,13 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { getQueueToken } from '@nestjs/bull';
-import { JobsService } from './jobs.service';
-import { PrismaService } from '@database/prisma.service';
-import { CreateJobDto, JobType, JobStatus, JobFiltersDto } from './dto';
+import { Test, TestingModule } from "@nestjs/testing";
+import { getQueueToken } from "@nestjs/bull";
+import { JobsService } from "./jobs.service";
+import { PrismaService } from "@database/prisma.service";
+import { CreateJobDto, JobType, JobStatus, JobFiltersDto } from "./dto";
 
-describe('JobsService', () => {
+describe("JobsService", () => {
   let service: JobsService;
 
-  const mockTenantId = 'tenant-id';
+  const mockTenantId = "tenant-id";
 
   const mockPrismaService = {
     job: {
@@ -45,7 +45,7 @@ describe('JobsService', () => {
           useValue: mockPrismaService,
         },
         {
-          provide: getQueueToken('jobs'),
+          provide: getQueueToken("jobs"),
           useValue: mockJobsQueue,
         },
       ],
@@ -58,19 +58,19 @@ describe('JobsService', () => {
     jest.clearAllMocks();
   });
 
-  describe('create', () => {
+  describe("create", () => {
     const createJobDto: CreateJobDto = {
       type: JobType.EMAIL,
       data: {
-        to: 'test@example.com',
-        subject: 'Test',
+        to: "test@example.com",
+        subject: "Test",
       },
       priority: 5,
     };
 
-    it('deve criar um job com sucesso', async () => {
+    it("deve criar um job com sucesso", async () => {
       const mockJob = {
-        id: 'job-id',
+        id: "job-id",
         tenantId: mockTenantId,
         type: JobType.EMAIL,
         status: JobStatus.PENDING,
@@ -90,7 +90,7 @@ describe('JobsService', () => {
 
       const result = await service.create(mockTenantId, createJobDto);
 
-      expect(result).toHaveProperty('id');
+      expect(result).toHaveProperty("id");
       expect(result.type).toBe(JobType.EMAIL);
       expect(result.status).toBe(JobStatus.PENDING);
       expect(result.data).toEqual(createJobDto.data);
@@ -109,14 +109,14 @@ describe('JobsService', () => {
       expect(mockJobsQueue.add).toHaveBeenCalled();
     });
 
-    it('deve criar job com prioridade padrão quando não informada', async () => {
+    it("deve criar job com prioridade padrão quando não informada", async () => {
       const dtoWithoutPriority: CreateJobDto = {
         type: JobType.REPORT,
-        data: { reportType: 'monthly' },
+        data: { reportType: "monthly" },
       };
 
       const mockJob = {
-        id: 'job-id',
+        id: "job-id",
         tenantId: mockTenantId,
         type: JobType.REPORT,
         status: JobStatus.PENDING,
@@ -140,7 +140,7 @@ describe('JobsService', () => {
       expect(result.type).toBe(JobType.REPORT);
     });
 
-    it('deve criar job com diferentes tipos', async () => {
+    it("deve criar job com diferentes tipos", async () => {
       const types = [
         JobType.EMAIL,
         JobType.REPORT,
@@ -152,7 +152,7 @@ describe('JobsService', () => {
       for (const type of types) {
         const dto: CreateJobDto = {
           type,
-          data: { test: 'data' },
+          data: { test: "data" },
         };
 
         const mockJob = {
@@ -178,21 +178,21 @@ describe('JobsService', () => {
       }
     });
 
-    it('deve criar job com attempts padrão', async () => {
+    it("deve criar job com attempts padrão", async () => {
       const result = await service.create(mockTenantId, createJobDto);
 
       expect(result.attempts).toBe(0);
     });
   });
 
-  describe('findAll', () => {
-    it('deve listar jobs com sucesso', async () => {
+  describe("findAll", () => {
+    it("deve listar jobs com sucesso", async () => {
       const mockJob = {
-        id: 'job-id',
+        id: "job-id",
         tenantId: mockTenantId,
         type: JobType.EMAIL,
         status: JobStatus.PENDING,
-        data: { test: 'data' },
+        data: { test: "data" },
         priority: 5,
         attempts: 0,
         maxAttempts: 3,
@@ -210,16 +210,16 @@ describe('JobsService', () => {
 
       const result = await service.findAll(mockTenantId, {});
 
-      expect(result).toHaveProperty('data');
-      expect(result).toHaveProperty('total');
-      expect(result).toHaveProperty('page');
-      expect(result).toHaveProperty('limit');
-      expect(result).toHaveProperty('totalPages');
+      expect(result).toHaveProperty("data");
+      expect(result).toHaveProperty("total");
+      expect(result).toHaveProperty("page");
+      expect(result).toHaveProperty("limit");
+      expect(result).toHaveProperty("totalPages");
       expect(Array.isArray(result.data)).toBe(true);
       expect(result.data).toHaveLength(1);
     });
 
-    it('deve aplicar filtros de paginação', async () => {
+    it("deve aplicar filtros de paginação", async () => {
       const filters: JobFiltersDto = {
         page: 2,
         limit: 10,
@@ -231,43 +231,43 @@ describe('JobsService', () => {
       expect(result.limit).toBe(10);
     });
 
-    it('deve usar valores padrão quando filtros não informados', async () => {
+    it("deve usar valores padrão quando filtros não informados", async () => {
       const result = await service.findAll(mockTenantId, {});
 
       expect(result.page).toBe(1);
       expect(result.limit).toBe(20);
     });
 
-    it('deve filtrar por tipo quando informado', async () => {
+    it("deve filtrar por tipo quando informado", async () => {
       const filters: JobFiltersDto = {
         type: JobType.EMAIL,
       };
 
       const result = await service.findAll(mockTenantId, filters);
 
-      expect(result).toHaveProperty('data');
+      expect(result).toHaveProperty("data");
     });
 
-    it('deve filtrar por status quando informado', async () => {
+    it("deve filtrar por status quando informado", async () => {
       const filters: JobFiltersDto = {
         status: JobStatus.PENDING,
       };
 
       const result = await service.findAll(mockTenantId, filters);
 
-      expect(result).toHaveProperty('data');
+      expect(result).toHaveProperty("data");
     });
   });
 
-  describe('processJob', () => {
-    it('deve processar job pendente adicionando à fila', async () => {
-      const jobId = 'job-123';
+  describe("processJob", () => {
+    it("deve processar job pendente adicionando à fila", async () => {
+      const jobId = "job-123";
       const mockJob = {
         id: jobId,
         tenantId: mockTenantId,
         type: JobType.EMAIL,
         status: JobStatus.PENDING,
-        data: { to: 'test@example.com' },
+        data: { to: "test@example.com" },
         priority: 5,
         attempts: 0,
         maxAttempts: 3,
@@ -286,8 +286,8 @@ describe('JobsService', () => {
       expect(mockJobsQueue.add).toHaveBeenCalled();
     });
 
-    it('deve lançar erro se job não estiver pendente', async () => {
-      const jobId = 'job-123';
+    it("deve lançar erro se job não estiver pendente", async () => {
+      const jobId = "job-123";
       const mockJob = {
         id: jobId,
         tenantId: mockTenantId,
@@ -310,63 +310,63 @@ describe('JobsService', () => {
     });
   });
 
-  describe('error handling', () => {
-    it('deve lidar com erros ao criar job', async () => {
+  describe("error handling", () => {
+    it("deve lidar com erros ao criar job", async () => {
       const createJobDto: CreateJobDto = {
         type: JobType.EMAIL,
-        data: { test: 'data' },
+        data: { test: "data" },
       };
 
       // Mock para forçar erro
       jest
-        .spyOn(service, 'create')
-        .mockRejectedValueOnce(new Error('Test error'));
+        .spyOn(service, "create")
+        .mockRejectedValueOnce(new Error("Test error"));
 
       await expect(service.create(mockTenantId, createJobDto)).rejects.toThrow(
-        'Test error',
+        "Test error",
       );
     });
 
-    it('deve lidar com erros ao listar jobs', async () => {
+    it("deve lidar com erros ao listar jobs", async () => {
       // Mock para forçar erro
       jest
-        .spyOn(service, 'findAll')
-        .mockRejectedValueOnce(new Error('Test error'));
+        .spyOn(service, "findAll")
+        .mockRejectedValueOnce(new Error("Test error"));
 
       await expect(service.findAll(mockTenantId, {})).rejects.toThrow(
-        'Test error',
+        "Test error",
       );
     });
   });
 
-  describe('toResponseDto', () => {
-    it('deve converter job completo para DTO', async () => {
+  describe("toResponseDto", () => {
+    it("deve converter job completo para DTO", async () => {
       const createJobDto: CreateJobDto = {
         type: JobType.EMAIL,
-        data: { test: 'data' },
+        data: { test: "data" },
         priority: 8,
         attempts: 2,
       };
 
       const result = await service.create(mockTenantId, createJobDto);
 
-      expect(result).toHaveProperty('id');
-      expect(result).toHaveProperty('type');
-      expect(result).toHaveProperty('status');
-      expect(result).toHaveProperty('data');
-      expect(result).toHaveProperty('priority');
-      expect(result).toHaveProperty('attempts');
-      expect(result).toHaveProperty('createdAt');
+      expect(result).toHaveProperty("id");
+      expect(result).toHaveProperty("type");
+      expect(result).toHaveProperty("status");
+      expect(result).toHaveProperty("data");
+      expect(result).toHaveProperty("priority");
+      expect(result).toHaveProperty("attempts");
+      expect(result).toHaveProperty("createdAt");
     });
 
-    it('deve converter job com campos opcionais', async () => {
+    it("deve converter job com campos opcionais", async () => {
       const createJobDto: CreateJobDto = {
         type: JobType.REPORT,
-        data: { report: 'data' },
+        data: { report: "data" },
       };
 
       const mockJob = {
-        id: 'job-id',
+        id: "job-id",
         tenantId: mockTenantId,
         type: JobType.REPORT,
         status: JobStatus.PENDING,
@@ -393,14 +393,14 @@ describe('JobsService', () => {
     });
   });
 
-  describe('findOne', () => {
-    it('deve buscar job por ID com sucesso', async () => {
+  describe("findOne", () => {
+    it("deve buscar job por ID com sucesso", async () => {
       const mockJob = {
-        id: 'job-id',
+        id: "job-id",
         tenantId: mockTenantId,
         type: JobType.EMAIL,
         status: JobStatus.PENDING,
-        data: { test: 'data' },
+        data: { test: "data" },
         priority: 5,
         attempts: 0,
         maxAttempts: 3,
@@ -413,34 +413,34 @@ describe('JobsService', () => {
 
       mockPrismaService.job.findFirst.mockResolvedValue(mockJob);
 
-      const result = await service.findOne(mockTenantId, 'job-id');
+      const result = await service.findOne(mockTenantId, "job-id");
 
-      expect(result).toHaveProperty('id', 'job-id');
+      expect(result).toHaveProperty("id", "job-id");
       expect(result.type).toBe(JobType.EMAIL);
     });
 
-    it('deve lançar NotFoundException se job não existe', async () => {
+    it("deve lançar NotFoundException se job não existe", async () => {
       mockPrismaService.job.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.findOne(mockTenantId, 'non-existent'),
-      ).rejects.toThrow('Job com ID non-existent não encontrado');
+        service.findOne(mockTenantId, "non-existent"),
+      ).rejects.toThrow("Job com ID non-existent não encontrado");
     });
   });
 
-  describe('findAll - filtros adicionais', () => {
-    it('deve filtrar por período de data', async () => {
+  describe("findAll - filtros adicionais", () => {
+    it("deve filtrar por período de data", async () => {
       const filters: JobFiltersDto = {
-        startDate: '2024-01-01',
-        endDate: '2024-12-31',
+        startDate: "2024-01-01",
+        endDate: "2024-12-31",
       };
 
       const mockJob = {
-        id: 'job-id',
+        id: "job-id",
         tenantId: mockTenantId,
         type: JobType.EMAIL,
         status: JobStatus.PENDING,
-        data: { test: 'data' },
+        data: { test: "data" },
         priority: 5,
         attempts: 0,
         maxAttempts: 3,
@@ -458,10 +458,10 @@ describe('JobsService', () => {
 
       const result = await service.findAll(mockTenantId, filters);
 
-      expect(result).toHaveProperty('data');
+      expect(result).toHaveProperty("data");
     });
 
-    it('deve filtrar por tipo e status juntos', async () => {
+    it("deve filtrar por tipo e status juntos", async () => {
       const filters: JobFiltersDto = {
         type: JobType.EMAIL,
         status: JobStatus.COMPLETED,
@@ -474,13 +474,13 @@ describe('JobsService', () => {
 
       const result = await service.findAll(mockTenantId, filters);
 
-      expect(result).toHaveProperty('data');
+      expect(result).toHaveProperty("data");
     });
   });
 
-  describe('cancelJob', () => {
-    it('deve cancelar job pendente', async () => {
-      const jobId = 'job-123';
+  describe("cancelJob", () => {
+    it("deve cancelar job pendente", async () => {
+      const jobId = "job-123";
       const mockJob = {
         id: jobId,
         tenantId: mockTenantId,
@@ -517,8 +517,8 @@ describe('JobsService', () => {
       });
     });
 
-    it('deve lançar erro se job não pode ser cancelado', async () => {
-      const jobId = 'job-123';
+    it("deve lançar erro se job não pode ser cancelado", async () => {
+      const jobId = "job-123";
       const mockJob = {
         id: jobId,
         tenantId: mockTenantId,
@@ -541,8 +541,8 @@ describe('JobsService', () => {
     });
   });
 
-  describe('getQueueStats', () => {
-    it('deve retornar estatísticas da fila', async () => {
+  describe("getQueueStats", () => {
+    it("deve retornar estatísticas da fila", async () => {
       mockJobsQueue.getWaitingCount.mockResolvedValue(5);
       mockJobsQueue.getActiveCount.mockResolvedValue(2);
       mockJobsQueue.getCompletedCount.mockResolvedValue(100);

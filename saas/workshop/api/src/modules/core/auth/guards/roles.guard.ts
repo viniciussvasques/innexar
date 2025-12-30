@@ -1,6 +1,6 @@
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { ROLES_KEY } from '../decorators/roles.decorator';
+import { Injectable, CanActivate, ExecutionContext } from "@nestjs/common";
+import { Reflector } from "@nestjs/core";
+import { ROLES_KEY } from "../decorators/roles.decorator";
 
 interface RequestWithUser extends Request {
   user?: {
@@ -30,7 +30,7 @@ export class RolesGuard implements CanActivate {
     }
 
     // Super admin tem acesso irrestrito em qualquer rota protegida
-    if (user.role === 'superadmin') {
+    if (user.role === "superadmin") {
       return true;
     }
 

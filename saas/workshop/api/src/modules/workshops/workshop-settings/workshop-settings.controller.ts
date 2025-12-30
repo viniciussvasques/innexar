@@ -10,30 +10,30 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
-} from '@nestjs/common';
+} from "@nestjs/common";
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
   ApiConsumes,
-} from '@nestjs/swagger';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'node:path';
-import { WorkshopSettingsService } from './workshop-settings.service';
+} from "@nestjs/swagger";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { diskStorage } from "multer";
+import { extname } from "node:path";
+import { WorkshopSettingsService } from "./workshop-settings.service";
 import {
   CreateWorkshopSettingsDto,
   UpdateWorkshopSettingsDto,
   WorkshopSettingsResponseDto,
-} from './dto';
-import { JwtAuthGuard } from '@core/auth/guards/jwt-auth.guard';
-import { RolesGuard } from '@core/auth/guards/roles.guard';
-import { Roles } from '@core/auth/decorators/roles.decorator';
-import { TenantId } from '@common/decorators/tenant.decorator';
+} from "./dto";
+import { JwtAuthGuard } from "@core/auth/guards/jwt-auth.guard";
+import { RolesGuard } from "@core/auth/guards/roles.guard";
+import { Roles } from "@core/auth/decorators/roles.decorator";
+import { TenantId } from "@common/decorators/tenant.decorator";
 
-@ApiTags('Workshop Settings')
-@Controller('workshop-settings')
+@ApiTags("Workshop Settings")
+@Controller("workshop-settings")
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 export class WorkshopSettingsController {
@@ -42,11 +42,11 @@ export class WorkshopSettingsController {
   ) {}
 
   @Get()
-  @Roles('admin', 'manager')
-  @ApiOperation({ summary: 'Buscar configurações da oficina' })
+  @Roles("admin", "manager")
+  @ApiOperation({ summary: "Buscar configurações da oficina" })
   @ApiResponse({
     status: 200,
-    description: 'Configurações encontradas',
+    description: "Configurações encontradas",
     type: WorkshopSettingsResponseDto,
   })
   async findOne(
@@ -56,12 +56,12 @@ export class WorkshopSettingsController {
   }
 
   @Post()
-  @Roles('admin', 'manager')
+  @Roles("admin", "manager")
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Criar ou atualizar configurações da oficina' })
+  @ApiOperation({ summary: "Criar ou atualizar configurações da oficina" })
   @ApiResponse({
     status: 201,
-    description: 'Configurações criadas/atualizadas com sucesso',
+    description: "Configurações criadas/atualizadas com sucesso",
     type: WorkshopSettingsResponseDto,
   })
   async upsert(
@@ -72,11 +72,11 @@ export class WorkshopSettingsController {
   }
 
   @Patch()
-  @Roles('admin', 'manager')
-  @ApiOperation({ summary: 'Atualizar configurações da oficina' })
+  @Roles("admin", "manager")
+  @ApiOperation({ summary: "Atualizar configurações da oficina" })
   @ApiResponse({
     status: 200,
-    description: 'Configurações atualizadas com sucesso',
+    description: "Configurações atualizadas com sucesso",
     type: WorkshopSettingsResponseDto,
   })
   async update(
@@ -86,12 +86,12 @@ export class WorkshopSettingsController {
     return this.workshopSettingsService.update(tenantId, updateDto);
   }
 
-  @Post('upload-logo')
-  @Roles('admin', 'manager')
+  @Post("upload-logo")
+  @Roles("admin", "manager")
   @UseInterceptors(
-    FileInterceptor('file', {
+    FileInterceptor("file", {
       storage: diskStorage({
-        destination: './uploads/logos',
+        destination: "./uploads/logos",
         filename: (
           _req: unknown,
           file: { originalname: string },
@@ -99,7 +99,7 @@ export class WorkshopSettingsController {
         ) => {
           // tenantId será injetado via decorator, usar timestamp único
           const uniqueSuffix =
-            Date.now() + '-' + Math.round(Math.random() * 1e9);
+            Date.now() + "-" + Math.round(Math.random() * 1e9);
           const ext = extname(file.originalname);
           cb(null, `logo-${uniqueSuffix}${ext}`);
         },
@@ -112,7 +112,7 @@ export class WorkshopSettingsController {
         const mimetypeRegex = /\/(jpg|jpeg|png|gif|webp|svg)$/;
         if (!mimetypeRegex.exec(file.mimetype)) {
           return cb(
-            new BadRequestException('Apenas imagens são permitidas'),
+            new BadRequestException("Apenas imagens são permitidas"),
             false,
           );
         }
@@ -123,17 +123,17 @@ export class WorkshopSettingsController {
       },
     }),
   )
-  @ApiConsumes('multipart/form-data')
-  @ApiOperation({ summary: 'Upload de logo da oficina' })
+  @ApiConsumes("multipart/form-data")
+  @ApiOperation({ summary: "Upload de logo da oficina" })
   @ApiResponse({
     status: 201,
-    description: 'Logo enviado com sucesso',
+    description: "Logo enviado com sucesso",
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
         url: {
-          type: 'string',
-          example: '/uploads/logos/tenant-1234567890-123456789.png',
+          type: "string",
+          example: "/uploads/logos/tenant-1234567890-123456789.png",
         },
       },
     },
@@ -143,7 +143,7 @@ export class WorkshopSettingsController {
     @TenantId() tenantId: string,
   ): Promise<{ url: string }> {
     if (!file) {
-      throw new BadRequestException('Nenhum arquivo enviado');
+      throw new BadRequestException("Nenhum arquivo enviado");
     }
 
     // URL relativa que será servida estaticamente

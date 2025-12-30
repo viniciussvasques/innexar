@@ -1,12 +1,12 @@
-import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, Logger } from '@nestjs/common';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { NestExpressApplication } from '@nestjs/platform-express';
-import { join } from 'node:path';
-import { AppModule } from './app/app.module';
-import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { NestFactory } from "@nestjs/core";
+import { ValidationPipe, Logger } from "@nestjs/common";
+import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
+import { NestExpressApplication } from "@nestjs/platform-express";
+import { join } from "node:path";
+import { AppModule } from "./app/app.module";
+import { AllExceptionsFilter } from "./common/filters/all-exceptions.filter";
 
-const logger = new Logger('Bootstrap');
+const logger = new Logger("Bootstrap");
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -14,21 +14,21 @@ async function bootstrap(): Promise<void> {
   });
 
   // Servir arquivos estáticos (uploads)
-  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
-    prefix: '/uploads/',
+  app.useStaticAssets(join(__dirname, "..", "uploads"), {
+    prefix: "/uploads/",
   });
 
   // CORS - Aceitar localhost e subdomains de localhost
   const allowedOrigins = [
-    process.env.FRONTEND_URL || 'http://localhost:3000',
-    'http://localhost:3000',
-    'http://localhost:3002', // Painel Admin (porta antiga)
-    'http://localhost:3003', // Painel Admin (porta atual)
-    'http://localhost:3004', // Affiliate Hub
+    process.env.FRONTEND_URL || "http://localhost:3000",
+    "http://localhost:3000",
+    "http://localhost:3002", // Painel Admin (porta antiga)
+    "http://localhost:3003", // Painel Admin (porta atual)
+    "http://localhost:3004", // Affiliate Hub
     /^http:\/\/.*\.localhost:3000$/, // Aceitar qualquer subdomain.localhost:3000
     // Produção
-    'https://mecanica365.com',
-    'https://www.mecanica365.com',
+    "https://mecanica365.com",
+    "https://www.mecanica365.com",
     /^https:\/\/.*\.mecanica365\.com$/, // Aceitar qualquer subdomain.mecanica365.com
   ];
 
@@ -45,7 +45,7 @@ async function bootstrap(): Promise<void> {
 
       // Verificar se a origin está na lista de permitidas
       const isAllowed = allowedOrigins.some((allowedOrigin) => {
-        if (typeof allowedOrigin === 'string') {
+        if (typeof allowedOrigin === "string") {
           return origin === allowedOrigin;
         }
         if (allowedOrigin instanceof RegExp) {
@@ -57,14 +57,14 @@ async function bootstrap(): Promise<void> {
       if (isAllowed) {
         callback(null, true);
       } else {
-        callback(new Error('Not allowed by CORS'), false);
+        callback(new Error("Not allowed by CORS"), false);
       }
     },
     credentials: true,
   });
 
   // Global prefix
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix("api");
 
   // Validation
   app.useGlobalPipes(
@@ -80,13 +80,13 @@ async function bootstrap(): Promise<void> {
 
   // Swagger
   const config = new DocumentBuilder()
-    .setTitle('Mecânica365 API')
-    .setDescription('API do sistema Mecânica365 - ERP para oficinas mecânicas')
-    .setVersion('1.0')
+    .setTitle("Mecânica365 API")
+    .setDescription("API do sistema Mecânica365 - ERP para oficinas mecânicas")
+    .setVersion("1.0")
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
+  SwaggerModule.setup("api/docs", app, document);
 
   const port = process.env.PORT || 3001;
   await app.listen(port);
@@ -96,6 +96,6 @@ async function bootstrap(): Promise<void> {
 }
 
 bootstrap().catch((error: unknown) => {
-  logger.error('Error starting application:', error);
+  logger.error("Error starting application:", error);
   process.exit(1);
 });

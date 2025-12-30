@@ -3,8 +3,8 @@ import {
   NotFoundException,
   BadRequestException,
   Logger,
-} from '@nestjs/common';
-import { PrismaService } from '@database/prisma.service';
+} from "@nestjs/common";
+import { PrismaService } from "@database/prisma.service";
 import {
   CreatePartDto,
   UpdatePartDto,
@@ -12,10 +12,10 @@ import {
   PartFiltersDto,
   ImportPartsDto,
   ImportPartsResponseDto,
-} from './dto';
-import { Prisma } from '@prisma/client';
-import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
-import { Decimal } from '@prisma/client/runtime/library';
+} from "./dto";
+import { Prisma } from "@prisma/client";
+import { getErrorMessage, getErrorStack } from "@common/utils/error.utils";
+import { Decimal } from "@prisma/client/runtime/library";
 
 @Injectable()
 export class PartsService {
@@ -42,7 +42,7 @@ export class PartsService {
 
         if (existingPart) {
           throw new BadRequestException(
-            'Já existe uma peça cadastrada com este número',
+            "Já existe uma peça cadastrada com este número",
           );
         }
       }
@@ -86,7 +86,7 @@ export class PartsService {
         `Erro ao criar peça: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new BadRequestException('Erro ao criar peça');
+      throw new BadRequestException("Erro ao criar peça");
     }
   }
 
@@ -115,17 +115,17 @@ export class PartsService {
 
       if (filters.search) {
         where.OR = [
-          { name: { contains: filters.search.trim(), mode: 'insensitive' } },
+          { name: { contains: filters.search.trim(), mode: "insensitive" } },
           {
             partNumber: {
               contains: filters.search.trim(),
-              mode: 'insensitive',
+              mode: "insensitive",
             },
           },
           {
             description: {
               contains: filters.search.trim(),
-              mode: 'insensitive',
+              mode: "insensitive",
             },
           },
         ];
@@ -134,14 +134,14 @@ export class PartsService {
       if (filters.category) {
         where.category = {
           contains: filters.category.trim(),
-          mode: 'insensitive',
+          mode: "insensitive",
         };
       }
 
       if (filters.brand) {
         where.brand = {
           contains: filters.brand.trim(),
-          mode: 'insensitive',
+          mode: "insensitive",
         };
       }
 
@@ -168,7 +168,7 @@ export class PartsService {
             },
           },
           orderBy: {
-            createdAt: 'desc',
+            createdAt: "desc",
           },
         }),
         this.prisma.part.count({ where }),
@@ -202,7 +202,7 @@ export class PartsService {
         `Erro ao listar peças: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new BadRequestException('Erro ao listar peças');
+      throw new BadRequestException("Erro ao listar peças");
     }
   }
 
@@ -227,7 +227,7 @@ export class PartsService {
       });
 
       if (!part) {
-        throw new NotFoundException('Peça não encontrada');
+        throw new NotFoundException("Peça não encontrada");
       }
 
       return this.toResponseDto(part);
@@ -240,7 +240,7 @@ export class PartsService {
         `Erro ao buscar peça: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new BadRequestException('Erro ao buscar peça');
+      throw new BadRequestException("Erro ao buscar peça");
     }
   }
 
@@ -292,7 +292,7 @@ export class PartsService {
         `Erro ao atualizar peça: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new BadRequestException('Erro ao atualizar peça');
+      throw new BadRequestException("Erro ao atualizar peça");
     }
   }
 
@@ -309,7 +309,7 @@ export class PartsService {
       });
 
       if (!part) {
-        throw new NotFoundException('Peça não encontrada');
+        throw new NotFoundException("Peça não encontrada");
       }
 
       // Verificar se a peça está sendo usada em alguma OS ou orçamento
@@ -348,7 +348,7 @@ export class PartsService {
         `Erro ao remover peça: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new BadRequestException('Erro ao remover peça');
+      throw new BadRequestException("Erro ao remover peça");
     }
   }
 
@@ -364,7 +364,7 @@ export class PartsService {
     });
 
     if (!existingPart) {
-      throw new NotFoundException('Peça não encontrada');
+      throw new NotFoundException("Peça não encontrada");
     }
 
     return existingPart;
@@ -390,7 +390,7 @@ export class PartsService {
 
     if (duplicatePart) {
       throw new BadRequestException(
-        'Já existe uma peça cadastrada com este número',
+        "Já existe uma peça cadastrada com este número",
       );
     }
   }
@@ -468,7 +468,7 @@ export class PartsService {
           result.errorDetails.push({
             row,
             name: partData.name,
-            error: 'Nome é obrigatório',
+            error: "Nome é obrigatório",
           });
           continue;
         }
@@ -583,11 +583,11 @@ export class PartsService {
       quantity: part.quantity,
       minQuantity: part.minQuantity,
       costPrice:
-        typeof part.costPrice === 'object' && 'toNumber' in part.costPrice
+        typeof part.costPrice === "object" && "toNumber" in part.costPrice
           ? part.costPrice.toNumber()
           : Number(part.costPrice),
       sellPrice:
-        typeof part.sellPrice === 'object' && 'toNumber' in part.sellPrice
+        typeof part.sellPrice === "object" && "toNumber" in part.sellPrice
           ? part.sellPrice.toNumber()
           : Number(part.sellPrice),
       location: part.location || undefined,

@@ -1,5 +1,5 @@
-import { IsOptional, IsEnum, IsString, IsDateString } from 'class-validator';
-import { BackupType, BackupStatus } from './backup-config.dto';
+import { IsOptional, IsEnum, IsString, IsDateString } from "class-validator";
+import { BackupType, BackupStatus } from "./backup-config.dto";
 
 export class BackupFiltersDto {
   @IsOptional()

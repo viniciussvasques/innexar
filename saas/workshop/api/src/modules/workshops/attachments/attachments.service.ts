@@ -3,23 +3,23 @@ import {
   NotFoundException,
   BadRequestException,
   Logger,
-} from '@nestjs/common';
-import { PrismaService } from '@database/prisma.service';
+} from "@nestjs/common";
+import { PrismaService } from "@database/prisma.service";
 import {
   CreateAttachmentDto,
   UpdateAttachmentDto,
   AttachmentResponseDto,
   AttachmentFiltersDto,
-} from './dto';
-import { Prisma } from '@prisma/client';
-import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
-import { join } from 'node:path';
-import { existsSync, unlinkSync } from 'node:fs';
+} from "./dto";
+import { Prisma } from "@prisma/client";
+import { getErrorMessage, getErrorStack } from "@common/utils/error.utils";
+import { join } from "node:path";
+import { existsSync, unlinkSync } from "node:fs";
 
 @Injectable()
 export class AttachmentsService {
   private readonly logger = new Logger(AttachmentsService.name);
-  private readonly uploadsDir = join(process.cwd(), 'uploads', 'attachments');
+  private readonly uploadsDir = join(process.cwd(), "uploads", "attachments");
 
   constructor(private readonly prisma: PrismaService) {}
 
@@ -41,13 +41,13 @@ export class AttachmentsService {
         !createAttachmentDto.vehicleId
       ) {
         throw new BadRequestException(
-          'É necessário fornecer pelo menos um relacionamento (quoteId, serviceOrderId, customerId ou vehicleId)',
+          "É necessário fornecer pelo menos um relacionamento (quoteId, serviceOrderId, customerId ou vehicleId)",
         );
       }
 
       // Validar arquivo
       if (!file) {
-        throw new BadRequestException('Arquivo é obrigatório');
+        throw new BadRequestException("Arquivo é obrigatório");
       }
 
       // Validar tipo de arquivo baseado no tipo de anexo
@@ -56,18 +56,18 @@ export class AttachmentsService {
       // Criar diretório do tenant se não existir
       const tenantDir = join(this.uploadsDir, tenantId);
       if (!existsSync(tenantDir)) {
-        const fs = await import('node:fs/promises');
+        const fs = await import("node:fs/promises");
         await fs.mkdir(tenantDir, { recursive: true });
       }
 
       // Gerar nome único para o arquivo
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-      const ext = file.originalname.split('.').pop();
+      const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+      const ext = file.originalname.split(".").pop();
       const fileName = `attachment-${uniqueSuffix}.${ext}`;
       const filePath = join(tenantDir, fileName);
 
       // Salvar arquivo
-      const fs = await import('node:fs/promises');
+      const fs = await import("node:fs/promises");
       // file.buffer está disponível quando usamos memoryStorage (padrão)
       const fileBuffer = file.buffer || Buffer.from([]);
       await fs.writeFile(filePath, fileBuffer);
@@ -134,9 +134,7 @@ export class AttachmentsService {
         `Anexo criado: ${attachment.id} (${attachment.type}) - ${attachment.fileName}`,
       );
 
-      return this.toResponseDto(
-        attachment as Parameters<typeof this.toResponseDto>[0],
-      );
+      return this.toResponseDto(attachment);
     } catch (error: unknown) {
       this.logger.error(
         `Erro ao criar anexo: ${getErrorMessage(error)}`,
@@ -187,7 +185,7 @@ export class AttachmentsService {
           where,
           skip,
           take: limit,
-          orderBy: { createdAt: 'desc' },
+          orderBy: { createdAt: "desc" },
           include: {
             quote: {
               select: {
@@ -221,11 +219,7 @@ export class AttachmentsService {
       ]);
 
       return {
-        data: attachments.map((attachment) =>
-          this.toResponseDto(
-            attachment as Parameters<typeof this.toResponseDto>[0],
-          ),
-        ),
+        data: attachments.map((attachment) => this.toResponseDto(attachment)),
         total,
         page,
         limit,
@@ -281,12 +275,10 @@ export class AttachmentsService {
       });
 
       if (!attachment) {
-        throw new NotFoundException('Anexo não encontrado');
+        throw new NotFoundException("Anexo não encontrado");
       }
 
-      return this.toResponseDto(
-        attachment as Parameters<typeof this.toResponseDto>[0],
-      );
+      return this.toResponseDto(attachment);
     } catch (error: unknown) {
       this.logger.error(
         `Erro ao buscar anexo: ${getErrorMessage(error)}`,
@@ -313,7 +305,7 @@ export class AttachmentsService {
       });
 
       if (!attachment) {
-        throw new NotFoundException('Anexo não encontrado');
+        throw new NotFoundException("Anexo não encontrado");
       }
 
       const updatedAttachment = await this.prisma.attachment.update({
@@ -397,7 +389,7 @@ export class AttachmentsService {
       });
 
       if (!attachment) {
-        throw new NotFoundException('Anexo não encontrado');
+        throw new NotFoundException("Anexo não encontrado");
       }
 
       // Remover arquivo físico
@@ -436,7 +428,7 @@ export class AttachmentsService {
   private toResponseDto(attachment: any): AttachmentResponseDto {
     return {
       id: attachment.id,
-      type: attachment.type as AttachmentResponseDto['type'],
+      type: attachment.type as AttachmentResponseDto["type"],
       fileName: attachment.fileName,
       originalName: attachment.originalName,
       mimeType: attachment.mimeType,
@@ -459,32 +451,32 @@ export class AttachmentsService {
    */
   private validateFileType(attachmentType: string, mimeType: string): void {
     const imageMimeTypes = [
-      'image/jpeg',
-      'image/jpg',
-      'image/png',
-      'image/gif',
-      'image/webp',
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/gif",
+      "image/webp",
     ];
     const documentMimeTypes = [
-      'application/pdf',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     ];
 
     if (
-      attachmentType === 'photo_before' ||
-      attachmentType === 'photo_during' ||
-      attachmentType === 'photo_after'
+      attachmentType === "photo_before" ||
+      attachmentType === "photo_during" ||
+      attachmentType === "photo_after"
     ) {
       if (!imageMimeTypes.includes(mimeType)) {
         throw new BadRequestException(
-          'Tipo de anexo de foto requer uma imagem (JPEG, PNG, GIF ou WebP)',
+          "Tipo de anexo de foto requer uma imagem (JPEG, PNG, GIF ou WebP)",
         );
       }
-    } else if (attachmentType === 'document') {
+    } else if (attachmentType === "document") {
       if (!documentMimeTypes.includes(mimeType)) {
         throw new BadRequestException(
-          'Tipo de anexo de documento requer um documento (PDF ou DOC/DOCX)',
+          "Tipo de anexo de documento requer um documento (PDF ou DOC/DOCX)",
         );
       }
     }

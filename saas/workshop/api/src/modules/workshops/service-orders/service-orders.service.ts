@@ -3,33 +3,33 @@ import {
   NotFoundException,
   BadRequestException,
   Logger,
-} from '@nestjs/common';
-import { PrismaService } from '@database/prisma.service';
+} from "@nestjs/common";
+import { PrismaService } from "@database/prisma.service";
 import {
   CreateServiceOrderDto,
   UpdateServiceOrderDto,
   ServiceOrderResponseDto,
   ServiceOrderFiltersDto,
   ServiceOrderStatus,
-} from './dto';
-import { Prisma } from '@prisma/client';
-import { getErrorMessage } from '@common/utils/error.utils';
-import { toNumber as toNumberUtil } from '@common/utils/dto-mapper.util';
-import { ElevatorsService } from '../elevators/elevators.service';
-import { ChecklistsService } from '../checklists/checklists.service';
-import { ChecklistType, ChecklistEntityType } from '../checklists/dto';
-import { AttachmentsService } from '../attachments/attachments.service';
+} from "./dto";
+import { Prisma } from "@prisma/client";
+import { getErrorMessage } from "@common/utils/error.utils";
+import { toNumber as toNumberUtil } from "@common/utils/dto-mapper.util";
+import { ElevatorsService } from "../elevators/elevators.service";
+import { ChecklistsService } from "../checklists/checklists.service";
+import { ChecklistType, ChecklistEntityType } from "../checklists/dto";
+import { AttachmentsService } from "../attachments/attachments.service";
 import {
   NotificationsService,
   NotificationType,
-} from '@core/notifications/notifications.service';
-import { InvoicingService } from '../invoicing/invoicing.service';
+} from "@core/notifications/notifications.service";
+import { InvoicingService } from "../invoicing/invoicing.service";
 import {
   CreateInvoiceDto,
   InvoiceItemType,
   InvoiceType,
-} from '../invoicing/dto';
-import { PaymentGatewaysService } from '../payment-gateways/payment-gateways.service';
+} from "../invoicing/dto";
+import { PaymentGatewaysService } from "../payment-gateways/payment-gateways.service";
 
 @Injectable()
 export class ServiceOrdersService {
@@ -51,16 +51,16 @@ export class ServiceOrdersService {
   private async generateOrderNumber(tenantId: string): Promise<string> {
     const lastOrder = await this.prisma.serviceOrder.findFirst({
       where: { tenantId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     if (!lastOrder) {
-      return 'OS-001';
+      return "OS-001";
     }
 
-    const lastNumber = Number.parseInt(lastOrder.number.replace('OS-', ''), 10);
+    const lastNumber = Number.parseInt(lastOrder.number.replace("OS-", ""), 10);
     const nextNumber = lastNumber + 1;
-    return `OS-${nextNumber.toString().padStart(3, '0')}`;
+    return `OS-${nextNumber.toString().padStart(3, "0")}`;
   }
 
   /**
@@ -82,7 +82,7 @@ export class ServiceOrdersService {
     });
 
     if (!customer) {
-      throw new NotFoundException('Cliente não encontrado');
+      throw new NotFoundException("Cliente não encontrado");
     }
   }
 
@@ -101,12 +101,12 @@ export class ServiceOrdersService {
       where: {
         id: technicianId,
         tenantId,
-        role: { in: ['mechanic', 'admin', 'manager'] },
+        role: { in: ["mechanic", "admin", "manager"] },
       },
     });
 
     if (!technician) {
-      throw new NotFoundException('Mecânico não encontrado');
+      throw new NotFoundException("Mecânico não encontrado");
     }
   }
 
@@ -403,7 +403,7 @@ export class ServiceOrdersService {
         );
         if (!isValid) {
           throw new BadRequestException(
-            'Não é possível finalizar a ordem de serviço. O checklist pré-serviço não está completo. Todos os itens obrigatórios devem ser concluídos.',
+            "Não é possível finalizar a ordem de serviço. O checklist pré-serviço não está completo. Todos os itens obrigatórios devem ser concluídos.",
           );
         }
       }
@@ -415,7 +415,7 @@ export class ServiceOrdersService {
         );
         if (!isValid) {
           throw new BadRequestException(
-            'Não é possível finalizar a ordem de serviço. O checklist pós-serviço não está completo. Todos os itens obrigatórios devem ser concluídos.',
+            "Não é possível finalizar a ordem de serviço. O checklist pós-serviço não está completo. Todos os itens obrigatórios devem ser concluídos.",
           );
         }
       }
@@ -601,37 +601,37 @@ export class ServiceOrdersService {
           entityId: serviceOrder.id,
           checklistType: ChecklistType.PRE_SERVICE,
           name: `Checklist Pré-Serviço - ${number}`,
-          description: 'Checklist para verificação antes de iniciar o serviço',
+          description: "Checklist para verificação antes de iniciar o serviço",
           items: [
             {
-              title: 'Verificar ferramentas necessárias',
+              title: "Verificar ferramentas necessárias",
               description:
-                'Confirmar que todas as ferramentas estão disponíveis',
+                "Confirmar que todas as ferramentas estão disponíveis",
               isRequired: true,
               order: 0,
             },
             {
-              title: 'Verificar peças e materiais',
-              description: 'Confirmar disponibilidade de peças e materiais',
+              title: "Verificar peças e materiais",
+              description: "Confirmar disponibilidade de peças e materiais",
               isRequired: true,
               order: 1,
             },
             {
-              title: 'Verificar segurança do veículo',
+              title: "Verificar segurança do veículo",
               description:
-                'Verificar se o veículo está seguro no elevador/equipamento',
+                "Verificar se o veículo está seguro no elevador/equipamento",
               isRequired: true,
               order: 2,
             },
             {
-              title: 'Verificar área de trabalho',
-              description: 'Confirmar que a área está limpa e organizada',
+              title: "Verificar área de trabalho",
+              description: "Confirmar que a área está limpa e organizada",
               isRequired: false,
               order: 3,
             },
             {
-              title: 'Verificar documentação',
-              description: 'Confirmar que a OS e documentos estão em ordem',
+              title: "Verificar documentação",
+              description: "Confirmar que a OS e documentos estão em ordem",
               isRequired: true,
               order: 4,
             },
@@ -647,36 +647,36 @@ export class ServiceOrdersService {
           entityId: serviceOrder.id,
           checklistType: ChecklistType.POST_SERVICE,
           name: `Checklist Pós-Serviço - ${number}`,
-          description: 'Checklist para verificação após conclusão do serviço',
+          description: "Checklist para verificação após conclusão do serviço",
           items: [
             {
-              title: 'Verificar limpeza do veículo',
-              description: 'Confirmar que o veículo foi limpo adequadamente',
+              title: "Verificar limpeza do veículo",
+              description: "Confirmar que o veículo foi limpo adequadamente",
               isRequired: true,
               order: 0,
             },
             {
-              title: 'Verificar funcionamento',
-              description: 'Testar se o problema foi resolvido',
+              title: "Verificar funcionamento",
+              description: "Testar se o problema foi resolvido",
               isRequired: true,
               order: 1,
             },
             {
-              title: 'Verificar níveis de fluidos',
-              description: 'Confirmar que os níveis estão corretos',
+              title: "Verificar níveis de fluidos",
+              description: "Confirmar que os níveis estão corretos",
               isRequired: true,
               order: 2,
             },
             {
-              title: 'Verificar peças substituídas',
+              title: "Verificar peças substituídas",
               description:
-                'Confirmar que todas as peças antigas foram removidas',
+                "Confirmar que todas as peças antigas foram removidas",
               isRequired: true,
               order: 3,
             },
             {
-              title: 'Verificar documentação final',
-              description: 'Confirmar que toda documentação foi preenchida',
+              title: "Verificar documentação final",
+              description: "Confirmar que toda documentação foi preenchida",
               isRequired: true,
               order: 4,
             },
@@ -703,7 +703,7 @@ export class ServiceOrdersService {
       this.logger.error(
         `Erro ao criar ordem de serviço: ${getErrorMessage(error)}`,
       );
-      throw new BadRequestException('Erro ao criar ordem de serviço');
+      throw new BadRequestException("Erro ao criar ordem de serviço");
     }
   }
 
@@ -737,18 +737,18 @@ export class ServiceOrdersService {
 
     const where: Prisma.ServiceOrderWhereInput = {
       tenantId,
-      ...(number && { number: { contains: number, mode: 'insensitive' } }),
+      ...(number && { number: { contains: number, mode: "insensitive" } }),
       ...(status && { status }),
       ...(customerId && { customerId }),
       ...(technicianId && { technicianId }),
       ...(vehiclePlaca && {
         vehiclePlaca: {
           contains: vehiclePlaca.toUpperCase(),
-          mode: 'insensitive',
+          mode: "insensitive",
         },
       }),
       ...(vehicleVin && {
-        vehicleVin: { contains: vehicleVin.toUpperCase(), mode: 'insensitive' },
+        vehicleVin: { contains: vehicleVin.toUpperCase(), mode: "insensitive" },
       }),
       ...(startDate &&
         endDate && {
@@ -773,7 +773,7 @@ export class ServiceOrdersService {
         skip,
         take: limit,
         orderBy: {
-          createdAt: 'desc',
+          createdAt: "desc",
         },
         include: {
           customer: {
@@ -866,7 +866,7 @@ export class ServiceOrdersService {
       });
 
       if (!serviceOrder) {
-        throw new NotFoundException('Ordem de serviço não encontrada');
+        throw new NotFoundException("Ordem de serviço não encontrada");
       }
 
       const responseDto = this.toResponseDto(serviceOrder);
@@ -887,7 +887,7 @@ export class ServiceOrdersService {
       this.logger.error(
         `Erro ao buscar ordem de serviço: ${getErrorMessage(error)}`,
       );
-      throw new BadRequestException('Erro ao buscar ordem de serviço');
+      throw new BadRequestException("Erro ao buscar ordem de serviço");
     }
   }
 
@@ -908,7 +908,7 @@ export class ServiceOrdersService {
       });
 
       if (!existingOrder) {
-        throw new NotFoundException('Ordem de serviço não encontrada');
+        throw new NotFoundException("Ordem de serviço não encontrada");
       }
 
       // Validar cliente e mecânico se fornecidos
@@ -1004,7 +1004,7 @@ export class ServiceOrdersService {
       this.logger.error(
         `Erro ao atualizar ordem de serviço: ${getErrorMessage(error)}`,
       );
-      throw new BadRequestException('Erro ao atualizar ordem de serviço');
+      throw new BadRequestException("Erro ao atualizar ordem de serviço");
     }
   }
 
@@ -1020,23 +1020,23 @@ export class ServiceOrdersService {
     });
 
     if (!serviceOrder) {
-      throw new NotFoundException('Ordem de serviço não encontrada');
+      throw new NotFoundException("Ordem de serviço não encontrada");
     }
 
     const serviceOrderStatus = serviceOrder.status as ServiceOrderStatus;
     if (serviceOrderStatus === ServiceOrderStatus.COMPLETED) {
       throw new BadRequestException(
-        'Não é possível iniciar uma OS já finalizada',
+        "Não é possível iniciar uma OS já finalizada",
       );
     }
 
     if (serviceOrderStatus === ServiceOrderStatus.CANCELLED) {
-      throw new BadRequestException('Não é possível iniciar uma OS cancelada');
+      throw new BadRequestException("Não é possível iniciar uma OS cancelada");
     }
 
     if (serviceOrderStatus === ServiceOrderStatus.IN_PROGRESS) {
       throw new BadRequestException(
-        'Não é possível iniciar uma OS que já está em progresso',
+        "Não é possível iniciar uma OS que já está em progresso",
       );
     }
 
@@ -1158,23 +1158,23 @@ export class ServiceOrdersService {
     });
 
     if (!serviceOrder) {
-      throw new NotFoundException('Ordem de serviço não encontrada');
+      throw new NotFoundException("Ordem de serviço não encontrada");
     }
 
     const serviceOrderStatus = serviceOrder.status as ServiceOrderStatus;
     if (serviceOrderStatus === ServiceOrderStatus.COMPLETED) {
-      throw new BadRequestException('OS já está finalizada');
+      throw new BadRequestException("OS já está finalizada");
     }
 
     if (serviceOrderStatus === ServiceOrderStatus.CANCELLED) {
       throw new BadRequestException(
-        'Não é possível finalizar uma OS cancelada',
+        "Não é possível finalizar uma OS cancelada",
       );
     }
 
     if (serviceOrderStatus !== ServiceOrderStatus.IN_PROGRESS) {
       throw new BadRequestException(
-        'Não é possível finalizar uma OS que não está em progresso',
+        "Não é possível finalizar uma OS que não está em progresso",
       );
     }
 
@@ -1250,7 +1250,7 @@ export class ServiceOrdersService {
       const receptionists = await this.prisma.user.findMany({
         where: {
           tenantId,
-          role: 'receptionist',
+          role: "receptionist",
           isActive: true,
         },
         select: { id: true },
@@ -1262,7 +1262,7 @@ export class ServiceOrdersService {
           tenantId,
           userId: receptionist.id,
           type: NotificationType.SERVICE_ORDER_COMPLETED,
-          title: '✅ Ordem de Serviço Finalizada',
+          title: "✅ Ordem de Serviço Finalizada",
           message: `OS ${updatedOrder.number} foi finalizada e está pronta para retirada`,
           data: {
             serviceOrderId: id,
@@ -1284,7 +1284,7 @@ export class ServiceOrdersService {
         await this.notificationsService.create({
           tenantId,
           type: NotificationType.SERVICE_ORDER_COMPLETED,
-          title: '✅ Ordem de Serviço Finalizada',
+          title: "✅ Ordem de Serviço Finalizada",
           message: `OS ${updatedOrder.number} foi finalizada e está pronta para retirada`,
           data: {
             serviceOrderId: id,
@@ -1315,7 +1315,7 @@ export class ServiceOrdersService {
         ? {
             id: updatedOrder.customer.id,
             name: updatedOrder.customer.name,
-            phone: updatedOrder.customer.phone || '',
+            phone: updatedOrder.customer.phone || "",
             email: updatedOrder.customer.email || null,
           }
         : null,
@@ -1348,18 +1348,18 @@ export class ServiceOrdersService {
     });
 
     if (!serviceOrder) {
-      throw new NotFoundException('Ordem de serviço não encontrada');
+      throw new NotFoundException("Ordem de serviço não encontrada");
     }
 
     const serviceOrderStatus = serviceOrder.status as ServiceOrderStatus;
     if (serviceOrderStatus === ServiceOrderStatus.COMPLETED) {
       throw new BadRequestException(
-        'Não é possível cancelar uma OS já finalizada',
+        "Não é possível cancelar uma OS já finalizada",
       );
     }
 
     if (serviceOrderStatus === ServiceOrderStatus.CANCELLED) {
-      throw new BadRequestException('OS já está cancelada');
+      throw new BadRequestException("OS já está cancelada");
     }
 
     // Finalizar uso do elevador se houver
@@ -1451,13 +1451,13 @@ export class ServiceOrdersService {
     });
 
     if (!serviceOrder) {
-      throw new NotFoundException('Ordem de serviço não encontrada');
+      throw new NotFoundException("Ordem de serviço não encontrada");
     }
 
     // Não permitir remover OS com fatura associada
     if (serviceOrder.invoiceId) {
       throw new BadRequestException(
-        'Não é possível remover uma OS com fatura associada',
+        "Não é possível remover uma OS com fatura associada",
       );
     }
 
@@ -1469,7 +1469,7 @@ export class ServiceOrdersService {
   }
 
   private decimalToNumber(value: unknown, fallback = 0): number {
-    if (value && typeof value === 'object' && 'toNumber' in value) {
+    if (value && typeof value === "object" && "toNumber" in value) {
       return (value as { toNumber(): number }).toNumber();
     }
     const numeric = Number(value);
@@ -1493,8 +1493,8 @@ export class ServiceOrdersService {
     totalCost?: unknown;
     laborCost?: unknown;
     partsCost?: unknown;
-  }): CreateInvoiceDto['items'] {
-    const items: CreateInvoiceDto['items'] = [];
+  }): CreateInvoiceDto["items"] {
+    const items: CreateInvoiceDto["items"] = [];
 
     for (const service of serviceOrder.services || []) {
       const cost = this.decimalToNumber(service.cost, 0);
@@ -1526,7 +1526,7 @@ export class ServiceOrdersService {
       }
       items.push({
         type: InvoiceItemType.PART,
-        name: part.partName || 'Peça',
+        name: part.partName || "Peça",
         description: part.part?.description || undefined,
         quantity,
         unitPrice,
@@ -1726,7 +1726,7 @@ export class ServiceOrdersService {
     // Helper para converter Decimal ou number para number (com fallback para 0)
     const toNumber = (value: unknown): number => {
       if (value == null) return 0;
-      if (typeof value === 'number') return value;
+      if (typeof value === "number") return value;
       const result = toNumberUtil(
         value as { toNumber: () => number } | number | null | undefined,
       );
@@ -1765,7 +1765,7 @@ export class ServiceOrdersService {
             id: item.id,
             serviceId: item.serviceId || undefined,
             partId: undefined,
-            name: item.serviceName || item.name || 'Serviço',
+            name: item.serviceName || item.name || "Serviço",
             description:
               item.serviceDescription || item.description || undefined,
             quantity: item.quantity || 1,
@@ -1789,7 +1789,7 @@ export class ServiceOrdersService {
             id: item.id,
             serviceId: undefined,
             partId: item.partId || undefined,
-            name: item.part?.name || item.partName || 'Peça',
+            name: item.part?.name || item.partName || "Peça",
             description: item.part?.description || undefined,
             quantity: item.quantity || 1,
             unitCost: toNumber(item.unitCost),

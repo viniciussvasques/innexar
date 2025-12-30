@@ -1,16 +1,16 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from "@nestjs/swagger";
 import {
   IsString,
   IsOptional,
   IsBoolean,
   Matches,
   MaxLength,
-} from 'class-validator';
+} from "class-validator";
 
 export class CreateWorkshopSettingsDto {
   @ApiProperty({
-    description: 'Nome de exibição da oficina',
-    example: 'Oficina Mecânica Silva',
+    description: "Nome de exibição da oficina",
+    example: "Oficina Mecânica Silva",
     required: false,
   })
   @IsString()
@@ -19,8 +19,8 @@ export class CreateWorkshopSettingsDto {
   displayName?: string;
 
   @ApiProperty({
-    description: 'URL do logo da oficina',
-    example: 'https://example.com/logo.png ou /uploads/logos/logo.png',
+    description: "URL do logo da oficina",
+    example: "https://example.com/logo.png ou /uploads/logos/logo.png",
     required: false,
   })
   @IsString()
@@ -28,8 +28,8 @@ export class CreateWorkshopSettingsDto {
   logoUrl?: string;
 
   @ApiProperty({
-    description: 'URL do favicon',
-    example: 'https://example.com/favicon.ico',
+    description: "URL do favicon",
+    example: "https://example.com/favicon.ico",
     required: false,
   })
   @IsString()
@@ -37,44 +37,44 @@ export class CreateWorkshopSettingsDto {
   faviconUrl?: string;
 
   @ApiProperty({
-    description: 'Cor primária (hex)',
-    example: '#00E0B8',
+    description: "Cor primária (hex)",
+    example: "#00E0B8",
     required: false,
   })
   @IsString()
   @IsOptional()
   @Matches(/^(#[0-9A-Fa-f]{6})?$/, {
-    message: 'Cor deve estar no formato hexadecimal (#RRGGBB) ou vazio',
+    message: "Cor deve estar no formato hexadecimal (#RRGGBB) ou vazio",
   })
   primaryColor?: string;
 
   @ApiProperty({
-    description: 'Cor secundária (hex)',
-    example: '#3ABFF8',
+    description: "Cor secundária (hex)",
+    example: "#3ABFF8",
     required: false,
   })
   @IsString()
   @IsOptional()
   @Matches(/^(#[0-9A-Fa-f]{6})?$/, {
-    message: 'Cor deve estar no formato hexadecimal (#RRGGBB) ou vazio',
+    message: "Cor deve estar no formato hexadecimal (#RRGGBB) ou vazio",
   })
   secondaryColor?: string;
 
   @ApiProperty({
-    description: 'Cor de destaque (hex)',
-    example: '#FF4E3D',
+    description: "Cor de destaque (hex)",
+    example: "#FF4E3D",
     required: false,
   })
   @IsString()
   @IsOptional()
   @Matches(/^(#[0-9A-Fa-f]{6})?$/, {
-    message: 'Cor deve estar no formato hexadecimal (#RRGGBB) ou vazio',
+    message: "Cor deve estar no formato hexadecimal (#RRGGBB) ou vazio",
   })
   accentColor?: string;
 
   @ApiProperty({
-    description: 'Telefone de contato',
-    example: '(11) 98765-4321',
+    description: "Telefone de contato",
+    example: "(11) 98765-4321",
     required: false,
   })
   @IsString()
@@ -83,8 +83,8 @@ export class CreateWorkshopSettingsDto {
   phone?: string;
 
   @ApiProperty({
-    description: 'Email de contato',
-    example: 'contato@oficina.com.br',
+    description: "Email de contato",
+    example: "contato@oficina.com.br",
     required: false,
   })
   @IsString()
@@ -93,8 +93,8 @@ export class CreateWorkshopSettingsDto {
   email?: string;
 
   @ApiProperty({
-    description: 'WhatsApp de contato',
-    example: '5511987654321',
+    description: "WhatsApp de contato",
+    example: "5511987654321",
     required: false,
   })
   @IsString()
@@ -103,8 +103,8 @@ export class CreateWorkshopSettingsDto {
   whatsapp?: string;
 
   @ApiProperty({
-    description: 'Endereço completo',
-    example: 'Rua das Flores, 123',
+    description: "Endereço completo",
+    example: "Rua das Flores, 123",
     required: false,
   })
   @IsString()
@@ -112,8 +112,8 @@ export class CreateWorkshopSettingsDto {
   address?: string;
 
   @ApiProperty({
-    description: 'Cidade',
-    example: 'São Paulo',
+    description: "Cidade",
+    example: "São Paulo",
     required: false,
   })
   @IsString()
@@ -122,20 +122,20 @@ export class CreateWorkshopSettingsDto {
   city?: string;
 
   @ApiProperty({
-    description: 'Estado (UF)',
-    example: 'SP',
+    description: "Estado (UF)",
+    example: "SP",
     required: false,
   })
   @IsString()
   @IsOptional()
   @Matches(/^[A-Z]{2}$|^$/, {
-    message: 'Estado deve ter 2 letras maiúsculas ou estar vazio',
+    message: "Estado deve ter 2 letras maiúsculas ou estar vazio",
   })
   state?: string;
 
   @ApiProperty({
-    description: 'CEP',
-    example: '01234-567',
+    description: "CEP",
+    example: "01234-567",
     required: false,
   })
   @IsString()
@@ -144,10 +144,10 @@ export class CreateWorkshopSettingsDto {
   zipCode?: string;
 
   @ApiProperty({
-    description: 'País (código ISO)',
-    example: 'BR',
+    description: "País (código ISO)",
+    example: "BR",
     required: false,
-    default: 'BR',
+    default: "BR",
   })
   @IsString()
   @IsOptional()
@@ -155,8 +155,8 @@ export class CreateWorkshopSettingsDto {
   country?: string;
 
   @ApiProperty({
-    description: 'Website',
-    example: 'https://www.oficina.com.br',
+    description: "Website",
+    example: "https://www.oficina.com.br",
     required: false,
   })
   @IsString()
@@ -164,8 +164,8 @@ export class CreateWorkshopSettingsDto {
   website?: string;
 
   @ApiProperty({
-    description: 'Facebook',
-    example: 'https://www.facebook.com/oficina',
+    description: "Facebook",
+    example: "https://www.facebook.com/oficina",
     required: false,
   })
   @IsString()
@@ -173,8 +173,8 @@ export class CreateWorkshopSettingsDto {
   facebook?: string;
 
   @ApiProperty({
-    description: 'Instagram',
-    example: 'https://www.instagram.com/oficina',
+    description: "Instagram",
+    example: "https://www.instagram.com/oficina",
     required: false,
   })
   @IsString()
@@ -182,8 +182,8 @@ export class CreateWorkshopSettingsDto {
   instagram?: string;
 
   @ApiProperty({
-    description: 'LinkedIn',
-    example: 'https://www.linkedin.com/company/oficina',
+    description: "LinkedIn",
+    example: "https://www.linkedin.com/company/oficina",
     required: false,
   })
   @IsString()
@@ -191,7 +191,7 @@ export class CreateWorkshopSettingsDto {
   linkedin?: string;
 
   @ApiProperty({
-    description: 'Mostrar logo nos orçamentos',
+    description: "Mostrar logo nos orçamentos",
     example: true,
     required: false,
     default: true,
@@ -201,7 +201,7 @@ export class CreateWorkshopSettingsDto {
   showLogoOnQuotes?: boolean;
 
   @ApiProperty({
-    description: 'Mostrar endereço nos orçamentos',
+    description: "Mostrar endereço nos orçamentos",
     example: true,
     required: false,
     default: true,
@@ -211,7 +211,7 @@ export class CreateWorkshopSettingsDto {
   showAddressOnQuotes?: boolean;
 
   @ApiProperty({
-    description: 'Mostrar contato nos orçamentos',
+    description: "Mostrar contato nos orçamentos",
     example: true,
     required: false,
     default: true,
@@ -221,8 +221,8 @@ export class CreateWorkshopSettingsDto {
   showContactOnQuotes?: boolean;
 
   @ApiProperty({
-    description: 'Texto do rodapé nos orçamentos',
-    example: 'Obrigado pela preferência!',
+    description: "Texto do rodapé nos orçamentos",
+    example: "Obrigado pela preferência!",
     required: false,
   })
   @IsString()
@@ -230,8 +230,8 @@ export class CreateWorkshopSettingsDto {
   quoteFooterText?: string;
 
   @ApiProperty({
-    description: 'Texto do rodapé nas faturas',
-    example: 'Pagamento em até 30 dias',
+    description: "Texto do rodapé nas faturas",
+    example: "Pagamento em até 30 dias",
     required: false,
   })
   @IsString()

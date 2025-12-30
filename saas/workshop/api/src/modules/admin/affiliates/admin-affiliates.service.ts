@@ -1,123 +1,131 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
-import { PrismaService } from '../../../database/prisma.service';
-import { CreateAffiliateDto, UpdateAffiliateDto, CreateAffiliateLinkDto } from './dto/affiliates.dto';
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+} from "@nestjs/common";
+import { PrismaService } from "../../../database/prisma.service";
+import {
+  CreateAffiliateDto,
+  UpdateAffiliateDto,
+  CreateAffiliateLinkDto,
+} from "./dto/affiliates.dto";
 
 @Injectable()
 export class AdminAffiliatesService {
-    constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) { }
 
-    async findAll() {
-        return (this.prisma as any).affiliate.findMany({
-            include: {
-                links: {
-                    include: {
-                        product: true,
-                    },
-                },
-                _count: {
-                    select: {
-                        visits: true,
-                        commissions: true,
-                    },
-                },
-            },
-            orderBy: { createdAt: 'desc' },
-        });
+  async findAll() {
+    return this.prisma.affiliate.findMany({
+      include: {
+        links: {
+          include: {
+            product: true,
+          },
+        },
+        _count: {
+          select: {
+            visits: true,
+            commissions: true,
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  async findOne(id: string) {
+    const affiliate = await this.prisma.affiliate.findUnique({
+      where: { id },
+      include: {
+        links: {
+          include: {
+            product: true,
+          },
+        },
+        commissions: {
+          orderBy: { createdAt: "desc" },
+        },
+      },
+    });
+
+    if (!affiliate) {
+      throw new NotFoundException(`Affiliate with ID ${id} not found`);
     }
 
-    async findOne(id: string) {
-        const affiliate = await (this.prisma as any).affiliate.findUnique({
-            where: { id },
-            include: {
-                links: {
-                    include: {
-                        product: true,
-                    },
-                },
-                commissions: {
-                    orderBy: { createdAt: 'desc' },
-                },
-            },
-        });
+    return affiliate;
+  }
 
-        if (!affiliate) {
-            throw new NotFoundException(`Affiliate with ID ${id} not found`);
-        }
+  async create(dto: CreateAffiliateDto) {
+    const existing = await this.prisma.affiliate.findUnique({
+      where: { email: dto.email },
+    });
 
-        return affiliate;
+    if (existing) {
+      throw new ConflictException("Affiliate with this email already exists");
     }
 
-    async create(dto: CreateAffiliateDto) {
-        const existing = await (this.prisma as any).affiliate.findUnique({
-            where: { email: dto.email },
-        });
+    return this.prisma.affiliate.create({
+      data: dto,
+    });
+  }
 
-        if (existing) {
-            throw new ConflictException('Affiliate with this email already exists');
-        }
+  async update(id: string, dto: UpdateAffiliateDto) {
+    await this.findOne(id);
 
-        return (this.prisma as any).affiliate.create({
-            data: dto,
-        });
+    return this.prisma.affiliate.update({
+      where: { id },
+      data: dto,
+    });
+  }
+
+  async remove(id: string) {
+    await this.findOne(id);
+    return this.prisma.affiliate.delete({ where: { id } });
+  }
+
+  // Links management
+  async createLink(affiliateId: string, dto: CreateAffiliateLinkDto) {
+    await this.findOne(affiliateId);
+
+    const existingLink = await this.prisma.affiliateLink.findUnique({
+      where: { code: dto.code },
+    });
+
+    if (existingLink) {
+      throw new ConflictException("Link code already in use");
     }
 
-    async update(id: string, dto: UpdateAffiliateDto) {
-        await this.findOne(id);
+    return this.prisma.affiliateLink.create({
+      data: {
+        ...dto,
+        affiliateId,
+      },
+    });
+  }
 
-        return (this.prisma as any).affiliate.update({
-            where: { id },
-            data: dto,
-        });
-    }
+  async getMetrics(id: string) {
+    const affiliate = await this.findOne(id);
 
-    async remove(id: string) {
-        await this.findOne(id);
-        return (this.prisma as any).affiliate.delete({ where: { id } });
-    }
+    const totalCommissions = await this.prisma.affiliateCommission.aggregate({
+      where: { affiliateId: id, status: "approved" },
+      _sum: { amount: true },
+    });
 
-    // Links management
-    async createLink(affiliateId: string, dto: CreateAffiliateLinkDto) {
-        await this.findOne(affiliateId);
+    const totalVisits = await this.prisma.affiliateVisit.count({
+      where: { affiliateId: id },
+    });
 
-        const existingLink = await (this.prisma as any).affiliateLink.findUnique({
-            where: { code: dto.code },
-        });
+    return {
+      totalCommissions: totalCommissions._sum.amount || 0,
+      totalVisits,
+      linksCount: affiliate.links.length,
+    };
+  }
 
-        if (existingLink) {
-            throw new ConflictException('Link code already in use');
-        }
-
-        return (this.prisma as any).affiliateLink.create({
-            data: {
-                ...dto,
-                affiliateId,
-            },
-        });
-    }
-
-    async getMetrics(id: string) {
-        const affiliate = await this.findOne(id);
-
-        const totalCommissions = await (this.prisma as any).affiliateCommission.aggregate({
-            where: { affiliateId: id, status: 'approved' },
-            _sum: { amount: true },
-        });
-
-        const totalVisits = await (this.prisma as any).affiliateVisit.count({
-            where: { affiliateId: id },
-        });
-
-        return {
-            totalCommissions: totalCommissions._sum.amount || 0,
-            totalVisits,
-            linksCount: affiliate.links.length,
-        };
-    }
-
-    // SaaS Products management (simplified for now)
-    async findAllProducts() {
-        return (this.prisma as any).saaSProduct.findMany({
-            where: { isActive: true },
-        });
-    }
+  // SaaS Products management (simplified for now)
+  async findAllProducts() {
+    return this.prisma.saaSProduct.findMany({
+      where: { isActive: true },
+    });
+  }
 }

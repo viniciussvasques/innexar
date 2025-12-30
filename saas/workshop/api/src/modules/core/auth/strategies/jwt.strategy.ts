@@ -1,8 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { PassportStrategy } from '@nestjs/passport';
-import { ExtractJwt, Strategy } from 'passport-jwt';
-import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '../../../../database/prisma.service';
+import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { PassportStrategy } from "@nestjs/passport";
+import { ExtractJwt, Strategy } from "passport-jwt";
+import { ConfigService } from "@nestjs/config";
+import { PrismaService } from "../../../../database/prisma.service";
 
 interface JwtPayload {
   sub: string; // userId
@@ -17,9 +17,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
   ) {
-    const secret = configService.get<string>('jwt.secret');
+    const secret = configService.get<string>("jwt.secret");
     if (!secret) {
-      throw new Error('JWT_SECRET não configurado');
+      throw new Error("JWT_SECRET não configurado");
     }
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -42,7 +42,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
 
     if (!user?.isActive) {
-      throw new UnauthorizedException('Usuário não encontrado ou inativo');
+      throw new UnauthorizedException("Usuário não encontrado ou inativo");
     }
 
     return {

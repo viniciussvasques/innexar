@@ -1,20 +1,20 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
-import { PrismaService } from '@database/prisma.service';
+import { Injectable, NotFoundException, Logger } from "@nestjs/common";
+import { PrismaService } from "@database/prisma.service";
 import {
   CreateSupportTicketDto,
   SupportPriority,
   SupportCategory,
-} from './dto/create-support-ticket.dto';
+} from "./dto/create-support-ticket.dto";
 import {
   SupportStatus,
   SupportTicketResponseDto,
-} from './dto/support-ticket-response.dto';
-import { UpdateSupportTicketDto } from './dto/update-support-ticket.dto';
-import { CreateSupportReplyDto } from './dto/create-support-reply.dto';
-import { SupportTicketFiltersDto } from './dto/support-ticket-filters.dto';
-import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
-import { Prisma } from '@prisma/client';
-import type { SupportTicket as SupportTicketModel } from '@prisma/client';
+} from "./dto/support-ticket-response.dto";
+import { UpdateSupportTicketDto } from "./dto/update-support-ticket.dto";
+import { CreateSupportReplyDto } from "./dto/create-support-reply.dto";
+import { SupportTicketFiltersDto } from "./dto/support-ticket-filters.dto";
+import { getErrorMessage, getErrorStack } from "@common/utils/error.utils";
+import { Prisma } from "@prisma/client";
+import type { SupportTicket as SupportTicketModel } from "@prisma/client";
 
 @Injectable()
 export class SupportService {
@@ -86,8 +86,8 @@ export class SupportService {
       // Busca por texto
       if (filters.search) {
         where.OR = [
-          { subject: { contains: filters.search, mode: 'insensitive' } },
-          { message: { contains: filters.search, mode: 'insensitive' } },
+          { subject: { contains: filters.search, mode: "insensitive" } },
+          { message: { contains: filters.search, mode: "insensitive" } },
         ];
       }
 
@@ -101,7 +101,7 @@ export class SupportService {
           where,
           include: {
             replies: {
-              orderBy: { createdAt: 'desc' },
+              orderBy: { createdAt: "desc" },
               take: 1, // Última resposta
             },
             assignedTo: {
@@ -111,7 +111,7 @@ export class SupportService {
               select: { replies: true },
             },
           },
-          orderBy: { createdAt: 'desc' },
+          orderBy: { createdAt: "desc" },
           skip: (filters.page! - 1) * filters.limit!,
           take: filters.limit!,
         }),
@@ -164,7 +164,7 @@ export class SupportService {
                 select: { id: true, name: true, email: true, role: true },
               },
             },
-            orderBy: { createdAt: 'asc' },
+            orderBy: { createdAt: "asc" },
           },
           assignedTo: {
             select: { id: true, name: true, email: true },
@@ -176,7 +176,7 @@ export class SupportService {
       });
 
       if (!ticket) {
-        throw new NotFoundException('Ticket não encontrado');
+        throw new NotFoundException("Ticket não encontrado");
       }
 
       return {

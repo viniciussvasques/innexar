@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../database/prisma.service';
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "../database/prisma.service";
 
 @Injectable()
 export class HealthService {
@@ -22,8 +22,8 @@ export class HealthService {
     const dbHealthy = await this.checkDatabase();
 
     return {
-      status: dbHealthy ? 'healthy' : 'unhealthy',
-      database: dbHealthy ? 'connected' : 'disconnected',
+      status: dbHealthy ? "healthy" : "unhealthy",
+      database: dbHealthy ? "connected" : "disconnected",
       timestamp: new Date().toISOString(),
     };
   }

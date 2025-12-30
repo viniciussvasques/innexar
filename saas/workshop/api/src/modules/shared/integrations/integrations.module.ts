@@ -1,7 +1,7 @@
-import { Module } from '@nestjs/common';
-import { IntegrationsService } from './integrations.service';
-import { IntegrationsController } from './integrations.controller';
-import { PrismaModule } from '@database/prisma.module';
+import { Module } from "@nestjs/common";
+import { IntegrationsService } from "./integrations.service";
+import { IntegrationsController } from "./integrations.controller";
+import { PrismaModule } from "@database/prisma.module";
 
 /**
  * IntegrationsModule - Módulo para integrações externas

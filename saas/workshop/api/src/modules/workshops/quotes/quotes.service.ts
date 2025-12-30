@@ -3,9 +3,9 @@ import {
   NotFoundException,
   BadRequestException,
   Logger,
-} from '@nestjs/common';
-import { PrismaService } from '@database/prisma.service';
-import { randomBytes } from 'node:crypto';
+} from "@nestjs/common";
+import { PrismaService } from "@database/prisma.service";
+import { randomBytes } from "node:crypto";
 import {
   CreateQuoteDto,
   UpdateQuoteDto,
@@ -17,24 +17,24 @@ import {
   QuoteStatus,
   QuoteItemDto,
   QuoteItemType,
-} from './dto';
-import { Prisma } from '@prisma/client';
-import { Decimal } from '@prisma/client/runtime/library';
-import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
-import { toNumber as toNumberUtil } from '@common/utils/dto-mapper.util';
-import { ElevatorsService } from '../elevators/elevators.service';
-import { ServiceOrdersService } from '../service-orders/service-orders.service';
-import { AppointmentsService } from '../appointments/appointments.service';
-import { ServiceOrderStatus } from '../service-orders/dto/service-order-status.enum';
-import { AppointmentStatus } from '../appointments/dto';
-import { AttachmentsService } from '../attachments/attachments.service';
-import { ChecklistsService } from '../checklists/checklists.service';
-import { ChecklistType, ChecklistEntityType } from '../checklists/dto';
-import { QuotePdfService } from './pdf/quote-pdf.service';
+} from "./dto";
+import { Prisma } from "@prisma/client";
+import { Decimal } from "@prisma/client/runtime/library";
+import { getErrorMessage, getErrorStack } from "@common/utils/error.utils";
+import { toNumber as toNumberUtil } from "@common/utils/dto-mapper.util";
+import { ElevatorsService } from "../elevators/elevators.service";
+import { ServiceOrdersService } from "../service-orders/service-orders.service";
+import { AppointmentsService } from "../appointments/appointments.service";
+import { ServiceOrderStatus } from "../service-orders/dto/service-order-status.enum";
+import { AppointmentStatus } from "../appointments/dto";
+import { AttachmentsService } from "../attachments/attachments.service";
+import { ChecklistsService } from "../checklists/checklists.service";
+import { ChecklistType, ChecklistEntityType } from "../checklists/dto";
+import { QuotePdfService } from "./pdf/quote-pdf.service";
 import {
   NotificationsService,
   NotificationType,
-} from '@core/notifications/notifications.service';
+} from "@core/notifications/notifications.service";
 
 @Injectable()
 export class QuotesService {
@@ -57,19 +57,19 @@ export class QuotesService {
   private async generateQuoteNumber(tenantId: string): Promise<string> {
     const lastQuote = await this.prisma.quote.findFirst({
       where: { tenantId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     if (!lastQuote) {
-      return 'ORC-001';
+      return "ORC-001";
     }
 
     const lastNumber = Number.parseInt(
-      lastQuote.number.replace('ORC-', ''),
+      lastQuote.number.replace("ORC-", ""),
       10,
     );
     const nextNumber = lastNumber + 1;
-    return `ORC-${nextNumber.toString().padStart(3, '0')}`;
+    return `ORC-${nextNumber.toString().padStart(3, "0")}`;
   }
 
   /**
@@ -161,36 +161,36 @@ export class QuotesService {
           entityType: ChecklistEntityType.QUOTE,
           entityId: quote.id,
           checklistType: ChecklistType.PRE_DIAGNOSIS,
-          name: 'Checklist Pré-Diagnóstico',
-          description: 'Checklist para verificação inicial do veículo',
+          name: "Checklist Pré-Diagnóstico",
+          description: "Checklist para verificação inicial do veículo",
           items: [
             {
-              title: 'Verificar nível de óleo',
-              description: 'Verificar se o nível está entre mínimo e máximo',
+              title: "Verificar nível de óleo",
+              description: "Verificar se o nível está entre mínimo e máximo",
               isRequired: true,
               order: 0,
             },
             {
-              title: 'Verificar nível de água/refrigerante',
-              description: 'Verificar nível do reservatório',
+              title: "Verificar nível de água/refrigerante",
+              description: "Verificar nível do reservatório",
               isRequired: true,
               order: 1,
             },
             {
-              title: 'Verificar estado dos pneus',
-              description: 'Verificar pressão e desgaste',
+              title: "Verificar estado dos pneus",
+              description: "Verificar pressão e desgaste",
               isRequired: false,
               order: 2,
             },
             {
-              title: 'Verificar sistema de freios',
-              description: 'Verificar pastilhas e fluido de freio',
+              title: "Verificar sistema de freios",
+              description: "Verificar pastilhas e fluido de freio",
               isRequired: true,
               order: 3,
             },
             {
-              title: 'Verificar bateria',
-              description: 'Verificar carga e terminais',
+              title: "Verificar bateria",
+              description: "Verificar carga e terminais",
               isRequired: false,
               order: 4,
             },
@@ -215,7 +215,7 @@ export class QuotesService {
         throw error;
       }
       this.logger.error(`Erro ao criar orçamento: ${getErrorMessage(error)}`);
-      throw new BadRequestException('Erro ao criar orçamento');
+      throw new BadRequestException("Erro ao criar orçamento");
     }
   }
 
@@ -248,7 +248,7 @@ export class QuotesService {
 
     const where: Prisma.QuoteWhereInput = {
       tenantId,
-      ...(number && { number: { contains: number, mode: 'insensitive' } }),
+      ...(number && { number: { contains: number, mode: "insensitive" } }),
       ...(status && { status }),
       ...(customerId && { customerId }),
       ...(vehicleId && { vehicleId }),
@@ -277,7 +277,7 @@ export class QuotesService {
           skip,
           take: limit,
           orderBy: {
-            createdAt: 'desc',
+            createdAt: "desc",
           },
           include: {
             customer: {
@@ -342,7 +342,7 @@ export class QuotesService {
         `Erro ao buscar/processar orçamentos: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new BadRequestException('Erro ao processar orçamentos');
+      throw new BadRequestException("Erro ao processar orçamentos");
     }
   }
 
@@ -393,7 +393,7 @@ export class QuotesService {
     });
 
     if (!quote) {
-      throw new NotFoundException('Orçamento não encontrado');
+      throw new NotFoundException("Orçamento não encontrado");
     }
 
     const responseDto = this.toResponseDto(quote);
@@ -437,7 +437,7 @@ export class QuotesService {
       this.logger.error(
         `Erro ao atualizar orçamento: ${getErrorMessage(error)}`,
       );
-      throw new BadRequestException('Erro ao atualizar orçamento');
+      throw new BadRequestException("Erro ao atualizar orçamento");
     }
   }
 
@@ -521,14 +521,14 @@ export class QuotesService {
     });
 
     if (!quote) {
-      throw new NotFoundException('Orçamento não encontrado');
+      throw new NotFoundException("Orçamento não encontrado");
     }
 
     // Não permitir remover orçamento convertido
     const quoteStatus = quote.status as QuoteStatus;
     if (quoteStatus === QuoteStatus.CONVERTED) {
       throw new BadRequestException(
-        'Não é possível remover um orçamento já convertido em OS',
+        "Não é possível remover um orçamento já convertido em OS",
       );
     }
 
@@ -581,27 +581,27 @@ export class QuotesService {
     });
 
     if (!quote) {
-      throw new NotFoundException('Orçamento não encontrado');
+      throw new NotFoundException("Orçamento não encontrado");
     }
 
     // Validar que o status é DRAFT
     const quoteStatus = quote.status as QuoteStatus;
     if (quoteStatus !== QuoteStatus.DRAFT) {
       throw new BadRequestException(
-        'Apenas orçamentos em rascunho podem ser enviados para diagnóstico',
+        "Apenas orçamentos em rascunho podem ser enviados para diagnóstico",
       );
     }
 
     // Validar campos obrigatórios
     if (!quote.customerId) {
       throw new BadRequestException(
-        'Cliente é obrigatório para enviar para diagnóstico',
+        "Cliente é obrigatório para enviar para diagnóstico",
       );
     }
 
     if (!quote.vehicleId) {
       throw new BadRequestException(
-        'Veículo é obrigatório para enviar para diagnóstico',
+        "Veículo é obrigatório para enviar para diagnóstico",
       );
     }
 
@@ -611,7 +611,7 @@ export class QuotesService {
       quote.reportedProblemSymptoms.length === 0
     ) {
       throw new BadRequestException(
-        'Categoria do problema e pelo menos um sintoma são obrigatórios para enviar para diagnóstico',
+        "Categoria do problema e pelo menos um sintoma são obrigatórios para enviar para diagnóstico",
       );
     }
 
@@ -619,7 +619,7 @@ export class QuotesService {
     await this.notificationsService.notifyAllMechanics(
       tenantId,
       NotificationType.QUOTE_AVAILABLE,
-      'Novo Orçamento Disponível',
+      "Novo Orçamento Disponível",
       `Orçamento ${quote.number} está aguardando diagnóstico`,
       { quoteId: id, quoteNumber: quote.number },
     );
@@ -768,7 +768,7 @@ export class QuotesService {
     });
 
     if (!quote) {
-      throw new NotFoundException('Orçamento não encontrado');
+      throw new NotFoundException("Orçamento não encontrado");
     }
 
     return quote;
@@ -796,7 +796,7 @@ export class QuotesService {
     const quoteStatus = quote.status as QuoteStatus;
     if (quoteStatus !== QuoteStatus.AWAITING_DIAGNOSIS) {
       throw new BadRequestException(
-        'Apenas orçamentos aguardando diagnóstico podem ter o diagnóstico concluído',
+        "Apenas orçamentos aguardando diagnóstico podem ter o diagnóstico concluído",
       );
     }
   }
@@ -883,13 +883,13 @@ export class QuotesService {
     });
 
     if (!quote) {
-      throw new NotFoundException('Orçamento não encontrado');
+      throw new NotFoundException("Orçamento não encontrado");
     }
 
     // Validar que o orçamento tem itens
     if (!quote.items || quote.items.length === 0) {
       throw new BadRequestException(
-        'Não é possível enviar orçamento sem itens. Adicione itens antes de enviar.',
+        "Não é possível enviar orçamento sem itens. Adicione itens antes de enviar.",
       );
     }
 
@@ -962,7 +962,7 @@ export class QuotesService {
    * Gera token único para acesso público ao orçamento
    */
   private generatePublicToken(): string {
-    return randomBytes(32).toString('base64url');
+    return randomBytes(32).toString("base64url");
   }
 
   /**
@@ -1022,7 +1022,7 @@ export class QuotesService {
     });
 
     if (!quote) {
-      throw new NotFoundException('Token inválido ou expirado');
+      throw new NotFoundException("Token inválido ou expirado");
     }
 
     // Registrar visualização se ainda não foi visualizado
@@ -1197,7 +1197,7 @@ export class QuotesService {
     });
 
     if (!quote) {
-      throw new NotFoundException('Token inválido ou expirado');
+      throw new NotFoundException("Token inválido ou expirado");
     }
 
     return quote;
@@ -1215,13 +1215,13 @@ export class QuotesService {
     ];
     if (!allowedStatuses.includes(quote.status as QuoteStatus)) {
       throw new BadRequestException(
-        `Este orçamento não pode ser aprovado. Status atual: ${quote.status}. Status permitidos: ${allowedStatuses.join(', ')}`,
+        `Este orçamento não pode ser aprovado. Status atual: ${quote.status}. Status permitidos: ${allowedStatuses.join(", ")}`,
       );
     }
 
     if (quote.acceptedAt || quote.serviceOrderId) {
       throw new BadRequestException(
-        'Este orçamento já foi aprovado e convertido',
+        "Este orçamento já foi aprovado e convertido",
       );
     }
   }
@@ -1292,7 +1292,7 @@ export class QuotesService {
         `Erro ao criar Service Order para orçamento ${quote.number}: ${getErrorMessage(serviceOrderError)}`,
       );
       throw new BadRequestException(
-        'Erro ao criar ordem de serviço. Tente novamente ou entre em contato com a oficina.',
+        "Erro ao criar ordem de serviço. Tente novamente ou entre em contato com a oficina.",
       );
     }
   }
@@ -1347,7 +1347,7 @@ export class QuotesService {
         status: QuoteStatus.ACCEPTED,
         acceptedAt: new Date(),
         customerSignature: customerSignature,
-        approvalMethod: 'digital',
+        approvalMethod: "digital",
         viewedAt: viewedAt || new Date(),
         serviceOrderId: serviceOrderId,
         convertedAt: new Date(),
@@ -1496,7 +1496,7 @@ export class QuotesService {
         assignedToId: quote.assignedMechanicId || undefined,
         date: appointmentDate.toISOString(),
         duration: totalHours > 0 ? Math.ceil(totalHours * 60) : 60,
-        serviceType: 'Serviço aprovado',
+        serviceType: "Serviço aprovado",
         notes: `Agendamento automático para OS ${serviceOrder.number}`,
         status: AppointmentStatus.SCHEDULED,
       });
@@ -1525,7 +1525,7 @@ export class QuotesService {
       const staffToNotify = await this.prisma.user.findMany({
         where: {
           tenantId: quote.tenantId,
-          role: { in: ['admin', 'manager', 'receptionist'] },
+          role: { in: ["admin", "manager", "receptionist"] },
           isActive: true,
         },
         select: { id: true, role: true },
@@ -1536,14 +1536,14 @@ export class QuotesService {
           tenantId: quote.tenantId,
           userId: staff.id,
           type: NotificationType.QUOTE_APPROVED,
-          title: '✅ Orçamento Aprovado pelo Cliente',
+          title: "✅ Orçamento Aprovado pelo Cliente",
           message: `Orçamento ${quote.number} foi APROVADO E ASSINADO DIGITALMENTE pelo cliente. A OS ${serviceOrder.number} foi criada automaticamente.`,
           data: {
             quoteId: quote.id,
             quoteNumber: quote.number,
             serviceOrderId: serviceOrder.id,
             serviceOrderNumber: serviceOrder.number,
-            approvalMethod: 'digital',
+            approvalMethod: "digital",
             hasSignature: true,
           },
         });
@@ -1604,7 +1604,7 @@ export class QuotesService {
         tenantId: quote.tenantId,
         userId: quote.assignedMechanicId,
         type: NotificationType.SERVICE_ORDER_STARTED,
-        title: '🛠️ Nova Ordem de Serviço Criada',
+        title: "🛠️ Nova Ordem de Serviço Criada",
         message: `Ordem de Serviço ${serviceOrder.number} foi criada a partir do orçamento ${quote.number} aprovado pelo cliente`,
         data: {
           serviceOrderId: serviceOrder.id,
@@ -1635,7 +1635,7 @@ export class QuotesService {
       await this.notificationsService.notifyAllMechanics(
         quote.tenantId,
         NotificationType.SERVICE_ORDER_STARTED,
-        '🛠️ Nova Ordem de Serviço Disponível',
+        "🛠️ Nova Ordem de Serviço Disponível",
         `Ordem de Serviço ${serviceOrder.number} foi criada a partir do orçamento ${quote.number} aprovado pelo cliente`,
         {
           serviceOrderId: serviceOrder.id,
@@ -1671,7 +1671,7 @@ export class QuotesService {
     });
 
     if (!quote) {
-      throw new NotFoundException('Token inválido ou expirado');
+      throw new NotFoundException("Token inválido ou expirado");
     }
 
     // Validar status
@@ -1681,7 +1681,7 @@ export class QuotesService {
       quoteStatus !== QuoteStatus.VIEWED
     ) {
       throw new BadRequestException(
-        'Este orçamento não pode ser rejeitado. Status inválido.',
+        "Este orçamento não pode ser rejeitado. Status inválido.",
       );
     }
 
@@ -1691,7 +1691,7 @@ export class QuotesService {
       data: {
         status: QuoteStatus.REJECTED,
         rejectedAt: new Date(),
-        rejectedReason: reason || 'Cliente rejeitou via link público',
+        rejectedReason: reason || "Cliente rejeitou via link público",
       },
       include: {
         customer: {
@@ -1736,7 +1736,7 @@ export class QuotesService {
       const receptionists = await this.prisma.user.findMany({
         where: {
           tenantId: quote.tenantId,
-          role: 'receptionist',
+          role: "receptionist",
           isActive: true,
         },
         select: { id: true },
@@ -1747,7 +1747,7 @@ export class QuotesService {
           tenantId: quote.tenantId,
           userId: receptionist.id,
           type: NotificationType.QUOTE_REJECTED,
-          title: '❌ Orçamento Rejeitado pelo Cliente',
+          title: "❌ Orçamento Rejeitado pelo Cliente",
           message: this.formatRejectionMessage(quote.number, reason),
           data: {
             quoteId: quote.id,
@@ -1806,7 +1806,7 @@ export class QuotesService {
     });
 
     if (!quote) {
-      throw new NotFoundException('Orçamento não encontrado');
+      throw new NotFoundException("Orçamento não encontrado");
     }
 
     // Validar status
@@ -1816,13 +1816,13 @@ export class QuotesService {
       quoteStatus !== QuoteStatus.VIEWED
     ) {
       throw new BadRequestException(
-        'Apenas orçamentos enviados podem ser aprovados manualmente',
+        "Apenas orçamentos enviados podem ser aprovados manualmente",
       );
     }
 
     // Verificar se já foi aprovado
     if (quote.acceptedAt) {
-      throw new BadRequestException('Este orçamento já foi aprovado');
+      throw new BadRequestException("Este orçamento já foi aprovado");
     }
 
     // Criar Service Order
@@ -1852,7 +1852,7 @@ export class QuotesService {
         status: QuoteStatus.ACCEPTED,
         acceptedAt: new Date(),
         customerSignature: customerSignature || quote.customerSignature,
-        approvalMethod: 'manual',
+        approvalMethod: "manual",
         serviceOrderId: serviceOrder.id,
         convertedAt: new Date(),
         convertedToServiceOrderId: serviceOrder.id,
@@ -1954,7 +1954,7 @@ export class QuotesService {
     });
 
     if (!quote) {
-      throw new NotFoundException('Orçamento não encontrado');
+      throw new NotFoundException("Orçamento não encontrado");
     }
 
     // Gerar novo token
@@ -2056,7 +2056,7 @@ export class QuotesService {
     });
 
     if (!quote) {
-      throw new NotFoundException('Orçamento não encontrado');
+      throw new NotFoundException("Orçamento não encontrado");
     }
 
     // Determinar qual mecânico atribuir
@@ -2064,11 +2064,11 @@ export class QuotesService {
 
     // Se não fornecido, usar o usuário atual (se for mecânico)
     if (!mechanicId) {
-      if (currentUserRole === 'mechanic') {
+      if (currentUserRole === "mechanic") {
         mechanicId = currentUserId;
       } else {
         throw new BadRequestException(
-          'ID do mecânico é obrigatório ou você deve ser um mecânico para auto-atribuição',
+          "ID do mecânico é obrigatório ou você deve ser um mecânico para auto-atribuição",
         );
       }
     }
@@ -2078,13 +2078,13 @@ export class QuotesService {
       where: {
         id: mechanicId,
         tenantId,
-        role: 'mechanic',
+        role: "mechanic",
         isActive: true,
       },
     });
 
     if (!mechanic) {
-      throw new NotFoundException('Mecânico não encontrado ou inativo');
+      throw new NotFoundException("Mecânico não encontrado ou inativo");
     }
 
     // Validar permissões
@@ -2092,12 +2092,12 @@ export class QuotesService {
     if (
       quote.assignedMechanicId &&
       quote.assignedMechanicId !== mechanicId &&
-      currentUserRole !== 'admin' &&
-      currentUserRole !== 'manager'
+      currentUserRole !== "admin" &&
+      currentUserRole !== "manager"
     ) {
       if (quote.assignedMechanicId !== currentUserId) {
         throw new BadRequestException(
-          'Orçamento já está atribuído a outro mecânico. Apenas admin/manager podem reatribuir.',
+          "Orçamento já está atribuído a outro mecânico. Apenas admin/manager podem reatribuir.",
         );
       }
     }
@@ -2113,7 +2113,7 @@ export class QuotesService {
         },
         data: {
           unassignedAt: new Date(),
-          reason: 'Reatribuído',
+          reason: "Reatribuído",
         },
       });
     }
@@ -2124,7 +2124,7 @@ export class QuotesService {
         quoteId,
         mechanicId,
         assignedBy: currentUserId,
-        reason: assignMechanicDto.reason || 'Atribuição manual',
+        reason: assignMechanicDto.reason || "Atribuição manual",
       },
     });
 
@@ -2187,7 +2187,7 @@ export class QuotesService {
       tenantId,
       userId: mechanicId,
       type: NotificationType.QUOTE_ASSIGNED,
-      title: 'Orçamento Atribuído',
+      title: "Orçamento Atribuído",
       message: `Orçamento ${quote.number} foi atribuído a você para diagnóstico`,
       data: { quoteId, quoteNumber: quote.number },
     });
@@ -2214,18 +2214,18 @@ export class QuotesService {
     });
 
     if (!quote) {
-      throw new NotFoundException('Orçamento não encontrado');
+      throw new NotFoundException("Orçamento não encontrado");
     }
 
     if (quote.assignedMechanicId) {
-      throw new BadRequestException('Orçamento já está atribuído');
+      throw new BadRequestException("Orçamento já está atribuído");
     }
 
     // Buscar mecânicos ativos
     const mechanics = await this.prisma.user.findMany({
       where: {
         tenantId,
-        role: 'mechanic',
+        role: "mechanic",
         isActive: true,
       },
       include: {
@@ -2237,13 +2237,13 @@ export class QuotesService {
       },
       orderBy: {
         assignedQuotes: {
-          _count: 'asc',
+          _count: "asc",
         },
       },
     });
 
     if (mechanics.length === 0) {
-      throw new BadRequestException('Nenhum mecânico ativo encontrado');
+      throw new BadRequestException("Nenhum mecânico ativo encontrado");
     }
 
     // Selecionar mecânico com menos orçamentos atribuídos
@@ -2253,9 +2253,9 @@ export class QuotesService {
     return this.assignMechanic(
       tenantId,
       quoteId,
-      { mechanicId: selectedMechanic.id, reason: 'Balanceamento automático' },
-      'system', // Sistema fazendo a atribuição
-      'admin',
+      { mechanicId: selectedMechanic.id, reason: "Balanceamento automático" },
+      "system", // Sistema fazendo a atribuição
+      "admin",
     );
   }
 
@@ -2274,7 +2274,7 @@ export class QuotesService {
     });
 
     if (!quote) {
-      throw new NotFoundException('Orçamento não encontrado');
+      throw new NotFoundException("Orçamento não encontrado");
     }
 
     const history = await this.prisma.quoteAssignmentHistory.findMany({
@@ -2298,7 +2298,7 @@ export class QuotesService {
         },
       },
       orderBy: {
-        assignedAt: 'desc',
+        assignedAt: "desc",
       },
     });
 
@@ -2332,7 +2332,7 @@ export class QuotesService {
       });
 
       if (!customer) {
-        throw new NotFoundException('Cliente não encontrado');
+        throw new NotFoundException("Cliente não encontrado");
       }
     }
 
@@ -2345,7 +2345,7 @@ export class QuotesService {
       });
 
       if (!vehicle) {
-        throw new NotFoundException('Veículo não encontrado');
+        throw new NotFoundException("Veículo não encontrado");
       }
     }
 
@@ -2358,7 +2358,7 @@ export class QuotesService {
       });
 
       if (!elevator) {
-        throw new NotFoundException('Elevador não encontrado');
+        throw new NotFoundException("Elevador não encontrado");
       }
     }
   }
@@ -2370,7 +2370,7 @@ export class QuotesService {
       !isDraft &&
       (!createQuoteDto.items || createQuoteDto.items.length === 0)
     ) {
-      throw new BadRequestException('Orçamento deve ter pelo menos um item');
+      throw new BadRequestException("Orçamento deve ter pelo menos um item");
     }
   }
 
@@ -2474,7 +2474,7 @@ export class QuotesService {
     });
 
     if (!existingQuote) {
-      throw new NotFoundException('Orçamento não encontrado');
+      throw new NotFoundException("Orçamento não encontrado");
     }
 
     return existingQuote;
@@ -2489,7 +2489,7 @@ export class QuotesService {
     const existingQuoteStatus = existingQuote.status as QuoteStatus;
     if (existingQuoteStatus === QuoteStatus.CONVERTED) {
       throw new BadRequestException(
-        'Não é possível atualizar um orçamento já convertido em OS',
+        "Não é possível atualizar um orçamento já convertido em OS",
       );
     }
 
@@ -2501,7 +2501,7 @@ export class QuotesService {
     if (isBlockedStatus) {
       if (updateQuoteDto.items && updateQuoteDto.items.length > 0) {
         throw new BadRequestException(
-          'Não é possível adicionar itens antes do diagnóstico do mecânico. Envie o orçamento para diagnóstico primeiro.',
+          "Não é possível adicionar itens antes do diagnóstico do mecânico. Envie o orçamento para diagnóstico primeiro.",
         );
       }
 
@@ -2512,7 +2512,7 @@ export class QuotesService {
         updateQuoteDto.taxAmount !== undefined
       ) {
         throw new BadRequestException(
-          'Não é possível editar custos antes do diagnóstico do mecânico. Envie o orçamento para diagnóstico primeiro.',
+          "Não é possível editar custos antes do diagnóstico do mecânico. Envie o orçamento para diagnóstico primeiro.",
         );
       }
     }
@@ -2849,7 +2849,7 @@ export class QuotesService {
     });
 
     if (!quote) {
-      throw new NotFoundException('Orçamento não encontrado');
+      throw new NotFoundException("Orçamento não encontrado");
     }
 
     return quote;
@@ -2873,18 +2873,18 @@ export class QuotesService {
   ): void {
     const quoteStatus = quote.status as QuoteStatus;
     if (quoteStatus === QuoteStatus.CONVERTED) {
-      throw new BadRequestException('Orçamento já foi convertido em OS');
+      throw new BadRequestException("Orçamento já foi convertido em OS");
     }
 
     if (quoteStatus === QuoteStatus.REJECTED) {
       throw new BadRequestException(
-        'Não é possível aprovar um orçamento rejeitado',
+        "Não é possível aprovar um orçamento rejeitado",
       );
     }
 
     if (quoteStatus === QuoteStatus.EXPIRED) {
       throw new BadRequestException(
-        'Não é possível aprovar um orçamento expirado',
+        "Não é possível aprovar um orçamento expirado",
       );
     }
   }
@@ -3014,8 +3014,8 @@ export class QuotesService {
 
     if (
       quoteWithEstimatedHours?.estimatedHours &&
-      typeof quoteWithEstimatedHours.estimatedHours === 'object' &&
-      'toNumber' in quoteWithEstimatedHours.estimatedHours
+      typeof quoteWithEstimatedHours.estimatedHours === "object" &&
+      "toNumber" in quoteWithEstimatedHours.estimatedHours
     ) {
       const estimatedHours = quoteWithEstimatedHours.estimatedHours as {
         toNumber: () => number;
@@ -3207,7 +3207,7 @@ export class QuotesService {
         assignedToId: quote.assignedMechanicId || undefined,
         date: appointmentDate.toISOString(),
         duration: estimatedHours ? Math.ceil(estimatedHours * 60) : 60,
-        serviceType: 'Serviço aprovado',
+        serviceType: "Serviço aprovado",
         notes: `Agendamento automático para OS ${serviceOrder.number}`,
         status: AppointmentStatus.SCHEDULED,
       });
@@ -3506,21 +3506,21 @@ export class QuotesService {
     });
 
     if (!quote) {
-      throw new NotFoundException('Orçamento não encontrado');
+      throw new NotFoundException("Orçamento não encontrado");
     }
 
     // Validar que o status permite atribuição
     const quoteStatus = quote.status as QuoteStatus;
     if (quoteStatus !== QuoteStatus.AWAITING_DIAGNOSIS) {
       throw new BadRequestException(
-        'Apenas orçamentos aguardando diagnóstico podem ser pegos',
+        "Apenas orçamentos aguardando diagnóstico podem ser pegos",
       );
     }
 
     // Validar que não tem mecânico atribuído
     if (quote.assignedMechanicId) {
       throw new BadRequestException(
-        'Este orçamento já foi atribuído a outro mecânico',
+        "Este orçamento já foi atribuído a outro mecânico",
       );
     }
 
@@ -3529,13 +3529,13 @@ export class QuotesService {
       where: {
         id: mechanicId,
         tenantId,
-        role: 'mechanic',
+        role: "mechanic",
         isActive: true,
       },
     });
 
     if (!mechanic) {
-      throw new NotFoundException('Mecânico não encontrado ou inativo');
+      throw new NotFoundException("Mecânico não encontrado ou inativo");
     }
 
     // Atribuir o orçamento ao mecânico
@@ -3589,7 +3589,7 @@ export class QuotesService {
         tenantId,
         userId: mechanicId,
         type: NotificationType.QUOTE_ASSIGNED,
-        title: 'Orçamento Atribuído',
+        title: "Orçamento Atribuído",
         message: `Você pegou o orçamento ${quote.number}`,
         data: {
           quoteId: id,
@@ -3613,9 +3613,9 @@ export class QuotesService {
       return undefined;
     }
     if (
-      typeof estimatedHours === 'object' &&
+      typeof estimatedHours === "object" &&
       estimatedHours !== null &&
-      'toNumber' in estimatedHours
+      "toNumber" in estimatedHours
     ) {
       return (estimatedHours as { toNumber: () => number }).toNumber();
     }

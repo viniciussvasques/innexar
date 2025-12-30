@@ -40,7 +40,7 @@ export default function AIConfigPage() {
   const [showModal, setShowModal] = useState(false)
   const [editingConfig, setEditingConfig] = useState<AIConfig | null>(null)
   const [testingId, setTestingId] = useState<number | null>(null)
-  
+
   const [formData, setFormData] = useState({
     name: '',
     provider: 'grok',
@@ -142,7 +142,7 @@ export default function AIConfigPage() {
 
   const handleDelete = async (id: number) => {
     if (!confirm('Tem certeza que deseja deletar esta configuração?')) return
-    
+
     try {
       await api.delete(`/api/ai-config/${id}`)
       toast.success('Configuração deletada com sucesso!')
@@ -333,55 +333,55 @@ export default function AIConfigPage() {
           />
 
           <div>
-          <div>
-            {formData.provider === 'ollama' ? (
-              <div>
-                <Input
+            <div>
+              {formData.provider === 'ollama' ? (
+                <div>
+                  <Input
+                    label="Modelo"
+                    value={formData.model_name}
+                    onChange={(e) => setFormData({ ...formData, model_name: e.target.value })}
+                    required
+                    placeholder="Ex: llama3.1, mistral, neural-chat"
+                  />
+                  <p className="mt-1 text-xs text-gray-500">
+                    💡 Digite o nome exato do modelo instalado no Ollama (use &apos;ollama list&apos; para ver os modelos disponíveis)
+                  </p>
+                </div>
+              ) : (
+                <Select
                   label="Modelo"
                   value={formData.model_name}
                   onChange={(e) => setFormData({ ...formData, model_name: e.target.value })}
+                  options={modelOptions}
                   required
-                  placeholder="Ex: llama3.1, mistral, neural-chat"
+                  disabled={!formData.provider}
                 />
-                <p className="mt-1 text-xs text-gray-500">
-                  💡 Digite o nome exato do modelo instalado no Ollama (use 'ollama list' para ver os modelos disponíveis)
-                </p>
-              </div>
-            ) : (
-              <Select
-                label="Modelo"
-                value={formData.model_name}
-                onChange={(e) => setFormData({ ...formData, model_name: e.target.value })}
-                options={modelOptions}
-                required
-                disabled={!formData.provider}
-              />
-            )}
-            {formData.provider === 'google' && formData.api_key && formData.api_key.trim().startsWith('AIza') && (
-              <button
-                type="button"
-                onClick={async () => {
-                  try {
-                    const response = await api.get(`/api/ai-config/google/list-models?api_key=${encodeURIComponent(formData.api_key.trim())}`)
-                    if (response.data.models && response.data.models.length > 0) {
-                      const googleModels = response.data.models.map((m: any) => ({
-                        value: m.name,
-                        label: m.display
-                      }))
-                      setAvailableModels({ ...availableModels, google: googleModels })
-                      toast.success(`Encontrados ${googleModels.length} modelos disponíveis!`)
+              )}
+              {formData.provider === 'google' && formData.api_key && formData.api_key.trim().startsWith('AIza') && (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      const response = await api.get(`/api/ai-config/google/list-models?api_key=${encodeURIComponent(formData.api_key.trim())}`)
+                      if (response.data.models && response.data.models.length > 0) {
+                        const googleModels = response.data.models.map((m: any) => ({
+                          value: m.name,
+                          label: m.display
+                        }))
+                        setAvailableModels({ ...availableModels, google: googleModels })
+                        toast.success(`Encontrados ${googleModels.length} modelos disponíveis!`)
+                      }
+                    } catch (error: any) {
+                      console.error('Erro ao listar modelos:', error)
+                      toast.error('Erro ao listar modelos. Use os modelos padrão.')
                     }
-                  } catch (error: any) {
-                    console.error('Erro ao listar modelos:', error)
-                    toast.error('Erro ao listar modelos. Use os modelos padrão.')
-                  }
-                }}
-                className="mt-2 text-sm text-primary hover:underline"
-              >
-                🔍 Buscar modelos disponíveis na API
-              </button>
-            )}
-          </div>
+                  }}
+                  className="mt-2 text-sm text-primary hover:underline"
+                >
+                  🔍 Buscar modelos disponíveis na API
+                </button>
+              )}
+            </div>
             {formData.provider === 'google' && formData.api_key && formData.api_key.trim().startsWith('AIza') && (
               <button
                 type="button"
@@ -419,7 +419,7 @@ export default function AIConfigPage() {
             />
             {formData.provider === 'google' && (
               <p className="mt-1 text-sm text-gray-500">
-                💡 A chave do Google Gemini deve começar com "AIza" e ter aproximadamente 39 caracteres. 
+                💡 A chave do Google Gemini deve começar com &quot;AIza&quot; e ter aproximadamente 39 caracteres.
                 Obtenha em: <a href="https://makersuite.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Google AI Studio</a>
               </p>
             )}

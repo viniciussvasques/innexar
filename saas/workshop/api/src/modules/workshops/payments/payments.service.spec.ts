@@ -1,21 +1,21 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { PaymentsService } from './payments.service';
-import { PrismaService } from '@database/prisma.service';
+import { Test, TestingModule } from "@nestjs/testing";
+import { NotFoundException, BadRequestException } from "@nestjs/common";
+import { PaymentsService } from "./payments.service";
+import { PrismaService } from "@database/prisma.service";
 import {
   CreatePaymentDto,
   UpdatePaymentDto,
   PaymentStatus,
   PaymentMethod,
-} from './dto';
-import { Decimal } from '@prisma/client/runtime/library';
+} from "./dto";
+import { Decimal } from "@prisma/client/runtime/library";
 
-describe('PaymentsService', () => {
+describe("PaymentsService", () => {
   let service: PaymentsService;
 
-  const mockTenantId = 'tenant-id';
-  const mockPaymentId = 'payment-id';
-  const mockInvoiceId = 'invoice-id';
+  const mockTenantId = "tenant-id";
+  const mockPaymentId = "payment-id";
+  const mockInvoiceId = "invoice-id";
 
   const mockPayment = {
     id: mockPaymentId,
@@ -32,9 +32,9 @@ describe('PaymentsService', () => {
     updatedAt: new Date(),
     invoice: {
       id: mockInvoiceId,
-      invoiceNumber: 'FAT-001',
+      invoiceNumber: "FAT-001",
       total: new Decimal(1000.0),
-      status: 'issued',
+      status: "issued",
     },
   };
 
@@ -75,7 +75,7 @@ describe('PaymentsService', () => {
     jest.clearAllMocks();
   });
 
-  describe('create', () => {
+  describe("create", () => {
     const createPaymentDto: CreatePaymentDto = {
       invoiceId: mockInvoiceId,
       amount: 1000.0,
@@ -84,7 +84,7 @@ describe('PaymentsService', () => {
       installments: 1,
     };
 
-    it('deve criar um pagamento com sucesso', async () => {
+    it("deve criar um pagamento com sucesso", async () => {
       // Mock: fatura existe
       mockPrismaService.invoice.findFirst.mockResolvedValueOnce({
         id: mockInvoiceId,
@@ -102,13 +102,13 @@ describe('PaymentsService', () => {
 
       const result = await service.create(mockTenantId, createPaymentDto);
 
-      expect(result).toHaveProperty('id', mockPaymentId);
-      expect(result).toHaveProperty('amount', 1000.0);
-      expect(result).toHaveProperty('method', PaymentMethod.CREDIT_CARD);
+      expect(result).toHaveProperty("id", mockPaymentId);
+      expect(result).toHaveProperty("amount", 1000.0);
+      expect(result).toHaveProperty("method", PaymentMethod.CREDIT_CARD);
       expect(mockPrismaService.payment.create).toHaveBeenCalled();
     });
 
-    it('deve lançar erro se fatura não encontrada', async () => {
+    it("deve lançar erro se fatura não encontrada", async () => {
       // Mock: fatura não encontrada
       mockPrismaService.invoice.findFirst.mockResolvedValueOnce(null);
       // Mock: payment.findMany não será chamado pois a fatura não existe
@@ -119,7 +119,7 @@ describe('PaymentsService', () => {
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('deve lançar erro se valor excede fatura', async () => {
+    it("deve lançar erro se valor excede fatura", async () => {
       // Mock: fatura existe com valor menor
       mockPrismaService.invoice.findFirst.mockResolvedValueOnce({
         id: mockInvoiceId,
@@ -136,8 +136,8 @@ describe('PaymentsService', () => {
     });
   });
 
-  describe('findAll', () => {
-    it('deve listar pagamentos com sucesso', async () => {
+  describe("findAll", () => {
+    it("deve listar pagamentos com sucesso", async () => {
       mockPrismaService.$transaction.mockResolvedValue([[mockPayment], 1]);
 
       const result = await service.findAll(mockTenantId, {
@@ -152,17 +152,17 @@ describe('PaymentsService', () => {
     });
   });
 
-  describe('findOne', () => {
-    it('deve buscar pagamento por ID com sucesso', async () => {
+  describe("findOne", () => {
+    it("deve buscar pagamento por ID com sucesso", async () => {
       mockPrismaService.payment.findFirst.mockResolvedValue(mockPayment);
 
       const result = await service.findOne(mockTenantId, mockPaymentId);
 
-      expect(result).toHaveProperty('id', mockPaymentId);
-      expect(result).toHaveProperty('amount', 1000.0);
+      expect(result).toHaveProperty("id", mockPaymentId);
+      expect(result).toHaveProperty("amount", 1000.0);
     });
 
-    it('deve lançar erro se pagamento não encontrado', async () => {
+    it("deve lançar erro se pagamento não encontrado", async () => {
       mockPrismaService.payment.findFirst.mockResolvedValue(null);
 
       await expect(
@@ -171,13 +171,13 @@ describe('PaymentsService', () => {
     });
   });
 
-  describe('update', () => {
+  describe("update", () => {
     const updatePaymentDto: UpdatePaymentDto = {
       amount: 1200.0,
       status: PaymentStatus.COMPLETED,
     };
 
-    it('deve atualizar pagamento com sucesso', async () => {
+    it("deve atualizar pagamento com sucesso", async () => {
       mockPrismaService.payment.findFirst.mockResolvedValueOnce({
         ...mockPayment,
         status: PaymentStatus.PENDING,
@@ -209,12 +209,12 @@ describe('PaymentsService', () => {
         updatePaymentDto,
       );
 
-      expect(result).toHaveProperty('id', mockPaymentId);
+      expect(result).toHaveProperty("id", mockPaymentId);
       expect(result.status).toBe(PaymentStatus.COMPLETED);
       expect(mockPrismaService.payment.update).toHaveBeenCalled();
     });
 
-    it('deve lançar erro se tentar atualizar pagamento reembolsado', async () => {
+    it("deve lançar erro se tentar atualizar pagamento reembolsado", async () => {
       mockPrismaService.payment.findFirst.mockResolvedValue({
         ...mockPayment,
         status: PaymentStatus.REFUNDED,
@@ -226,8 +226,8 @@ describe('PaymentsService', () => {
     });
   });
 
-  describe('remove', () => {
-    it('deve remover pagamento com sucesso', async () => {
+  describe("remove", () => {
+    it("deve remover pagamento com sucesso", async () => {
       mockPrismaService.payment.findFirst.mockResolvedValue({
         ...mockPayment,
         status: PaymentStatus.PENDING,
@@ -246,7 +246,7 @@ describe('PaymentsService', () => {
       expect(mockPrismaService.payment.delete).toHaveBeenCalled();
     });
 
-    it('deve lançar erro se tentar remover pagamento completo', async () => {
+    it("deve lançar erro se tentar remover pagamento completo", async () => {
       mockPrismaService.payment.findFirst.mockResolvedValue({
         ...mockPayment,
         status: PaymentStatus.COMPLETED,
@@ -257,7 +257,7 @@ describe('PaymentsService', () => {
       );
     });
 
-    it('deve lançar erro se tentar remover pagamento reembolsado', async () => {
+    it("deve lançar erro se tentar remover pagamento reembolsado", async () => {
       mockPrismaService.payment.findFirst.mockResolvedValue({
         ...mockPayment,
         status: PaymentStatus.REFUNDED,
@@ -269,8 +269,8 @@ describe('PaymentsService', () => {
     });
   });
 
-  describe('create - casos adicionais', () => {
-    it('deve criar pagamento sem fatura', async () => {
+  describe("create - casos adicionais", () => {
+    it("deve criar pagamento sem fatura", async () => {
       const createPaymentDto: CreatePaymentDto = {
         amount: 1000.0,
         method: PaymentMethod.CREDIT_CARD,
@@ -285,11 +285,11 @@ describe('PaymentsService', () => {
 
       const result = await service.create(mockTenantId, createPaymentDto);
 
-      expect(result).toHaveProperty('id', mockPaymentId);
+      expect(result).toHaveProperty("id", mockPaymentId);
       expect(result.invoiceId).toBeUndefined();
     });
 
-    it('deve criar pagamento com status COMPLETED e atualizar fatura', async () => {
+    it("deve criar pagamento com status COMPLETED e atualizar fatura", async () => {
       const createPaymentDto: CreatePaymentDto = {
         invoiceId: mockInvoiceId,
         amount: 1000.0,
@@ -327,7 +327,7 @@ describe('PaymentsService', () => {
       expect(mockPrismaService.invoice.update).toHaveBeenCalled();
     });
 
-    it('deve validar que pagamentos existentes não excedem fatura', async () => {
+    it("deve validar que pagamentos existentes não excedem fatura", async () => {
       const createPaymentDto: CreatePaymentDto = {
         invoiceId: mockInvoiceId,
         amount: 500.0,
@@ -342,7 +342,7 @@ describe('PaymentsService', () => {
       });
       mockPrismaService.payment.findMany.mockResolvedValueOnce([
         {
-          id: 'existing-payment',
+          id: "existing-payment",
           amount: new Decimal(600.0),
           status: PaymentStatus.COMPLETED,
         },
@@ -354,8 +354,8 @@ describe('PaymentsService', () => {
     });
   });
 
-  describe('findAll - casos adicionais', () => {
-    it('deve filtrar pagamentos por fatura', async () => {
+  describe("findAll - casos adicionais", () => {
+    it("deve filtrar pagamentos por fatura", async () => {
       mockPrismaService.$transaction.mockResolvedValue([[mockPayment], 1]);
 
       const result = await service.findAll(mockTenantId, {
@@ -367,7 +367,7 @@ describe('PaymentsService', () => {
       expect(result.data).toHaveLength(1);
     });
 
-    it('deve filtrar pagamentos por método', async () => {
+    it("deve filtrar pagamentos por método", async () => {
       mockPrismaService.$transaction.mockResolvedValue([[mockPayment], 1]);
 
       const result = await service.findAll(mockTenantId, {
@@ -379,7 +379,7 @@ describe('PaymentsService', () => {
       expect(result.data).toHaveLength(1);
     });
 
-    it('deve filtrar pagamentos por status', async () => {
+    it("deve filtrar pagamentos por status", async () => {
       mockPrismaService.$transaction.mockResolvedValue([[mockPayment], 1]);
 
       const result = await service.findAll(mockTenantId, {
@@ -391,12 +391,12 @@ describe('PaymentsService', () => {
       expect(result.data).toHaveLength(1);
     });
 
-    it('deve filtrar pagamentos por período', async () => {
+    it("deve filtrar pagamentos por período", async () => {
       mockPrismaService.$transaction.mockResolvedValue([[mockPayment], 1]);
 
       const result = await service.findAll(mockTenantId, {
-        startDate: '2024-01-01',
-        endDate: '2024-12-31',
+        startDate: "2024-01-01",
+        endDate: "2024-12-31",
         page: 1,
         limit: 20,
       });
@@ -405,8 +405,8 @@ describe('PaymentsService', () => {
     });
   });
 
-  describe('update - casos adicionais', () => {
-    it('deve atualizar apenas amount', async () => {
+  describe("update - casos adicionais", () => {
+    it("deve atualizar apenas amount", async () => {
       const updatePaymentDto: UpdatePaymentDto = {
         amount: 1500.0,
       };
@@ -429,7 +429,7 @@ describe('PaymentsService', () => {
       expect(result.amount).toBe(1500.0);
     });
 
-    it('deve atualizar apenas method', async () => {
+    it("deve atualizar apenas method", async () => {
       const updatePaymentDto: UpdatePaymentDto = {
         method: PaymentMethod.PIX,
       };
@@ -452,7 +452,7 @@ describe('PaymentsService', () => {
       expect(result.method).toBe(PaymentMethod.PIX);
     });
 
-    it('não deve atualizar fatura se pagamento não foi completado', async () => {
+    it("não deve atualizar fatura se pagamento não foi completado", async () => {
       const updatePaymentDto: UpdatePaymentDto = {
         status: PaymentStatus.PENDING,
       };

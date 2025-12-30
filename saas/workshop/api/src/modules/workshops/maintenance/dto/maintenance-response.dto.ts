@@ -1,9 +1,9 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import {
   MaintenanceCategory,
   MaintenanceStatus,
   MaintenancePriority,
-} from './maintenance-category.enum';
+} from "./maintenance-category.enum";
 
 // Template Response
 export class MaintenanceTemplateResponseDto {

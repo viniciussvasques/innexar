@@ -1,4 +1,4 @@
-import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { createParamDecorator, ExecutionContext } from "@nestjs/common";
 
 interface RequestWithUser extends Request {
   user?: {
@@ -20,7 +20,7 @@ export const CurrentUser = createParamDecorator(
     }
 
     // Se um campo específico foi solicitado (ex: 'id', 'role'), retornar apenas esse campo
-    if (data && typeof data === 'string') {
+    if (data && typeof data === "string") {
       return user[data as keyof typeof user];
     }
 

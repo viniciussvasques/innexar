@@ -1,9 +1,9 @@
-import { Processor, Process } from '@nestjs/bull';
-import { Job as BullJob } from 'bull';
-import { Logger } from '@nestjs/common';
-import { PrismaService } from '@database/prisma.service';
-import { JobType, JobStatus } from './dto';
-import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
+import { Processor, Process } from "@nestjs/bull";
+import { Job as BullJob } from "bull";
+import { Logger } from "@nestjs/common";
+import { PrismaService } from "@database/prisma.service";
+import { JobType, JobStatus } from "./dto";
+import { getErrorMessage, getErrorStack } from "@common/utils/error.utils";
 
 export interface JobData {
   id: string;
@@ -12,55 +12,55 @@ export interface JobData {
   data: Record<string, unknown>;
 }
 
-@Processor('jobs')
+@Processor("jobs")
 export class JobsProcessor {
   private readonly logger = new Logger(JobsProcessor.name);
 
   constructor(private readonly prisma: PrismaService) {}
 
-  @Process({ name: 'email', concurrency: 5 })
+  @Process({ name: "email", concurrency: 5 })
   async handleEmailJob(job: BullJob<JobData>): Promise<void> {
     await this.processJob(job, (jobData) => {
       this.logger.log(`Processando job de email: ${jobData.id}`);
       // Implementar lógica de envio de email aqui
       // Por enquanto, apenas log
-      return { success: true, message: 'Email processado' };
+      return { success: true, message: "Email processado" };
     });
   }
 
-  @Process({ name: 'report', concurrency: 2 })
+  @Process({ name: "report", concurrency: 2 })
   async handleReportJob(job: BullJob<JobData>): Promise<void> {
     await this.processJob(job, (jobData) => {
       this.logger.log(`Processando job de relatório: ${jobData.id}`);
       // Implementar lógica de geração de relatório aqui
-      return { success: true, message: 'Relatório processado' };
+      return { success: true, message: "Relatório processado" };
     });
   }
 
-  @Process({ name: 'webhook', concurrency: 10 })
+  @Process({ name: "webhook", concurrency: 10 })
   async handleWebhookJob(job: BullJob<JobData>): Promise<void> {
     await this.processJob(job, (jobData) => {
       this.logger.log(`Processando job de webhook: ${jobData.id}`);
       // Implementar lógica de webhook aqui
-      return { success: true, message: 'Webhook processado' };
+      return { success: true, message: "Webhook processado" };
     });
   }
 
-  @Process({ name: 'cleanup', concurrency: 1 })
+  @Process({ name: "cleanup", concurrency: 1 })
   async handleCleanupJob(job: BullJob<JobData>): Promise<void> {
     await this.processJob(job, (jobData) => {
       this.logger.log(`Processando job de limpeza: ${jobData.id}`);
       // Implementar lógica de limpeza aqui
-      return { success: true, message: 'Limpeza processada' };
+      return { success: true, message: "Limpeza processada" };
     });
   }
 
-  @Process({ name: 'export', concurrency: 2 })
+  @Process({ name: "export", concurrency: 2 })
   async handleExportJob(job: BullJob<JobData>): Promise<void> {
     await this.processJob(job, (jobData) => {
       this.logger.log(`Processando job de exportação: ${jobData.id}`);
       // Implementar lógica de exportação aqui
-      return { success: true, message: 'Exportação processada' };
+      return { success: true, message: "Exportação processada" };
     });
   }
 

@@ -1,25 +1,25 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test, TestingModule } from "@nestjs/testing";
 import {
   NotificationsService,
   NotificationType,
-} from './notifications.service';
-import { PrismaService } from '@database/prisma.service';
+} from "./notifications.service";
+import { PrismaService } from "@database/prisma.service";
 
-describe('NotificationsService', () => {
+describe("NotificationsService", () => {
   let service: NotificationsService;
 
-  const mockTenantId = 'tenant-id';
-  const mockUserId = 'user-id';
-  const mockNotificationId = 'notification-id';
+  const mockTenantId = "tenant-id";
+  const mockUserId = "user-id";
+  const mockNotificationId = "notification-id";
 
   const mockNotification = {
     id: mockNotificationId,
     tenantId: mockTenantId,
     userId: mockUserId,
     type: NotificationType.QUOTE_ASSIGNED,
-    title: 'Orçamento atribuído',
-    message: 'Você recebeu um novo orçamento',
-    data: { quoteId: 'quote-id' },
+    title: "Orçamento atribuído",
+    message: "Você recebeu um novo orçamento",
+    data: { quoteId: "quote-id" },
     read: false,
     readAt: null,
     createdAt: new Date(),
@@ -57,17 +57,17 @@ describe('NotificationsService', () => {
     jest.clearAllMocks();
   });
 
-  describe('create', () => {
+  describe("create", () => {
     const createDto = {
       tenantId: mockTenantId,
       userId: mockUserId,
       type: NotificationType.QUOTE_ASSIGNED,
-      title: 'Orçamento atribuído',
-      message: 'Você recebeu um novo orçamento',
-      data: { quoteId: 'quote-id' },
+      title: "Orçamento atribuído",
+      message: "Você recebeu um novo orçamento",
+      data: { quoteId: "quote-id" },
     };
 
-    it('deve criar uma notificação com sucesso', async () => {
+    it("deve criar uma notificação com sucesso", async () => {
       mockPrismaService.notification.create.mockResolvedValue(mockNotification);
 
       await service.create(createDto);
@@ -77,14 +77,14 @@ describe('NotificationsService', () => {
           tenantId: mockTenantId,
           userId: mockUserId,
           type: NotificationType.QUOTE_ASSIGNED,
-          title: 'Orçamento atribuído',
-          message: 'Você recebeu um novo orçamento',
-          data: { quoteId: 'quote-id' },
+          title: "Orçamento atribuído",
+          message: "Você recebeu um novo orçamento",
+          data: { quoteId: "quote-id" },
         },
       });
     });
 
-    it('deve criar notificação sem userId (notificação geral)', async () => {
+    it("deve criar notificação sem userId (notificação geral)", async () => {
       const dtoWithoutUserId = { ...createDto, userId: undefined };
       mockPrismaService.notification.create.mockResolvedValue({
         ...mockNotification,
@@ -98,14 +98,14 @@ describe('NotificationsService', () => {
           tenantId: mockTenantId,
           userId: null,
           type: NotificationType.QUOTE_ASSIGNED,
-          title: 'Orçamento atribuído',
-          message: 'Você recebeu um novo orçamento',
-          data: { quoteId: 'quote-id' },
+          title: "Orçamento atribuído",
+          message: "Você recebeu um novo orçamento",
+          data: { quoteId: "quote-id" },
         },
       });
     });
 
-    it('deve criar notificação sem data', async () => {
+    it("deve criar notificação sem data", async () => {
       const dtoWithoutData = { ...createDto, data: undefined };
       mockPrismaService.notification.create.mockResolvedValue({
         ...mockNotification,
@@ -119,15 +119,15 @@ describe('NotificationsService', () => {
           tenantId: mockTenantId,
           userId: mockUserId,
           type: NotificationType.QUOTE_ASSIGNED,
-          title: 'Orçamento atribuído',
-          message: 'Você recebeu um novo orçamento',
+          title: "Orçamento atribuído",
+          message: "Você recebeu um novo orçamento",
           data: undefined,
         },
       });
     });
 
-    it('não deve lançar erro se criação falhar', async () => {
-      const error = new Error('Database error');
+    it("não deve lançar erro se criação falhar", async () => {
+      const error = new Error("Database error");
       mockPrismaService.notification.create.mockRejectedValue(error);
 
       // Não deve lançar erro
@@ -135,12 +135,12 @@ describe('NotificationsService', () => {
     });
   });
 
-  describe('notifyAllMechanics', () => {
-    it('deve notificar todos os mecânicos com sucesso', async () => {
+  describe("notifyAllMechanics", () => {
+    it("deve notificar todos os mecânicos com sucesso", async () => {
       const mechanics = [
-        { id: 'mechanic-1' },
-        { id: 'mechanic-2' },
-        { id: 'mechanic-3' },
+        { id: "mechanic-1" },
+        { id: "mechanic-2" },
+        { id: "mechanic-3" },
       ];
 
       mockPrismaService.user.findMany.mockResolvedValue(mechanics);
@@ -149,15 +149,15 @@ describe('NotificationsService', () => {
       await service.notifyAllMechanics(
         mockTenantId,
         NotificationType.QUOTE_AVAILABLE,
-        'Novo orçamento disponível',
-        'Há um novo orçamento aguardando atribuição',
-        { quoteId: 'quote-id' },
+        "Novo orçamento disponível",
+        "Há um novo orçamento aguardando atribuição",
+        { quoteId: "quote-id" },
       );
 
       expect(mockPrismaService.user.findMany).toHaveBeenCalledWith({
         where: {
           tenantId: mockTenantId,
-          role: 'mechanic',
+          role: "mechanic",
           isActive: true,
         },
         select: { id: true },
@@ -167,47 +167,47 @@ describe('NotificationsService', () => {
         data: [
           {
             tenantId: mockTenantId,
-            userId: 'mechanic-1',
+            userId: "mechanic-1",
             type: NotificationType.QUOTE_AVAILABLE,
-            title: 'Novo orçamento disponível',
-            message: 'Há um novo orçamento aguardando atribuição',
-            data: { quoteId: 'quote-id' },
+            title: "Novo orçamento disponível",
+            message: "Há um novo orçamento aguardando atribuição",
+            data: { quoteId: "quote-id" },
           },
           {
             tenantId: mockTenantId,
-            userId: 'mechanic-2',
+            userId: "mechanic-2",
             type: NotificationType.QUOTE_AVAILABLE,
-            title: 'Novo orçamento disponível',
-            message: 'Há um novo orçamento aguardando atribuição',
-            data: { quoteId: 'quote-id' },
+            title: "Novo orçamento disponível",
+            message: "Há um novo orçamento aguardando atribuição",
+            data: { quoteId: "quote-id" },
           },
           {
             tenantId: mockTenantId,
-            userId: 'mechanic-3',
+            userId: "mechanic-3",
             type: NotificationType.QUOTE_AVAILABLE,
-            title: 'Novo orçamento disponível',
-            message: 'Há um novo orçamento aguardando atribuição',
-            data: { quoteId: 'quote-id' },
+            title: "Novo orçamento disponível",
+            message: "Há um novo orçamento aguardando atribuição",
+            data: { quoteId: "quote-id" },
           },
         ],
       });
     });
 
-    it('não deve criar notificações se não houver mecânicos', async () => {
+    it("não deve criar notificações se não houver mecânicos", async () => {
       mockPrismaService.user.findMany.mockResolvedValue([]);
 
       await service.notifyAllMechanics(
         mockTenantId,
         NotificationType.QUOTE_AVAILABLE,
-        'Novo orçamento disponível',
-        'Há um novo orçamento aguardando atribuição',
+        "Novo orçamento disponível",
+        "Há um novo orçamento aguardando atribuição",
       );
 
       expect(mockPrismaService.notification.createMany).not.toHaveBeenCalled();
     });
 
-    it('não deve lançar erro se notificação falhar', async () => {
-      const error = new Error('Database error');
+    it("não deve lançar erro se notificação falhar", async () => {
+      const error = new Error("Database error");
       mockPrismaService.user.findMany.mockRejectedValue(error);
 
       // Não deve lançar erro
@@ -215,15 +215,15 @@ describe('NotificationsService', () => {
         service.notifyAllMechanics(
           mockTenantId,
           NotificationType.QUOTE_AVAILABLE,
-          'Título',
-          'Mensagem',
+          "Título",
+          "Mensagem",
         ),
       ).resolves.not.toThrow();
     });
   });
 
-  describe('markAsRead', () => {
-    it('deve marcar notificação como lida com sucesso', async () => {
+  describe("markAsRead", () => {
+    it("deve marcar notificação como lida com sucesso", async () => {
       mockPrismaService.notification.updateMany.mockResolvedValue({ count: 1 });
 
       await service.markAsRead(mockTenantId, mockUserId, mockNotificationId);
@@ -242,7 +242,7 @@ describe('NotificationsService', () => {
       });
     });
 
-    it('deve funcionar mesmo se notificação não for encontrada', async () => {
+    it("deve funcionar mesmo se notificação não for encontrada", async () => {
       mockPrismaService.notification.updateMany.mockResolvedValue({ count: 0 });
 
       await service.markAsRead(mockTenantId, mockUserId, mockNotificationId);
@@ -251,8 +251,8 @@ describe('NotificationsService', () => {
     });
   });
 
-  describe('markAllAsRead', () => {
-    it('deve marcar todas as notificações como lidas com sucesso', async () => {
+  describe("markAllAsRead", () => {
+    it("deve marcar todas as notificações como lidas com sucesso", async () => {
       mockPrismaService.notification.updateMany.mockResolvedValue({ count: 5 });
 
       await service.markAllAsRead(mockTenantId, mockUserId);
@@ -271,8 +271,8 @@ describe('NotificationsService', () => {
     });
   });
 
-  describe('findByUser', () => {
-    it('deve buscar notificações do usuário com sucesso', async () => {
+  describe("findByUser", () => {
+    it("deve buscar notificações do usuário com sucesso", async () => {
       const mockNotifications = [mockNotification];
       mockPrismaService.notification.findMany.mockResolvedValue(
         mockNotifications,
@@ -286,8 +286,8 @@ describe('NotificationsService', () => {
         false,
       );
 
-      expect(result).toHaveProperty('notifications');
-      expect(result).toHaveProperty('unreadCount');
+      expect(result).toHaveProperty("notifications");
+      expect(result).toHaveProperty("unreadCount");
       expect(result.notifications).toHaveLength(1);
       expect(result.unreadCount).toBe(3);
 
@@ -296,12 +296,12 @@ describe('NotificationsService', () => {
           tenantId: mockTenantId,
           userId: mockUserId,
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         take: 50,
       });
     });
 
-    it('deve buscar apenas notificações não lidas quando solicitado', async () => {
+    it("deve buscar apenas notificações não lidas quando solicitado", async () => {
       mockPrismaService.notification.findMany.mockResolvedValue([]);
       mockPrismaService.notification.count.mockResolvedValue(2);
 
@@ -315,12 +315,12 @@ describe('NotificationsService', () => {
           userId: mockUserId,
           read: false,
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         take: 50,
       });
     });
 
-    it('deve buscar notificações gerais (userId = null)', async () => {
+    it("deve buscar notificações gerais (userId = null)", async () => {
       mockPrismaService.notification.findMany.mockResolvedValue([]);
       mockPrismaService.notification.count.mockResolvedValue(0);
 
@@ -331,12 +331,12 @@ describe('NotificationsService', () => {
           tenantId: mockTenantId,
           userId: null,
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         take: 50,
       });
     });
 
-    it('deve usar limite padrão quando não especificado', async () => {
+    it("deve usar limite padrão quando não especificado", async () => {
       mockPrismaService.notification.findMany.mockResolvedValue([]);
       mockPrismaService.notification.count.mockResolvedValue(0);
 
@@ -347,7 +347,7 @@ describe('NotificationsService', () => {
           tenantId: mockTenantId,
           userId: mockUserId,
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         take: 50,
       });
     });

@@ -1,25 +1,25 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException } from '@nestjs/common';
-import { WebhooksService } from './webhooks.service';
-import { PrismaService } from '@database/prisma.service';
-import { CreateWebhookDto, UpdateWebhookDto } from './dto';
-import axios, { AxiosError } from 'axios';
+import { Test, TestingModule } from "@nestjs/testing";
+import { NotFoundException } from "@nestjs/common";
+import { WebhooksService } from "./webhooks.service";
+import { PrismaService } from "@database/prisma.service";
+import { CreateWebhookDto, UpdateWebhookDto } from "./dto";
+import axios, { AxiosError } from "axios";
 
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 
-jest.mock('axios');
+jest.mock("axios");
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
-describe('WebhooksService', () => {
+describe("WebhooksService", () => {
   let service: WebhooksService;
 
-  const mockTenantId = 'tenant-id';
+  const mockTenantId = "tenant-id";
   const mockWebhook = {
-    id: 'webhook-id',
+    id: "webhook-id",
     tenantId: mockTenantId,
-    url: 'https://example.com/webhook',
-    secret: 'secret-key',
-    events: ['quote.approved', 'service_order.completed'],
+    url: "https://example.com/webhook",
+    secret: "secret-key",
+    events: ["quote.approved", "service_order.completed"],
     isActive: true,
     lastTriggeredAt: null,
     createdAt: new Date(),
@@ -59,20 +59,20 @@ describe('WebhooksService', () => {
     jest.clearAllMocks();
   });
 
-  describe('create', () => {
+  describe("create", () => {
     const createWebhookDto: CreateWebhookDto = {
-      url: 'https://example.com/webhook',
-      secret: 'secret-key',
-      events: ['quote.approved'],
+      url: "https://example.com/webhook",
+      secret: "secret-key",
+      events: ["quote.approved"],
     };
 
-    it('deve criar um webhook com sucesso', async () => {
+    it("deve criar um webhook com sucesso", async () => {
       mockPrismaService.webhook.create.mockResolvedValue(mockWebhook);
 
       const result = await service.create(mockTenantId, createWebhookDto);
 
-      expect(result).toHaveProperty('id', 'webhook-id');
-      expect(result).toHaveProperty('url', 'https://example.com/webhook');
+      expect(result).toHaveProperty("id", "webhook-id");
+      expect(result).toHaveProperty("url", "https://example.com/webhook");
       expect(mockPrismaService.webhook.create).toHaveBeenCalledWith({
         data: {
           tenantId: mockTenantId,
@@ -84,11 +84,11 @@ describe('WebhooksService', () => {
       });
     });
 
-    it('deve criar webhook com diferentes eventos', async () => {
+    it("deve criar webhook com diferentes eventos", async () => {
       const createDtoMultipleEvents: CreateWebhookDto = {
-        url: 'https://example.com/webhook',
-        secret: 'secret-key',
-        events: ['quote.approved', 'service_order.completed', 'invoice.issued'],
+        url: "https://example.com/webhook",
+        secret: "secret-key",
+        events: ["quote.approved", "service_order.completed", "invoice.issued"],
       };
 
       const webhookWithMultipleEvents = {
@@ -106,48 +106,48 @@ describe('WebhooksService', () => {
       );
 
       expect(result.events).toHaveLength(3);
-      expect(result.events).toContain('quote.approved');
-      expect(result.events).toContain('service_order.completed');
-      expect(result.events).toContain('invoice.issued');
+      expect(result.events).toContain("quote.approved");
+      expect(result.events).toContain("service_order.completed");
+      expect(result.events).toContain("invoice.issued");
     });
   });
 
-  describe('findAll', () => {
-    it('deve listar webhooks com sucesso', async () => {
+  describe("findAll", () => {
+    it("deve listar webhooks com sucesso", async () => {
       mockPrismaService.webhook.findMany.mockResolvedValue([mockWebhook]);
 
       const result = await service.findAll(mockTenantId);
 
       expect(result).toHaveLength(1);
-      expect(result[0]).toHaveProperty('id', 'webhook-id');
+      expect(result[0]).toHaveProperty("id", "webhook-id");
     });
   });
 
-  describe('findOne', () => {
-    it('deve buscar webhook por ID com sucesso', async () => {
+  describe("findOne", () => {
+    it("deve buscar webhook por ID com sucesso", async () => {
       mockPrismaService.webhook.findFirst.mockResolvedValue(mockWebhook);
 
-      const result = await service.findOne(mockTenantId, 'webhook-id');
+      const result = await service.findOne(mockTenantId, "webhook-id");
 
-      expect(result).toHaveProperty('id', 'webhook-id');
+      expect(result).toHaveProperty("id", "webhook-id");
     });
 
-    it('deve lançar erro se webhook não encontrado', async () => {
+    it("deve lançar erro se webhook não encontrado", async () => {
       mockPrismaService.webhook.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.findOne(mockTenantId, 'non-existent'),
+        service.findOne(mockTenantId, "non-existent"),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('update', () => {
+  describe("update", () => {
     const updateWebhookDto: UpdateWebhookDto = {
-      url: 'https://new-url.com/webhook',
+      url: "https://new-url.com/webhook",
       isActive: false,
     };
 
-    it('deve atualizar webhook com sucesso', async () => {
+    it("deve atualizar webhook com sucesso", async () => {
       mockPrismaService.webhook.findFirst.mockResolvedValue(mockWebhook);
       mockPrismaService.webhook.update.mockResolvedValue({
         ...mockWebhook,
@@ -156,101 +156,101 @@ describe('WebhooksService', () => {
 
       const result = await service.update(
         mockTenantId,
-        'webhook-id',
+        "webhook-id",
         updateWebhookDto,
       );
 
-      expect(result).toHaveProperty('url', 'https://new-url.com/webhook');
+      expect(result).toHaveProperty("url", "https://new-url.com/webhook");
       expect(mockPrismaService.webhook.update).toHaveBeenCalled();
     });
   });
 
-  describe('remove', () => {
-    it('deve remover webhook com sucesso', async () => {
+  describe("remove", () => {
+    it("deve remover webhook com sucesso", async () => {
       mockPrismaService.webhook.findFirst.mockResolvedValue(mockWebhook);
       mockPrismaService.webhook.delete.mockResolvedValue(mockWebhook);
 
-      await service.remove(mockTenantId, 'webhook-id');
+      await service.remove(mockTenantId, "webhook-id");
 
       expect(mockPrismaService.webhook.delete).toHaveBeenCalledWith({
-        where: { id: 'webhook-id' },
+        where: { id: "webhook-id" },
       });
     });
 
-    it('deve lançar erro se webhook não encontrado ao remover', async () => {
+    it("deve lançar erro se webhook não encontrado ao remover", async () => {
       mockPrismaService.webhook.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.remove(mockTenantId, 'non-existent'),
+        service.remove(mockTenantId, "non-existent"),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('trigger', () => {
-    it('deve disparar webhook para evento específico', async () => {
+  describe("trigger", () => {
+    it("deve disparar webhook para evento específico", async () => {
       mockPrismaService.webhook.findMany.mockResolvedValue([mockWebhook]);
       mockPrismaService.webhookAttempt.create.mockResolvedValue({});
       mockPrismaService.webhook.update.mockResolvedValue(mockWebhook);
 
-      const payload = { quoteId: 'quote-123', status: 'approved' };
+      const payload = { quoteId: "quote-123", status: "approved" };
 
-      await service.trigger(mockTenantId, 'quote.approved', payload);
+      await service.trigger(mockTenantId, "quote.approved", payload);
 
       expect(mockPrismaService.webhook.findMany).toHaveBeenCalledWith({
         where: {
           tenantId: mockTenantId,
           isActive: true,
           events: {
-            has: 'quote.approved',
+            has: "quote.approved",
           },
         },
       });
     });
 
-    it('deve não disparar webhook se nenhum encontrado', async () => {
+    it("deve não disparar webhook se nenhum encontrado", async () => {
       mockPrismaService.webhook.findMany.mockResolvedValue([]);
 
-      const payload = { quoteId: 'quote-123' };
+      const payload = { quoteId: "quote-123" };
 
-      await service.trigger(mockTenantId, 'quote.approved', payload);
+      await service.trigger(mockTenantId, "quote.approved", payload);
 
       expect(mockPrismaService.webhookAttempt.create).not.toHaveBeenCalled();
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockedAxios.post).not.toHaveBeenCalled();
     });
 
-    it('deve lidar com erros ao disparar webhook sem interromper fluxo', async () => {
+    it("deve lidar com erros ao disparar webhook sem interromper fluxo", async () => {
       mockPrismaService.webhook.findMany.mockRejectedValue(
-        new Error('Database error'),
+        new Error("Database error"),
       );
 
-      const payload = { quoteId: 'quote-123' };
+      const payload = { quoteId: "quote-123" };
 
       // Não deve lançar erro
       await expect(
-        service.trigger(mockTenantId, 'quote.approved', payload),
+        service.trigger(mockTenantId, "quote.approved", payload),
       ).resolves.toBeUndefined();
     });
 
-    it('deve disparar múltiplos webhooks para o mesmo evento', async () => {
-      const webhook1 = { ...mockWebhook, id: 'webhook-1' };
-      const webhook2 = { ...mockWebhook, id: 'webhook-2' };
+    it("deve disparar múltiplos webhooks para o mesmo evento", async () => {
+      const webhook1 = { ...mockWebhook, id: "webhook-1" };
+      const webhook2 = { ...mockWebhook, id: "webhook-2" };
 
       mockPrismaService.webhook.findMany.mockResolvedValue([
         webhook1,
         webhook2,
       ]);
       mockPrismaService.webhookAttempt.create.mockResolvedValue({
-        id: 'attempt-id',
-        webhookId: 'webhook-id',
-        event: 'quote.approved',
+        id: "attempt-id",
+        webhookId: "webhook-id",
+        event: "quote.approved",
         payload: {},
-        status: 'pending',
+        status: "pending",
         attemptedAt: new Date(),
       });
       mockPrismaService.webhookAttempt.update.mockResolvedValue({
-        id: 'attempt-id',
-        status: 'success',
+        id: "attempt-id",
+        status: "success",
       });
       mockPrismaService.webhook.update.mockResolvedValue(mockWebhook);
 
@@ -259,11 +259,11 @@ describe('WebhooksService', () => {
         data: { success: true },
       });
 
-      const payload = { quoteId: 'quote-123' };
+      const payload = { quoteId: "quote-123" };
 
       const triggerPromise = service.trigger(
         mockTenantId,
-        'quote.approved',
+        "quote.approved",
         payload,
       );
       await jest.runAllTimersAsync();
@@ -273,19 +273,19 @@ describe('WebhooksService', () => {
       expect(mockedAxios.post).toHaveBeenCalledTimes(2);
     });
 
-    it('deve registrar tentativa falha quando sendWebhook falha', async () => {
+    it("deve registrar tentativa falha quando sendWebhook falha", async () => {
       mockPrismaService.webhook.findMany.mockResolvedValue([mockWebhook]);
       mockPrismaService.webhookAttempt.create.mockResolvedValue({
-        id: 'attempt-id',
-        webhookId: 'webhook-id',
-        event: 'quote.approved',
+        id: "attempt-id",
+        webhookId: "webhook-id",
+        event: "quote.approved",
         payload: {},
-        status: 'pending',
+        status: "pending",
         attemptedAt: new Date(),
       });
       mockPrismaService.webhookAttempt.update.mockResolvedValue({
-        id: 'attempt-id',
-        status: 'failed',
+        id: "attempt-id",
+        status: "failed",
       });
 
       mockedAxios.post.mockRejectedValue({
@@ -293,11 +293,11 @@ describe('WebhooksService', () => {
         isAxiosError: true,
       } as AxiosError);
 
-      const payload = { quoteId: 'quote-123' };
+      const payload = { quoteId: "quote-123" };
 
       const triggerPromise = service.trigger(
         mockTenantId,
-        'quote.approved',
+        "quote.approved",
         payload,
       );
       await jest.runAllTimersAsync();
@@ -307,88 +307,88 @@ describe('WebhooksService', () => {
       expect(mockPrismaService.webhookAttempt.update).toHaveBeenCalled();
       const updateCalls = mockPrismaService.webhookAttempt.update.mock.calls;
       const lastCall = updateCalls.at(-1);
-      if (lastCall && lastCall[0] && 'data' in lastCall[0]) {
+      if (lastCall && lastCall[0] && "data" in lastCall[0]) {
         expect((lastCall[0] as { data: { status: string } }).data.status).toBe(
-          'failed',
+          "failed",
         );
       } else {
         // Verificar se alguma chamada tem status 'failed'
         const hasFailedStatus = updateCalls.some(
           (call) =>
             call[0] &&
-            'data' in call[0] &&
-            (call[0] as { data: { status: string } }).data.status === 'failed',
+            "data" in call[0] &&
+            (call[0] as { data: { status: string } }).data.status === "failed",
         );
         expect(hasFailedStatus).toBe(true);
       }
     });
   });
 
-  describe('error handling', () => {
-    it('deve lidar com erros ao criar webhook', async () => {
+  describe("error handling", () => {
+    it("deve lidar com erros ao criar webhook", async () => {
       const createDto: CreateWebhookDto = {
-        url: 'https://example.com/webhook',
-        secret: 'secret-key',
-        events: ['quote.approved'],
+        url: "https://example.com/webhook",
+        secret: "secret-key",
+        events: ["quote.approved"],
       };
 
       mockPrismaService.webhook.create.mockRejectedValue(
-        new Error('Database error'),
+        new Error("Database error"),
       );
 
       await expect(service.create(mockTenantId, createDto)).rejects.toThrow(
-        'Database error',
+        "Database error",
       );
     });
 
-    it('deve lidar com erros ao listar webhooks', async () => {
+    it("deve lidar com erros ao listar webhooks", async () => {
       mockPrismaService.webhook.findMany.mockRejectedValue(
-        new Error('Database error'),
+        new Error("Database error"),
       );
 
       await expect(service.findAll(mockTenantId)).rejects.toThrow(
-        'Database error',
+        "Database error",
       );
     });
 
-    it('deve lidar com erros ao atualizar webhook', async () => {
+    it("deve lidar com erros ao atualizar webhook", async () => {
       const updateDto: UpdateWebhookDto = {
-        url: 'https://new-url.com/webhook',
+        url: "https://new-url.com/webhook",
       };
 
       mockPrismaService.webhook.findFirst.mockResolvedValue(mockWebhook);
       mockPrismaService.webhook.update.mockRejectedValue(
-        new Error('Database error'),
+        new Error("Database error"),
       );
 
       await expect(
-        service.update(mockTenantId, 'webhook-id', updateDto),
-      ).rejects.toThrow('Database error');
+        service.update(mockTenantId, "webhook-id", updateDto),
+      ).rejects.toThrow("Database error");
     });
 
-    it('deve lidar com erros ao remover webhook', async () => {
+    it("deve lidar com erros ao remover webhook", async () => {
       mockPrismaService.webhook.findFirst.mockResolvedValue(mockWebhook);
       mockPrismaService.webhook.delete.mockRejectedValue(
-        new Error('Database error'),
+        new Error("Database error"),
       );
 
-      await expect(service.remove(mockTenantId, 'webhook-id')).rejects.toThrow(
-        'Database error',
+      await expect(service.remove(mockTenantId, "webhook-id")).rejects.toThrow(
+        "Database error",
       );
     });
   });
 
-  describe('create - casos especiais', () => {
-    it('deve criar webhook com secret customizado', async () => {
+  describe("create - casos especiais", () => {
+    it("deve criar webhook com secret customizado", async () => {
       const createDto: CreateWebhookDto = {
-        url: 'https://example.com/webhook',
-        secret: 'custom-secret-key',
-        events: ['quote.approved'],
+        url: "https://example.com/webhook",
+        secret: "custom-secret-key",
+        events: ["quote.approved"],
       };
 
       const webhookWithCustomSecret = {
         ...mockWebhook,
-        secret: 'custom-secret-key',
+        secret: "custom-secret-key",
       };
 
       mockPrismaService.webhook.create.mockResolvedValue(
@@ -397,17 +397,17 @@ describe('WebhooksService', () => {
 
       const result = await service.create(mockTenantId, createDto);
 
-      expect(result).toHaveProperty('id');
+      expect(result).toHaveProperty("id");
       expect(mockPrismaService.webhook.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
-          secret: 'custom-secret-key',
+          secret: "custom-secret-key",
         }),
       });
     });
   });
 
-  describe('update - casos especiais', () => {
-    it('deve atualizar apenas campos fornecidos', async () => {
+  describe("update - casos especiais", () => {
+    it("deve atualizar apenas campos fornecidos", async () => {
       const updateDto: UpdateWebhookDto = {
         isActive: false,
       };
@@ -420,33 +420,33 @@ describe('WebhooksService', () => {
 
       const result = await service.update(
         mockTenantId,
-        'webhook-id',
+        "webhook-id",
         updateDto,
       );
 
       expect(result.isActive).toBe(false);
       expect(mockPrismaService.webhook.update).toHaveBeenCalledWith({
-        where: { id: 'webhook-id' },
+        where: { id: "webhook-id" },
         data: expect.objectContaining({
           isActive: false,
         }),
       });
     });
 
-    it('deve lançar erro se webhook não encontrado ao atualizar', async () => {
+    it("deve lançar erro se webhook não encontrado ao atualizar", async () => {
       const updateDto: UpdateWebhookDto = {
-        url: 'https://new-url.com/webhook',
+        url: "https://new-url.com/webhook",
       };
 
       mockPrismaService.webhook.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.update(mockTenantId, 'non-existent', updateDto),
+        service.update(mockTenantId, "non-existent", updateDto),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('trigger - envio real com retry', () => {
+  describe("trigger - envio real com retry", () => {
     beforeEach(() => {
       jest.useFakeTimers();
     });
@@ -455,20 +455,20 @@ describe('WebhooksService', () => {
       jest.useRealTimers();
     });
 
-    it('deve enviar webhook com sucesso na primeira tentativa', async () => {
+    it("deve enviar webhook com sucesso na primeira tentativa", async () => {
       const webhooks = [mockWebhook];
       mockPrismaService.webhook.findMany.mockResolvedValue(webhooks);
       mockPrismaService.webhookAttempt.create.mockResolvedValue({
-        id: 'attempt-id',
-        webhookId: 'webhook-id',
-        event: 'quote.approved',
+        id: "attempt-id",
+        webhookId: "webhook-id",
+        event: "quote.approved",
         payload: {},
-        status: 'pending',
+        status: "pending",
         attemptedAt: new Date(),
       });
       mockPrismaService.webhookAttempt.update.mockResolvedValue({
-        id: 'attempt-id',
-        status: 'success',
+        id: "attempt-id",
+        status: "success",
         statusCode: 200,
       });
       mockPrismaService.webhook.update.mockResolvedValue(mockWebhook);
@@ -478,8 +478,8 @@ describe('WebhooksService', () => {
         data: { success: true },
       });
 
-      await service.trigger(mockTenantId, 'quote.approved', {
-        quoteId: 'quote-123',
+      await service.trigger(mockTenantId, "quote.approved", {
+        quoteId: "quote-123",
       });
 
       // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -487,22 +487,22 @@ describe('WebhooksService', () => {
       expect(mockPrismaService.webhookAttempt.update).toHaveBeenCalledWith({
         where: { id: expect.any(String) }, // UUID gerado dinamicamente
         data: {
-          status: 'success',
+          status: "success",
           statusCode: 200,
           response: expect.any(String),
         },
       });
     });
 
-    it('deve fazer retry em caso de erro retryable (5xx)', async () => {
+    it("deve fazer retry em caso de erro retryable (5xx)", async () => {
       const webhooks = [mockWebhook];
       mockPrismaService.webhook.findMany.mockResolvedValue(webhooks);
       mockPrismaService.webhookAttempt.create.mockResolvedValue({
-        id: 'attempt-id',
-        webhookId: 'webhook-id',
-        event: 'quote.approved',
+        id: "attempt-id",
+        webhookId: "webhook-id",
+        event: "quote.approved",
         payload: {},
-        status: 'pending',
+        status: "pending",
         attemptedAt: new Date(),
       });
 
@@ -524,13 +524,13 @@ describe('WebhooksService', () => {
         });
 
       mockPrismaService.webhookAttempt.update.mockResolvedValue({
-        id: 'attempt-id',
-        status: 'success',
+        id: "attempt-id",
+        status: "success",
       });
       mockPrismaService.webhook.update.mockResolvedValue(mockWebhook);
 
-      const triggerPromise = service.trigger(mockTenantId, 'quote.approved', {
-        quoteId: 'quote-123',
+      const triggerPromise = service.trigger(mockTenantId, "quote.approved", {
+        quoteId: "quote-123",
       });
 
       // Avançar timers para processar retries
@@ -541,15 +541,15 @@ describe('WebhooksService', () => {
       expect(mockedAxios.post).toHaveBeenCalledTimes(3);
     });
 
-    it('deve marcar como failed após todas as tentativas falharem', async () => {
+    it("deve marcar como failed após todas as tentativas falharem", async () => {
       const webhooks = [mockWebhook];
       mockPrismaService.webhook.findMany.mockResolvedValue(webhooks);
       mockPrismaService.webhookAttempt.create.mockResolvedValue({
-        id: 'attempt-id',
-        webhookId: 'webhook-id',
-        event: 'quote.approved',
+        id: "attempt-id",
+        webhookId: "webhook-id",
+        event: "quote.approved",
         payload: {},
-        status: 'pending',
+        status: "pending",
         attemptedAt: new Date(),
       });
 
@@ -560,12 +560,12 @@ describe('WebhooksService', () => {
       } as AxiosError);
 
       mockPrismaService.webhookAttempt.update.mockResolvedValue({
-        id: 'attempt-id',
-        status: 'failed',
+        id: "attempt-id",
+        status: "failed",
       });
 
-      const triggerPromise = service.trigger(mockTenantId, 'quote.approved', {
-        quoteId: 'quote-123',
+      const triggerPromise = service.trigger(mockTenantId, "quote.approved", {
+        quoteId: "quote-123",
       });
 
       await jest.runAllTimersAsync();
@@ -577,31 +577,31 @@ describe('WebhooksService', () => {
       expect(mockPrismaService.webhookAttempt.update).toHaveBeenCalled();
       const updateCalls = mockPrismaService.webhookAttempt.update.mock.calls;
       const lastCall = updateCalls.at(-1);
-      if (lastCall && lastCall[0] && 'data' in lastCall[0]) {
+      if (lastCall && lastCall[0] && "data" in lastCall[0]) {
         expect((lastCall[0] as { data: { status: string } }).data.status).toBe(
-          'failed',
+          "failed",
         );
       } else {
         // Verificar se alguma chamada tem status 'failed'
         const hasFailedStatus = updateCalls.some(
           (call) =>
             call[0] &&
-            'data' in call[0] &&
-            (call[0] as { data: { status: string } }).data.status === 'failed',
+            "data" in call[0] &&
+            (call[0] as { data: { status: string } }).data.status === "failed",
         );
         expect(hasFailedStatus).toBe(true);
       }
     });
 
-    it('não deve fazer retry para erros não retryable (4xx)', async () => {
+    it("não deve fazer retry para erros não retryable (4xx)", async () => {
       const webhooks = [mockWebhook];
       mockPrismaService.webhook.findMany.mockResolvedValue(webhooks);
       mockPrismaService.webhookAttempt.create.mockResolvedValue({
-        id: 'attempt-id',
-        webhookId: 'webhook-id',
-        event: 'quote.approved',
+        id: "attempt-id",
+        webhookId: "webhook-id",
+        event: "quote.approved",
         payload: {},
-        status: 'pending',
+        status: "pending",
         attemptedAt: new Date(),
       });
 
@@ -612,12 +612,12 @@ describe('WebhooksService', () => {
       } as AxiosError);
 
       mockPrismaService.webhookAttempt.update.mockResolvedValue({
-        id: 'attempt-id',
-        status: 'failed',
+        id: "attempt-id",
+        status: "failed",
       });
 
-      await service.trigger(mockTenantId, 'quote.approved', {
-        quoteId: 'quote-123',
+      await service.trigger(mockTenantId, "quote.approved", {
+        quoteId: "quote-123",
       });
 
       // Apenas 1 tentativa (sem retry)
@@ -626,15 +626,15 @@ describe('WebhooksService', () => {
     });
   });
 
-  describe('retryFailedWebhooks', () => {
-    it('deve reprocessar webhooks falhos', async () => {
+  describe("retryFailedWebhooks", () => {
+    it("deve reprocessar webhooks falhos", async () => {
       const failedAttempt = {
-        id: 'attempt-id',
-        webhookId: 'webhook-id',
-        event: 'quote.approved',
-        payload: { quoteId: 'quote-123' },
-        status: 'failed',
-        error: 'Connection timeout',
+        id: "attempt-id",
+        webhookId: "webhook-id",
+        event: "quote.approved",
+        payload: { quoteId: "quote-123" },
+        status: "failed",
+        error: "Connection timeout",
         attemptedAt: new Date(),
         webhook: mockWebhook,
       };
@@ -643,8 +643,8 @@ describe('WebhooksService', () => {
         failedAttempt,
       ]);
       mockPrismaService.webhookAttempt.create.mockResolvedValue({
-        id: 'new-attempt-id',
-        status: 'success',
+        id: "new-attempt-id",
+        status: "success",
       });
       mockPrismaService.webhook.update.mockResolvedValue(mockWebhook);
 
@@ -664,14 +664,14 @@ describe('WebhooksService', () => {
       expect(result.failed).toBe(0);
     });
 
-    it('deve lidar com falhas ao reprocessar', async () => {
+    it("deve lidar com falhas ao reprocessar", async () => {
       const failedAttempt = {
-        id: 'attempt-id',
-        webhookId: 'webhook-id',
-        event: 'quote.approved',
-        payload: { quoteId: 'quote-123' },
-        status: 'failed',
-        error: 'Connection timeout',
+        id: "attempt-id",
+        webhookId: "webhook-id",
+        event: "quote.approved",
+        payload: { quoteId: "quote-123" },
+        status: "failed",
+        error: "Connection timeout",
         attemptedAt: new Date(),
         webhook: mockWebhook,
       };
@@ -680,11 +680,11 @@ describe('WebhooksService', () => {
         failedAttempt,
       ]);
       mockPrismaService.webhookAttempt.create.mockResolvedValue({
-        id: 'new-attempt-id',
-        status: 'failed',
+        id: "new-attempt-id",
+        status: "failed",
       });
 
-      mockedAxios.post.mockRejectedValue(new Error('Network error'));
+      mockedAxios.post.mockRejectedValue(new Error("Network error"));
 
       const result = await service.retryFailedWebhooks(mockTenantId, 10);
 

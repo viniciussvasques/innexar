@@ -1,10 +1,10 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { InjectQueue } from '@nestjs/bull';
-import { Queue, Job as BullJob } from 'bull';
-import { PrismaService } from '@database/prisma.service';
-import { CreateJobDto, JobResponseDto, JobFiltersDto, JobStatus } from './dto';
-import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
-import { Prisma } from '@prisma/client';
+import { Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { InjectQueue } from "@nestjs/bull";
+import { Queue, Job as BullJob } from "bull";
+import { PrismaService } from "@database/prisma.service";
+import { CreateJobDto, JobResponseDto, JobFiltersDto, JobStatus } from "./dto";
+import { getErrorMessage, getErrorStack } from "@common/utils/error.utils";
+import { Prisma } from "@prisma/client";
 
 interface JobData {
   id: string;
@@ -24,7 +24,7 @@ export class JobsService {
 
   constructor(
     private readonly prisma: PrismaService,
-    @InjectQueue('jobs') private readonly jobsQueue: Queue,
+    @InjectQueue("jobs") private readonly jobsQueue: Queue,
   ) {}
 
   /**
@@ -58,7 +58,7 @@ export class JobsService {
         priority: createJobDto.priority || 5,
         attempts: createJobDto.attempts || 3,
         backoff: {
-          type: 'exponential',
+          type: "exponential",
           delay: 2000, // 2 segundos base
         },
       };
@@ -152,7 +152,7 @@ export class JobsService {
           where,
           skip,
           take: limit,
-          orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
+          orderBy: [{ priority: "desc" }, { createdAt: "desc" }],
         }),
         this.prisma.job.count({ where }),
       ]);
@@ -233,7 +233,7 @@ export class JobsService {
         job.type,
         {
           id: job.id,
-          tenantId: '', // Será preenchido pelo processador
+          tenantId: "", // Será preenchido pelo processador
           type: job.type,
           data: job.data,
         },
@@ -270,9 +270,9 @@ export class JobsService {
 
       // Remover da fila Bull se ainda estiver pendente
       const jobs = await this.jobsQueue.getJobs([
-        'waiting',
-        'active',
-        'delayed',
+        "waiting",
+        "active",
+        "delayed",
       ]);
       const bullJob = jobs.find((j: BullJob<JobData>) => j.data.id === jobId);
 

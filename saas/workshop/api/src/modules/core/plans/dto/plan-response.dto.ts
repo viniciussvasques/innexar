@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from "@nestjs/swagger";
 
 export class PlanResponseDto {
   @ApiProperty()
@@ -59,13 +59,13 @@ export class PlanResponseDto {
   updatedAt: Date;
 
   // Computed fields for frontend compatibility
-  @ApiProperty({ description: 'Preços formatados para frontend' })
+  @ApiProperty({ description: "Preços formatados para frontend" })
   price: {
     monthly: number;
     annual: number;
   };
 
-  @ApiProperty({ description: 'Limites formatados para frontend' })
+  @ApiProperty({ description: "Limites formatados para frontend" })
   limits: {
     serviceOrdersLimit: number | null;
     partsLimit: number | null;

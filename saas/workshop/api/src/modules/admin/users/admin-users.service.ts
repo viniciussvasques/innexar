@@ -2,14 +2,14 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
-} from '@nestjs/common';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import * as bcrypt from 'bcrypt';
-import { PrismaService } from '../../../database/prisma.service';
-import { CreateAdminUserDto } from './dto/create-admin-user.dto';
-import { ResetAdminPasswordDto } from './dto/reset-admin-password.dto';
-import { UpdateAdminUserDto } from './dto/update-admin-user.dto';
-import { UpdateAdminUserStatusDto } from './dto/update-admin-user-status.dto';
+} from "@nestjs/common";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+import * as bcrypt from "bcrypt";
+import { PrismaService } from "../../../database/prisma.service";
+import { CreateAdminUserDto } from "./dto/create-admin-user.dto";
+import { ResetAdminPasswordDto } from "./dto/reset-admin-password.dto";
+import { UpdateAdminUserDto } from "./dto/update-admin-user.dto";
+import { UpdateAdminUserStatusDto } from "./dto/update-admin-user-status.dto";
 
 @Injectable()
 export class AdminUsersService {
@@ -17,7 +17,7 @@ export class AdminUsersService {
 
   async findAll() {
     const users = await this.prisma.adminUser.findMany({
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
     return users.map((user) => this.sanitize(user));
   }
@@ -26,7 +26,7 @@ export class AdminUsersService {
     const user = await this.prisma.adminUser.findUnique({ where: { id } });
 
     if (!user) {
-      throw new NotFoundException('Usuário admin não encontrado');
+      throw new NotFoundException("Usuário admin não encontrado");
     }
 
     return this.sanitize(user);
@@ -41,7 +41,7 @@ export class AdminUsersService {
           email: dto.email,
           name: dto.name,
           passwordHash,
-          role: dto.role ?? 'admin',
+          role: dto.role ?? "admin",
         },
       });
 
@@ -49,9 +49,9 @@ export class AdminUsersService {
     } catch (error) {
       if (
         error instanceof PrismaClientKnownRequestError &&
-        error.code === 'P2002'
+        error.code === "P2002"
       ) {
-        throw new BadRequestException('Já existe um usuário com este email');
+        throw new BadRequestException("Já existe um usuário com este email");
       }
       throw error;
     }
@@ -61,7 +61,7 @@ export class AdminUsersService {
     const existing = await this.prisma.adminUser.findUnique({ where: { id } });
 
     if (!existing) {
-      throw new NotFoundException('Usuário admin não encontrado');
+      throw new NotFoundException("Usuário admin não encontrado");
     }
 
     const data: Record<string, unknown> = {};
@@ -91,9 +91,9 @@ export class AdminUsersService {
     } catch (error) {
       if (
         error instanceof PrismaClientKnownRequestError &&
-        error.code === 'P2002'
+        error.code === "P2002"
       ) {
-        throw new BadRequestException('Já existe um usuário com este email');
+        throw new BadRequestException("Já existe um usuário com este email");
       }
       throw error;
     }
@@ -127,7 +127,7 @@ export class AdminUsersService {
     const user = await this.prisma.adminUser.findUnique({ where: { id } });
 
     if (!user) {
-      throw new NotFoundException('Usuário admin não encontrado');
+      throw new NotFoundException("Usuário admin não encontrado");
     }
 
     return user;

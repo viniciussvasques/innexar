@@ -1,12 +1,12 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsObject } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { IsOptional, IsObject } from "class-validator";
 
 export class TestIntegrationDto {
-  @ApiProperty({ description: 'Dados de teste' })
+  @ApiProperty({ description: "Dados de teste" })
   @IsObject()
   testData: Record<string, unknown>;
 
-  @ApiPropertyOptional({ description: 'Parâmetros adicionais' })
+  @ApiPropertyOptional({ description: "Parâmetros adicionais" })
   @IsOptional()
   @IsObject()
   params?: Record<string, unknown>;

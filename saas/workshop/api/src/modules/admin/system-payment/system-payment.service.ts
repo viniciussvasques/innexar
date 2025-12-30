@@ -2,11 +2,11 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
-} from '@nestjs/common';
-import { PrismaService } from '../../../database/prisma.service';
-import { EncryptionService } from '../../shared/encryption/encryption.service';
-import { CreateSystemPaymentDto } from './dto/create-system-payment.dto';
-import { UpdateSystemPaymentDto } from './dto/update-system-payment.dto';
+} from "@nestjs/common";
+import { PrismaService } from "../../../database/prisma.service";
+import { EncryptionService } from "../../shared/encryption/encryption.service";
+import { CreateSystemPaymentDto } from "./dto/create-system-payment.dto";
+import { UpdateSystemPaymentDto } from "./dto/update-system-payment.dto";
 
 @Injectable()
 export class SystemPaymentService {
@@ -17,7 +17,7 @@ export class SystemPaymentService {
 
   async findAll() {
     const gateways = await this.prisma.systemPaymentGateway.findMany({
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     return gateways.map((gateway) => this.sanitize(gateway));
@@ -29,7 +29,7 @@ export class SystemPaymentService {
     });
 
     if (!gateway) {
-      throw new NotFoundException('Gateway de pagamento não encontrado');
+      throw new NotFoundException("Gateway de pagamento não encontrado");
     }
 
     return this.sanitize(gateway);
@@ -63,7 +63,7 @@ export class SystemPaymentService {
     });
 
     if (!existing) {
-      throw new NotFoundException('Gateway de pagamento não encontrado');
+      throw new NotFoundException("Gateway de pagamento não encontrado");
     }
 
     if (dto.isDefault) {
@@ -74,13 +74,15 @@ export class SystemPaymentService {
 
     if (dto.name !== undefined) updateData.name = dto.name;
     if (dto.type !== undefined) updateData.type = dto.type;
-    
+
     if (dto.credentials) {
       if (dto.credentials.publicKey !== undefined) {
         updateData.publicKey = dto.credentials.publicKey;
       }
       if (dto.credentials.secretKey !== undefined) {
-        updateData.secretKey = this.encryptionService.encrypt(dto.credentials.secretKey);
+        updateData.secretKey = this.encryptionService.encrypt(
+          dto.credentials.secretKey,
+        );
       }
       if (dto.credentials.webhookSecret !== undefined) {
         updateData.webhookSecret = dto.credentials.webhookSecret
@@ -88,7 +90,7 @@ export class SystemPaymentService {
           : null;
       }
     }
-    
+
     if (dto.isActive !== undefined) updateData.isActive = dto.isActive;
     if (dto.isDefault !== undefined) updateData.isDefault = dto.isDefault;
 
@@ -106,18 +108,16 @@ export class SystemPaymentService {
     });
 
     if (!existing) {
-      throw new NotFoundException('Gateway de pagamento não encontrado');
+      throw new NotFoundException("Gateway de pagamento não encontrado");
     }
 
     if (existing.isDefault) {
-      throw new BadRequestException(
-        'Não é possível remover o gateway padrão',
-      );
+      throw new BadRequestException("Não é possível remover o gateway padrão");
     }
 
     await this.prisma.systemPaymentGateway.delete({ where: { id } });
 
-    return { message: 'Gateway removido com sucesso' };
+    return { message: "Gateway removido com sucesso" };
   }
 
   async setDefault(id: string) {
@@ -126,7 +126,7 @@ export class SystemPaymentService {
     });
 
     if (!existing) {
-      throw new NotFoundException('Gateway de pagamento não encontrado');
+      throw new NotFoundException("Gateway de pagamento não encontrado");
     }
 
     await this.resetDefaultGateway(id);
@@ -145,13 +145,13 @@ export class SystemPaymentService {
     });
 
     if (!existing) {
-      throw new NotFoundException('Gateway de pagamento não encontrado');
+      throw new NotFoundException("Gateway de pagamento não encontrado");
     }
 
     // TODO: Implementar testes reais por tipo (Stripe, MercadoPago, etc.)
     return {
       success: true,
-      message: 'Teste de conexão não implementado. Configure manualmente.',
+      message: "Teste de conexão não implementado. Configure manualmente.",
     };
   }
 

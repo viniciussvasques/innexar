@@ -1,29 +1,29 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from "@nestjs/swagger";
 
 export class BulkEmailErrorDto {
-  @ApiProperty({ description: 'Email do destinatário que falhou' })
+  @ApiProperty({ description: "Email do destinatário que falhou" })
   email: string;
 
-  @ApiProperty({ description: 'Mensagem de erro' })
+  @ApiProperty({ description: "Mensagem de erro" })
   error: string;
 }
 
 export class BulkEmailResponseDto {
-  @ApiProperty({ description: 'Total de destinatários' })
+  @ApiProperty({ description: "Total de destinatários" })
   total: number;
 
-  @ApiProperty({ description: 'Quantidade de emails enviados com sucesso' })
+  @ApiProperty({ description: "Quantidade de emails enviados com sucesso" })
   sent: number;
 
-  @ApiProperty({ description: 'Quantidade de emails que falharam' })
+  @ApiProperty({ description: "Quantidade de emails que falharam" })
   failed: number;
 
   @ApiProperty({
-    description: 'Lista de erros ocorridos',
+    description: "Lista de erros ocorridos",
     type: [BulkEmailErrorDto],
   })
   errors: BulkEmailErrorDto[];
 
-  @ApiProperty({ description: 'Mensagem de status' })
+  @ApiProperty({ description: "Mensagem de status" })
   message: string;
 }

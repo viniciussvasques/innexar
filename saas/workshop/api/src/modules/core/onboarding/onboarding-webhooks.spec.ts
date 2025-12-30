@@ -1,44 +1,44 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { OnboardingService } from './onboarding.service';
-import { PrismaService } from '@database/prisma.service';
-import { TenantsService } from '../tenants/tenants.service';
-import { BillingService } from '../billing/billing.service';
-import { UsersService } from '../users/users.service';
-import { EmailService } from '@shared/email/email.service';
-import { ConfigService } from '@nestjs/config';
-import { CloudflareService } from '@shared/cloudflare/cloudflare.service';
-import { EncryptionService } from '@shared/encryption/encryption.service';
-import Stripe from 'stripe';
+import { Test, TestingModule } from "@nestjs/testing";
+import { OnboardingService } from "./onboarding.service";
+import { PrismaService } from "@database/prisma.service";
+import { TenantsService } from "../tenants/tenants.service";
+import { BillingService } from "../billing/billing.service";
+import { UsersService } from "../users/users.service";
+import { EmailService } from "@shared/email/email.service";
+import { ConfigService } from "@nestjs/config";
+import { CloudflareService } from "@shared/cloudflare/cloudflare.service";
+import { EncryptionService } from "@shared/encryption/encryption.service";
+import Stripe from "stripe";
 
-describe('OnboardingService - Webhook Handlers', () => {
+describe("OnboardingService - Webhook Handlers", () => {
   let service: OnboardingService;
   let prismaService: jest.Mocked<PrismaService>;
   let emailService: jest.Mocked<EmailService>;
 
   const mockTenant = {
-    id: 'tenant-id',
-    name: 'Oficina Teste',
-    subdomain: 'oficina-teste',
-    adminEmail: 'admin@oficina.com',
-    status: 'pending',
+    id: "tenant-id",
+    name: "Oficina Teste",
+    subdomain: "oficina-teste",
+    adminEmail: "admin@oficina.com",
+    status: "pending",
     users: [
       {
-        id: 'user-id',
-        email: 'admin@oficina.com',
-        name: 'Admin',
-        role: 'admin',
+        id: "user-id",
+        email: "admin@oficina.com",
+        name: "Admin",
+        role: "admin",
       },
     ],
   };
 
   const mockSubscription = {
-    id: 'sub-id',
-    tenantId: 'tenant-id',
-    stripeCustomerId: 'cus_test',
-    stripeSubscriptionId: 'sub_test',
-    plan: 'workshops_starter',
-    status: 'active',
-    billingCycle: 'monthly',
+    id: "sub-id",
+    tenantId: "tenant-id",
+    stripeCustomerId: "cus_test",
+    stripeSubscriptionId: "sub_test",
+    plan: "workshops_starter",
+    status: "active",
+    billingCycle: "monthly",
     currentPeriodEnd: new Date(),
   };
 
@@ -64,7 +64,7 @@ describe('OnboardingService - Webhook Handlers', () => {
 
     const mockBillingService = {
       findByTenantId: jest.fn().mockResolvedValue({
-        id: 'sub-id',
+        id: "sub-id",
         currentPeriodEnd: new Date(),
       }),
       update: jest.fn(),
@@ -93,8 +93,8 @@ describe('OnboardingService - Webhook Handlers', () => {
     };
 
     const mockEncryptionService = {
-      encrypt: jest.fn(val => val),
-      decrypt: jest.fn(val => val),
+      encrypt: jest.fn((val) => val),
+      decrypt: jest.fn((val) => val),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -117,12 +117,12 @@ describe('OnboardingService - Webhook Handlers', () => {
 
     // Garantir que billingService.findByTenantId retorna um objeto válido
     mockBillingService.findByTenantId.mockResolvedValue({
-      id: 'sub-id',
+      id: "sub-id",
       currentPeriodEnd: new Date(),
     });
 
     // Mock Stripe
-    process.env.STRIPE_SECRET_KEY = 'sk_test_mock';
+    process.env.STRIPE_SECRET_KEY = "sk_test_mock";
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
     (service as any).stripe = {
       checkout: {
@@ -137,30 +137,30 @@ describe('OnboardingService - Webhook Handlers', () => {
     jest.clearAllMocks();
   });
 
-  describe('handleChargeFailed', () => {
+  describe("handleChargeFailed", () => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const mockCharge: Partial<Stripe.Charge> = {
-      id: 'ch_test_123',
-      customer: 'cus_test_123',
+      id: "ch_test_123",
+      customer: "cus_test_123",
       billing_details: {
-        email: 'admin@oficina.com',
-        name: 'Admin',
+        email: "admin@oficina.com",
+        name: "Admin",
         address: null,
         phone: null,
       },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any;
 
-    it('deve encontrar tenant via checkout session e enviar email', async () => {
+    it("deve encontrar tenant via checkout session e enviar email", async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
       const mockService = service as any;
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       mockService.stripe.checkout.sessions.list.mockResolvedValue({
         data: [
           {
-            id: 'cs_test',
-            metadata: { tenantId: 'tenant-id' },
-            customer_email: 'admin@oficina.com',
+            id: "cs_test",
+            metadata: { tenantId: "tenant-id" },
+            customer_email: "admin@oficina.com",
           },
         ],
       });
@@ -175,16 +175,16 @@ describe('OnboardingService - Webhook Handlers', () => {
       expect(emailService.sendPaymentFailedEmail).toHaveBeenCalled();
     });
 
-    it('deve usar email do billing_details quando disponível', async () => {
+    it("deve usar email do billing_details quando disponível", async () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
       const mockService = service as any;
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       mockService.stripe.checkout.sessions.list.mockResolvedValue({
         data: [
           {
-            id: 'cs_test',
-            metadata: { tenantId: 'tenant-id' },
-            customer_email: 'admin@oficina.com',
+            id: "cs_test",
+            metadata: { tenantId: "tenant-id" },
+            customer_email: "admin@oficina.com",
           },
         ],
       });
@@ -198,23 +198,23 @@ describe('OnboardingService - Webhook Handlers', () => {
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(emailService.sendPaymentFailedEmail).toHaveBeenCalledWith(
         expect.objectContaining({
-          to: 'admin@oficina.com',
+          to: "admin@oficina.com",
         }),
       );
     });
   });
 
-  describe('handleInvoicePaymentFailed', () => {
+  describe("handleInvoicePaymentFailed", () => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const mockInvoice: Partial<Stripe.Invoice> = {
-      id: 'in_test_123',
-      customer: 'cus_test_123',
+      id: "in_test_123",
+      customer: "cus_test_123",
       amount_due: 9900,
-      currency: 'brl',
+      currency: "brl",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any;
 
-    it('deve encontrar tenant e enviar email de pagamento falhado', async () => {
+    it("deve encontrar tenant e enviar email de pagamento falhado", async () => {
       (prismaService.subscription.findFirst as jest.Mock).mockResolvedValue({
         ...mockSubscription,
         tenant: {
@@ -230,18 +230,18 @@ describe('OnboardingService - Webhook Handlers', () => {
     });
   });
 
-  describe('handleInvoicePaymentSucceeded', () => {
+  describe("handleInvoicePaymentSucceeded", () => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const mockInvoice: Partial<Stripe.Invoice> = {
-      id: 'in_test_123',
-      customer: 'cus_test_123',
+      id: "in_test_123",
+      customer: "cus_test_123",
       amount_paid: 9900,
-      currency: 'brl',
-      invoice_pdf: 'https://invoice.pdf',
+      currency: "brl",
+      invoice_pdf: "https://invoice.pdf",
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } as any;
 
-    it('deve encontrar tenant e enviar email de pagamento bem-sucedido', async () => {
+    it("deve encontrar tenant e enviar email de pagamento bem-sucedido", async () => {
       (prismaService.subscription.findFirst as jest.Mock).mockResolvedValue({
         ...mockSubscription,
         tenant: {
@@ -259,14 +259,14 @@ describe('OnboardingService - Webhook Handlers', () => {
     });
   });
 
-  describe('handleSubscriptionDeleted', () => {
+  describe("handleSubscriptionDeleted", () => {
     const mockSubscription: Partial<Stripe.Subscription> = {
-      id: 'sub_test_123',
-      customer: 'cus_test_123',
-      status: 'canceled',
+      id: "sub_test_123",
+      customer: "cus_test_123",
+      status: "canceled",
     };
 
-    it('deve encontrar tenant e enviar email de cancelamento', async () => {
+    it("deve encontrar tenant e enviar email de cancelamento", async () => {
       (prismaService.subscription.findFirst as jest.Mock).mockResolvedValue({
         ...mockSubscription,
         tenant: {
@@ -284,40 +284,40 @@ describe('OnboardingService - Webhook Handlers', () => {
     });
   });
 
-  describe('handleSubscriptionUpdated', () => {
+  describe("handleSubscriptionUpdated", () => {
     const mockSubscription = {
-      id: 'sub_test_123',
-      customer: 'cus_test_123',
-      status: 'active',
+      id: "sub_test_123",
+      customer: "cus_test_123",
+      status: "active",
       items: {
-        object: 'list',
+        object: "list",
         data: [
           {
-            id: 'si_test',
-            object: 'subscription_item',
+            id: "si_test",
+            object: "subscription_item",
             price: {
-              id: 'price_test',
-              nickname: 'Professional',
+              id: "price_test",
+              nickname: "Professional",
               unit_amount: 9900,
-              currency: 'brl',
+              currency: "brl",
               recurring: {
-                interval: 'month',
+                interval: "month",
               },
             },
             billing_thresholds: null,
             created: Math.floor(Date.now() / 1000),
             metadata: {},
             quantity: 1,
-            subscription: 'sub_test_123',
+            subscription: "sub_test_123",
             tax_rates: [],
           },
         ],
         has_more: false,
-        url: '/v1/subscription_items',
+        url: "/v1/subscription_items",
       },
     } as unknown as Stripe.Subscription;
 
-    it('deve encontrar tenant e enviar email de atualização', async () => {
+    it("deve encontrar tenant e enviar email de atualização", async () => {
       (prismaService.subscription.findFirst as jest.Mock).mockResolvedValue({
         ...mockSubscription,
         tenant: {

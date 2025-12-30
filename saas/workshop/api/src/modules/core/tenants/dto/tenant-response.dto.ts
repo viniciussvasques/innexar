@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { TenantStatus, TenantPlan } from './create-tenant.dto';
+import { ApiProperty } from "@nestjs/swagger";
+import { TenantStatus, TenantPlan } from "./create-tenant.dto";
 
 export class SubscriptionResponseDto {
   @ApiProperty()
@@ -19,51 +19,51 @@ export class SubscriptionResponseDto {
 }
 
 export class TenantResponseDto {
-  @ApiProperty({ description: 'ID do tenant', example: 'uuid' })
+  @ApiProperty({ description: "ID do tenant", example: "uuid" })
   id: string;
 
-  @ApiProperty({ description: 'Nome da oficina', example: 'Oficina do João' })
+  @ApiProperty({ description: "Nome da oficina", example: "Oficina do João" })
   name: string;
 
-  @ApiProperty({ description: 'Tipo de documento', enum: ['cnpj', 'cpf'] })
+  @ApiProperty({ description: "Tipo de documento", enum: ["cnpj", "cpf"] })
   documentType: string;
 
-  @ApiProperty({ description: 'CNPJ ou CPF', example: '12345678000199' })
+  @ApiProperty({ description: "CNPJ ou CPF", example: "12345678000199" })
   document: string;
 
-  @ApiProperty({ description: 'Subdomain', example: 'oficina-joao' })
+  @ApiProperty({ description: "Subdomain", example: "oficina-joao" })
   subdomain: string;
 
   @ApiProperty({
-    description: 'Plano',
+    description: "Plano",
     enum: TenantPlan,
     example: TenantPlan.WORKSHOPS_STARTER,
   })
   plan: TenantPlan;
 
   @ApiProperty({
-    description: 'Status',
+    description: "Status",
     enum: TenantStatus,
     example: TenantStatus.ACTIVE,
   })
   status: TenantStatus;
 
   @ApiProperty({
-    description: 'ID do link de indicação',
+    description: "ID do link de indicação",
     required: false,
   })
   referredByLinkId?: string;
 
   @ApiProperty({
-    description: 'Subscription',
+    description: "Subscription",
     type: SubscriptionResponseDto,
     required: false,
   })
   subscription?: SubscriptionResponseDto;
 
-  @ApiProperty({ description: 'Data de criação' })
+  @ApiProperty({ description: "Data de criação" })
   createdAt: Date;
 
-  @ApiProperty({ description: 'Data de atualização' })
+  @ApiProperty({ description: "Data de atualização" })
   updatedAt: Date;
 }

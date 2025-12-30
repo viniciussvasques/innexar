@@ -27,5 +27,5 @@ export function generateValidCPF(): string {
   if (remainder === 10 || remainder === 11) remainder = 0;
   digits.push(remainder);
 
-  return digits.join('');
+  return digits.join("");
 }

@@ -1,4 +1,4 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from "@nestjs/swagger";
 import {
   IsString,
   IsOptional,
@@ -8,26 +8,26 @@ import {
   IsNumber,
   Min,
   IsDateString,
-} from 'class-validator';
-import { Type } from 'class-transformer';
+} from "class-validator";
+import { Type } from "class-transformer";
 import {
   InvoiceType,
   InvoiceStatus,
   PaymentStatus,
   PaymentPreference,
-} from './invoice-status.enum';
-import { InvoiceItemDto } from './invoice-item.dto';
+} from "./invoice-status.enum";
+import { InvoiceItemDto } from "./invoice-item.dto";
 
 export class UpdateInvoiceDto {
   @ApiPropertyOptional({
-    description: 'ID do cliente',
+    description: "ID do cliente",
   })
   @IsOptional()
   @IsString()
   customerId?: string;
 
   @ApiPropertyOptional({
-    description: 'Tipo de fatura',
+    description: "Tipo de fatura",
     enum: InvoiceType,
   })
   @IsOptional()
@@ -35,7 +35,7 @@ export class UpdateInvoiceDto {
   type?: InvoiceType;
 
   @ApiPropertyOptional({
-    description: 'Itens da fatura',
+    description: "Itens da fatura",
     type: [InvoiceItemDto],
   })
   @IsOptional()
@@ -45,7 +45,7 @@ export class UpdateInvoiceDto {
   items?: InvoiceItemDto[];
 
   @ApiPropertyOptional({
-    description: 'Valor total',
+    description: "Valor total",
     minimum: 0,
   })
   @IsOptional()
@@ -55,7 +55,7 @@ export class UpdateInvoiceDto {
   total?: number;
 
   @ApiPropertyOptional({
-    description: 'Valor do desconto',
+    description: "Valor do desconto",
     minimum: 0,
   })
   @IsOptional()
@@ -65,7 +65,7 @@ export class UpdateInvoiceDto {
   discount?: number;
 
   @ApiPropertyOptional({
-    description: 'Valor do imposto',
+    description: "Valor do imposto",
     minimum: 0,
   })
   @IsOptional()
@@ -75,14 +75,14 @@ export class UpdateInvoiceDto {
   taxAmount?: number;
 
   @ApiPropertyOptional({
-    description: 'Método de pagamento',
+    description: "Método de pagamento",
   })
   @IsOptional()
   @IsString()
   paymentMethod?: string;
 
   @ApiPropertyOptional({
-    description: 'Preferência de pagamento',
+    description: "Preferência de pagamento",
     enum: PaymentPreference,
   })
   @IsOptional()
@@ -90,14 +90,14 @@ export class UpdateInvoiceDto {
   paymentPreference?: PaymentPreference;
 
   @ApiPropertyOptional({
-    description: 'Gateway usado para pagamento',
+    description: "Gateway usado para pagamento",
   })
   @IsOptional()
   @IsString()
   paymentGatewayId?: string;
 
   @ApiPropertyOptional({
-    description: 'Status do pagamento',
+    description: "Status do pagamento",
     enum: PaymentStatus,
   })
   @IsOptional()
@@ -105,7 +105,7 @@ export class UpdateInvoiceDto {
   paymentStatus?: PaymentStatus;
 
   @ApiPropertyOptional({
-    description: 'Status da fatura',
+    description: "Status da fatura",
     enum: InvoiceStatus,
   })
   @IsOptional()
@@ -113,35 +113,35 @@ export class UpdateInvoiceDto {
   status?: InvoiceStatus;
 
   @ApiPropertyOptional({
-    description: 'Data de vencimento',
+    description: "Data de vencimento",
   })
   @IsOptional()
   @IsDateString()
   dueDate?: string;
 
   @ApiPropertyOptional({
-    description: 'Chave da NFe',
+    description: "Chave da NFe",
   })
   @IsOptional()
   @IsString()
   nfeKey?: string;
 
   @ApiPropertyOptional({
-    description: 'URL do XML da NFe',
+    description: "URL do XML da NFe",
   })
   @IsOptional()
   @IsString()
   nfeXmlUrl?: string;
 
   @ApiPropertyOptional({
-    description: 'URL do PDF da NFe',
+    description: "URL do PDF da NFe",
   })
   @IsOptional()
   @IsString()
   nfePdfUrl?: string;
 
   @ApiPropertyOptional({
-    description: 'Status da NFe',
+    description: "Status da NFe",
   })
   @IsOptional()
   @IsString()

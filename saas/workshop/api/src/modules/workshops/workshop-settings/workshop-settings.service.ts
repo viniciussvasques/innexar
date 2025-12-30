@@ -1,11 +1,11 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
-import { PrismaService } from '@database/prisma.service';
+import { Injectable, NotFoundException, Logger } from "@nestjs/common";
+import { PrismaService } from "@database/prisma.service";
 import {
   CreateWorkshopSettingsDto,
   UpdateWorkshopSettingsDto,
   WorkshopSettingsResponseDto,
-} from './dto';
-import { Prisma } from '@prisma/client';
+} from "./dto";
+import { Prisma } from "@prisma/client";
 
 @Injectable()
 export class WorkshopSettingsService {
@@ -55,7 +55,7 @@ export class WorkshopSettingsService {
     });
 
     if (!tenant) {
-      throw new NotFoundException('Tenant não encontrado');
+      throw new NotFoundException("Tenant não encontrado");
     }
   }
 
@@ -102,7 +102,7 @@ export class WorkshopSettingsService {
       city: this.normalizeField(createDto.city),
       state: this.normalizeField(createDto.state),
       zipCode: this.normalizeField(createDto.zipCode),
-      country: createDto.country ?? 'BR',
+      country: createDto.country ?? "BR",
       website: this.normalizeField(createDto.website),
       facebook: this.normalizeField(createDto.facebook),
       instagram: this.normalizeField(createDto.instagram),
@@ -135,7 +135,7 @@ export class WorkshopSettingsService {
       city: createDto.city,
       state: createDto.state,
       zipCode: createDto.zipCode,
-      country: createDto.country || 'BR',
+      country: createDto.country || "BR",
       website: createDto.website,
       facebook: createDto.facebook,
       instagram: createDto.instagram,
@@ -179,7 +179,7 @@ export class WorkshopSettingsService {
     });
 
     if (!existing) {
-      throw new NotFoundException('Configurações não encontradas');
+      throw new NotFoundException("Configurações não encontradas");
     }
   }
 
@@ -289,9 +289,9 @@ export class WorkshopSettingsService {
    */
   private getDefaultSettings(tenantId: string): WorkshopSettingsResponseDto {
     return {
-      id: '',
+      id: "",
       tenantId,
-      country: 'BR',
+      country: "BR",
       showLogoOnQuotes: true,
       showAddressOnQuotes: true,
       showContactOnQuotes: true,
@@ -321,7 +321,7 @@ export class WorkshopSettingsService {
       city: settings.city ?? undefined,
       state: settings.state ?? undefined,
       zipCode: settings.zipCode ?? undefined,
-      country: settings.country ?? 'BR',
+      country: settings.country ?? "BR",
       website: settings.website ?? undefined,
       facebook: settings.facebook ?? undefined,
       instagram: settings.instagram ?? undefined,

@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsEnum } from 'class-validator';
+import { IsString, IsOptional, IsEnum } from "class-validator";
 
 export class CreateSupportTicketDto {
   @IsString()
@@ -7,15 +7,15 @@ export class CreateSupportTicketDto {
   @IsString()
   message: string;
 
-  @IsEnum(['open', 'in_progress', 'waiting_for_user', 'resolved', 'closed'])
+  @IsEnum(["open", "in_progress", "waiting_for_user", "resolved", "closed"])
   @IsOptional()
   status?: string;
 
-  @IsEnum(['low', 'normal', 'high', 'urgent'])
+  @IsEnum(["low", "normal", "high", "urgent"])
   @IsOptional()
   priority?: string;
 
-  @IsEnum(['technical', 'billing', 'account', 'feature_request', 'general'])
+  @IsEnum(["technical", "billing", "account", "feature_request", "general"])
   @IsOptional()
   category?: string;
 

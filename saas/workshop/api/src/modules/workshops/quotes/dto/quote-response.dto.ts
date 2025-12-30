@@ -1,6 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { QuoteStatus } from './quote-status.enum';
-import { QuoteItemType } from './quote-item.dto';
+import { ApiProperty } from "@nestjs/swagger";
+import { QuoteStatus } from "./quote-status.enum";
+import { QuoteItemType } from "./quote-item.dto";
 
 export class QuoteItemResponseDto {
   @ApiProperty()
@@ -182,7 +182,7 @@ export class QuoteResponseDto {
   @ApiProperty({
     nullable: true,
     description:
-      'Tempo estimado de serviço em horas (preenchido no diagnóstico)',
+      "Tempo estimado de serviço em horas (preenchido no diagnóstico)",
   })
   estimatedHours?: number;
 

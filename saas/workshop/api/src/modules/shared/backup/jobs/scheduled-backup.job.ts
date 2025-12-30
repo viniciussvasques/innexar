@@ -1,7 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
-import { BackupService } from '../backup.service';
-import { BackupConfigDto, BackupType } from '../dto';
+import { Injectable, Logger } from "@nestjs/common";
+import { Cron, CronExpression } from "@nestjs/schedule";
+import { BackupService } from "../backup.service";
+import { BackupConfigDto, BackupType } from "../dto";
 
 /**
  * Job agendado para backup diário completo
@@ -16,7 +16,7 @@ export class ScheduledBackupJob {
   @Cron(CronExpression.EVERY_DAY_AT_2AM)
   async handleDailyBackup(): Promise<void> {
     try {
-      this.logger.log('Iniciando backup diário completo');
+      this.logger.log("Iniciando backup diário completo");
 
       const config: BackupConfigDto = {
         type: BackupType.FULL,
@@ -26,7 +26,7 @@ export class ScheduledBackupJob {
 
       await this.backupService.createBackup(config);
 
-      this.logger.log('Backup diário completo concluído');
+      this.logger.log("Backup diário completo concluído");
     } catch (error: unknown) {
       this.logger.error(
         `Erro ao executar backup diário: ${error instanceof Error ? error.message : String(error)}`,

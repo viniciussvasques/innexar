@@ -1,11 +1,11 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsEnum, IsString } from 'class-validator';
-import { SupportPriority, SupportCategory } from './create-support-ticket.dto';
-import { SupportStatus } from './support-ticket-response.dto';
+import { ApiProperty } from "@nestjs/swagger";
+import { IsOptional, IsEnum, IsString } from "class-validator";
+import { SupportPriority, SupportCategory } from "./create-support-ticket.dto";
+import { SupportStatus } from "./support-ticket-response.dto";
 
 export class UpdateSupportTicketDto {
   @ApiProperty({
-    description: 'Status do ticket',
+    description: "Status do ticket",
     enum: SupportStatus,
     required: false,
   })
@@ -14,7 +14,7 @@ export class UpdateSupportTicketDto {
   status?: SupportStatus;
 
   @ApiProperty({
-    description: 'Prioridade do ticket',
+    description: "Prioridade do ticket",
     enum: SupportPriority,
     required: false,
   })
@@ -23,7 +23,7 @@ export class UpdateSupportTicketDto {
   priority?: SupportPriority;
 
   @ApiProperty({
-    description: 'Categoria do ticket',
+    description: "Categoria do ticket",
     enum: SupportCategory,
     required: false,
   })
@@ -32,7 +32,7 @@ export class UpdateSupportTicketDto {
   category?: SupportCategory;
 
   @ApiProperty({
-    description: 'ID do usuário responsável',
+    description: "ID do usuário responsável",
     required: false,
   })
   @IsString()
@@ -40,7 +40,7 @@ export class UpdateSupportTicketDto {
   assignedToId?: string;
 
   @ApiProperty({
-    description: 'Notas internas (visíveis apenas para admins)',
+    description: "Notas internas (visíveis apenas para admins)",
     required: false,
   })
   @IsString()

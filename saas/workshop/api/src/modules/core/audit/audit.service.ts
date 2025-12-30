@@ -1,13 +1,13 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '@database/prisma.service';
+import { Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { PrismaService } from "@database/prisma.service";
 import {
   CreateAuditLogDto,
   AuditLogResponseDto,
   AuditLogFiltersDto,
   AuditAction,
-} from './dto';
-import { Prisma } from '@prisma/client';
-import { getErrorMessage } from '@common/utils/error.utils';
+} from "./dto";
+import { Prisma } from "@prisma/client";
+import { getErrorMessage } from "@common/utils/error.utils";
 
 @Injectable()
 export class AuditService {
@@ -106,7 +106,7 @@ export class AuditService {
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         include: {
           user: {
             select: {
@@ -155,7 +155,7 @@ export class AuditService {
     });
 
     if (!auditLog) {
-      throw new NotFoundException('Log de auditoria não encontrado');
+      throw new NotFoundException("Log de auditoria não encontrado");
     }
 
     return this.toResponseDto(auditLog);

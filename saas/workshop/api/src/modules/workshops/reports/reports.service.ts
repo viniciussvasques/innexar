@@ -3,20 +3,20 @@ import {
   BadRequestException,
   Logger,
   NotFoundException,
-} from '@nestjs/common';
-import { PrismaService } from '@database/prisma.service';
-import { Prisma } from '@prisma/client';
+} from "@nestjs/common";
+import { PrismaService } from "@database/prisma.service";
+import { Prisma } from "@prisma/client";
 import {
   GenerateReportDto,
   ReportResponseDto,
   ReportType,
   ReportFormat,
-} from './dto';
-import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
-import PDFDocument from 'pdfkit';
-import ExcelJS from 'exceljs';
-import { join } from 'node:path';
-import { existsSync, promises as fs } from 'node:fs';
+} from "./dto";
+import { getErrorMessage, getErrorStack } from "@common/utils/error.utils";
+import PDFDocument from "pdfkit";
+import ExcelJS from "exceljs";
+import { join } from "node:path";
+import { existsSync, promises as fs } from "node:fs";
 
 @Injectable()
 export class ReportsService {
@@ -25,7 +25,7 @@ export class ReportsService {
 
   constructor(private readonly prisma: PrismaService) {
     // Diretório para salvar relatórios: uploads/reports/{tenantId}
-    this.reportsDir = join(process.cwd(), 'uploads', 'reports');
+    this.reportsDir = join(process.cwd(), "uploads", "reports");
   }
 
   /**
@@ -114,7 +114,7 @@ export class ReportsService {
       // Validar datas
       if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
         throw new BadRequestException(
-          'Data inicial não pode ser maior que data final',
+          "Data inicial não pode ser maior que data final",
         );
       }
 
@@ -165,7 +165,7 @@ export class ReportsService {
         );
       } else {
         // JSON - salvar como arquivo também
-        fileBuffer = Buffer.from(JSON.stringify(reportData, null, 2), 'utf-8');
+        fileBuffer = Buffer.from(JSON.stringify(reportData, null, 2), "utf-8");
       }
 
       // Salvar arquivo
@@ -205,14 +205,14 @@ export class ReportsService {
           type,
           format,
           filename,
-          filePath: filePath ? filePath.replace(process.cwd(), '') : null,
+          filePath: filePath ? filePath.replace(process.cwd(), "") : null,
           fileSize,
           startDate: startDate ? new Date(startDate) : null,
           endDate: endDate ? new Date(endDate) : null,
           filters: filters ? (filters as Prisma.InputJsonValue) : undefined,
           summary: summary ? (summary as Prisma.InputJsonValue) : undefined,
           generatedBy: userId || null,
-          status: 'completed',
+          status: "completed",
           expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 dias
         },
       });
@@ -243,7 +243,7 @@ export class ReportsService {
         throw error;
       }
 
-      throw new BadRequestException('Erro ao gerar relatório');
+      throw new BadRequestException("Erro ao gerar relatório");
     }
   }
 
@@ -281,7 +281,7 @@ export class ReportsService {
       this.prisma.serviceOrder.findMany({
         where: {
           ...serviceOrderWhere,
-          status: 'completed',
+          status: "completed",
         },
         include: {
           customer: {
@@ -295,7 +295,7 @@ export class ReportsService {
       this.prisma.invoice.findMany({
         where: {
           ...invoiceWhere,
-          status: 'issued',
+          status: "issued",
         },
         include: {
           customer: {
@@ -396,7 +396,7 @@ export class ReportsService {
 
     const paymentWhere: Prisma.PaymentWhereInput = {
       tenantId,
-      status: 'completed',
+      status: "completed",
     };
 
     if (startDate || endDate) {
@@ -530,7 +530,7 @@ export class ReportsService {
   ): Promise<Record<string, unknown>> {
     const where: Prisma.UserWhereInput = {
       tenantId,
-      role: 'mechanic',
+      role: "mechanic",
       isActive: true,
     };
 
@@ -582,7 +582,7 @@ export class ReportsService {
           name: mechanic.name,
         },
         totalOrders: orders.length,
-        completedOrders: orders.filter((o) => o.status === 'completed').length,
+        completedOrders: orders.filter((o) => o.status === "completed").length,
       };
     });
 
@@ -812,13 +812,13 @@ export class ReportsService {
    * Gera nome do arquivo
    */
   private generateFilename(type: ReportType, format: ReportFormat): string {
-    const date = new Date().toISOString().split('T')[0];
+    const date = new Date().toISOString().split("T")[0];
     const timestamp = Date.now();
     let extension: string = format;
     if (format === ReportFormat.EXCEL) {
-      extension = 'xlsx';
+      extension = "xlsx";
     } else if (format === ReportFormat.CSV) {
-      extension = 'csv';
+      extension = "csv";
     }
     return `relatorio-${type}-${date}-${timestamp}.${extension}`;
   }
@@ -844,25 +844,25 @@ export class ReportsService {
     return new Promise((resolve, reject) => {
       try {
         const doc = new PDFDocument({
-          size: 'A4',
+          size: "A4",
           margins: { top: 50, bottom: 50, left: 50, right: 50 },
         });
 
         const chunks: Buffer[] = [];
 
-        doc.on('data', (chunk: unknown) => {
+        doc.on("data", (chunk: unknown) => {
           const bufferChunk = Buffer.isBuffer(chunk)
             ? chunk
             : Buffer.from(chunk as ArrayLike<number>);
           chunks.push(bufferChunk);
         });
-        doc.on('end', () => resolve(Buffer.concat(chunks)));
-        doc.on('error', (error) =>
+        doc.on("end", () => resolve(Buffer.concat(chunks)));
+        doc.on("error", (error) =>
           reject(error instanceof Error ? error : new Error(String(error))),
         );
 
         // Cabeçalho profissional
-        const primaryColor = workshopSettings?.primaryColor || '#00E0B8';
+        const primaryColor = workshopSettings?.primaryColor || "#00E0B8";
         this.renderPdfHeader(doc, type, workshopSettings, primaryColor);
         this.renderPdfPeriod(doc, startDate, endDate);
         this.renderPdfSummary(doc, summary);
@@ -891,29 +891,29 @@ export class ReportsService {
     isCsv: boolean,
   ): Promise<Buffer> {
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Relatório');
+    const worksheet = workbook.addWorksheet("Relatório");
 
     // Cabeçalho
-    worksheet.mergeCells('A1:B1');
-    worksheet.getCell('A1').value =
+    worksheet.mergeCells("A1:B1");
+    worksheet.getCell("A1").value =
       `Relatório de ${this.getReportTypeName(type)}`;
-    worksheet.getCell('A1').font = {
+    worksheet.getCell("A1").font = {
       size: 16,
       bold: true,
-      color: { argb: 'FF00E0B8' },
+      color: { argb: "FF00E0B8" },
     };
-    worksheet.getCell('A1').alignment = {
-      horizontal: 'center',
-      vertical: 'middle',
+    worksheet.getCell("A1").alignment = {
+      horizontal: "center",
+      vertical: "middle",
     };
 
-    worksheet.getCell('A2').value = 'Gerado em:';
-    worksheet.getCell('B2').value = new Date().toLocaleString('pt-BR');
+    worksheet.getCell("A2").value = "Gerado em:";
+    worksheet.getCell("B2").value = new Date().toLocaleString("pt-BR");
 
     // Resumo
     if (Object.keys(summary).length > 0) {
       let row = 4;
-      worksheet.getCell(`A${row}`).value = 'Resumo';
+      worksheet.getCell(`A${row}`).value = "Resumo";
       worksheet.getCell(`A${row}`).font = { size: 12, bold: true };
       row++;
 
@@ -927,7 +927,7 @@ export class ReportsService {
 
     // Dados principais
     const dataRow = Object.keys(summary).length > 0 ? 7 : 4;
-    worksheet.getCell(`A${dataRow}`).value = 'Dados';
+    worksheet.getCell(`A${dataRow}`).value = "Dados";
     worksheet.getCell(`A${dataRow}`).font = { size: 12, bold: true };
 
     // Converter dados para planilha
@@ -942,7 +942,7 @@ export class ReportsService {
     if (isCsv) {
       // Para CSV, converter para formato CSV
       const csv = this.workbookToCsv(workbook);
-      return Buffer.from(csv, 'utf-8');
+      return Buffer.from(csv, "utf-8");
     } else {
       const buffer = await workbook.xlsx.writeBuffer();
       return Buffer.from(buffer);
@@ -957,7 +957,7 @@ export class ReportsService {
     const worksheetOrUndefined = workbook.getWorksheet(1);
 
     if (!worksheetOrUndefined) {
-      throw new Error('Worksheet não encontrada no workbook');
+      throw new Error("Worksheet não encontrada no workbook");
     }
 
     // Após a verificação, TypeScript sabe que worksheet não é undefined
@@ -968,30 +968,30 @@ export class ReportsService {
         let cellValue: string;
         const rawValue = cell.value;
         if (rawValue instanceof Date) {
-          cellValue = rawValue.toLocaleString('pt-BR');
+          cellValue = rawValue.toLocaleString("pt-BR");
         } else if (rawValue !== null && rawValue !== undefined) {
-          if (typeof rawValue === 'object') {
+          if (typeof rawValue === "object") {
             cellValue = JSON.stringify(rawValue);
           } else {
             cellValue = String(rawValue);
           }
         } else {
-          cellValue = '';
+          cellValue = "";
         }
         // Escapar vírgulas e aspas
         if (
-          cellValue.includes(',') ||
+          cellValue.includes(",") ||
           cellValue.includes('"') ||
-          cellValue.includes('\n')
+          cellValue.includes("\n")
         ) {
           cellValue = `"${cellValue.replaceAll('"', '""')}"`;
         }
         values.push(cellValue);
       });
-      lines.push(values.join(','));
+      lines.push(values.join(","));
     });
 
-    return lines.join('\n');
+    return lines.join("\n");
   }
 
   /**
@@ -1007,7 +1007,7 @@ export class ReportsService {
     for (const [key, value] of Object.entries(data)) {
       if (Array.isArray(value)) {
         currentRow = this.flattenArrayValue(worksheet, key, value, currentRow);
-      } else if (value !== null && typeof value === 'object') {
+      } else if (value !== null && typeof value === "object") {
         currentRow = this.flattenObjectValue(
           worksheet,
           key,
@@ -1028,7 +1028,7 @@ export class ReportsService {
     value: unknown[],
     currentRow: number,
   ): number {
-    if (value.length > 0 && typeof value[0] === 'object') {
+    if (value.length > 0 && typeof value[0] === "object") {
       return this.flattenObjectArray(worksheet, value, currentRow);
     }
     return this.flattenSimpleArray(worksheet, key, value, currentRow);
@@ -1086,7 +1086,7 @@ export class ReportsService {
     currentRow: number,
   ): number {
     worksheet.getCell(currentRow, 1).value = this.formatKey(key);
-    worksheet.getCell(currentRow, 2).value = value.join(', ');
+    worksheet.getCell(currentRow, 2).value = value.join(", ");
     return currentRow + 1;
   }
 
@@ -1118,7 +1118,7 @@ export class ReportsService {
    * Formata chave para exibição
    */
   private formatKey(key: string): string {
-    const withSpaces = key.replaceAll(/([A-Z])/g, ' $1');
+    const withSpaces = key.replaceAll(/([A-Z])/g, " $1");
     const capitalized =
       withSpaces.charAt(0).toUpperCase() + withSpaces.slice(1);
     return capitalized.trim();
@@ -1129,29 +1129,29 @@ export class ReportsService {
    */
   private formatValue(value: unknown): string {
     if (value === null || value === undefined) {
-      return '';
+      return "";
     }
-    if (typeof value === 'number') {
-      return value.toLocaleString('pt-BR');
+    if (typeof value === "number") {
+      return value.toLocaleString("pt-BR");
     }
     if (value instanceof Date) {
-      return value.toLocaleString('pt-BR');
+      return value.toLocaleString("pt-BR");
     }
-    if (typeof value === 'boolean') {
-      return value ? 'Sim' : 'Não';
+    if (typeof value === "boolean") {
+      return value ? "Sim" : "Não";
     }
-    if (typeof value === 'object') {
+    if (typeof value === "object") {
       return JSON.stringify(value);
     }
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
       return value;
     }
     // Se chegou aqui, value é um tipo primitivo (symbol, bigint)
     // que pode ser convertido com segurança para string
-    if (typeof value === 'symbol') {
+    if (typeof value === "symbol") {
       return value.toString();
     }
-    if (typeof value === 'bigint') {
+    if (typeof value === "bigint") {
       return value.toString();
     }
     // NOSONAR - value já foi verificado e não é objeto, null, undefined, number, Date, boolean, string, symbol ou bigint
@@ -1165,15 +1165,15 @@ export class ReportsService {
    */
   private getReportTypeName(type: ReportType): string {
     const names: Record<ReportType, string> = {
-      [ReportType.SALES]: 'Vendas',
-      [ReportType.SERVICES]: 'Serviços',
-      [ReportType.FINANCIAL]: 'Financeiro',
-      [ReportType.INVENTORY]: 'Estoque',
-      [ReportType.CUSTOMERS]: 'Clientes',
-      [ReportType.MECHANICS]: 'Mecânicos',
-      [ReportType.QUOTES]: 'Orçamentos',
-      [ReportType.INVOICES]: 'Faturas',
-      [ReportType.PAYMENTS]: 'Pagamentos',
+      [ReportType.SALES]: "Vendas",
+      [ReportType.SERVICES]: "Serviços",
+      [ReportType.FINANCIAL]: "Financeiro",
+      [ReportType.INVENTORY]: "Estoque",
+      [ReportType.CUSTOMERS]: "Clientes",
+      [ReportType.MECHANICS]: "Mecânicos",
+      [ReportType.QUOTES]: "Orçamentos",
+      [ReportType.INVOICES]: "Faturas",
+      [ReportType.PAYMENTS]: "Pagamentos",
     };
     return names[type] || type;
   }
@@ -1225,7 +1225,7 @@ export class ReportsService {
     } as never);
 
     if (!report) {
-      throw new NotFoundException('Relatório não encontrado');
+      throw new NotFoundException("Relatório não encontrado");
     }
 
     return report;
@@ -1238,14 +1238,14 @@ export class ReportsService {
     const report = await this.findOne(tenantId, id);
 
     if (!report.filePath) {
-      throw new NotFoundException('Arquivo do relatório não encontrado');
+      throw new NotFoundException("Arquivo do relatório não encontrado");
     }
 
     const fullPath = join(process.cwd(), report.filePath);
 
     if (!existsSync(fullPath)) {
       throw new NotFoundException(
-        'Arquivo do relatório não existe no sistema de arquivos',
+        "Arquivo do relatório não existe no sistema de arquivos",
       );
     }
 
@@ -1263,7 +1263,7 @@ export class ReportsService {
         }
       ).report.findMany({
         where: { tenantId },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         take: limit,
         skip: offset,
         select: {
@@ -1336,25 +1336,25 @@ export class ReportsService {
     }
 
     // Nome da oficina
-    const workshopName = workshopSettings?.displayName || 'Oficina Mecânica';
+    const workshopName = workshopSettings?.displayName || "Oficina Mecânica";
     doc
       .fontSize(16)
-      .font('Helvetica-Bold')
+      .font("Helvetica-Bold")
       .fillColor(primaryColor)
-      .text(workshopName, 50, currentY, { align: 'center', width: 500 });
+      .text(workshopName, 50, currentY, { align: "center", width: 500 });
     currentY += 25;
 
     // Título do relatório
     doc
       .fontSize(24)
-      .font('Helvetica-Bold')
-      .fillColor('#000000')
+      .font("Helvetica-Bold")
+      .fillColor("#000000")
       .text(
         `RELATÓRIO DE ${this.getReportTypeName(type).toUpperCase()}`,
         50,
         currentY,
         {
-          align: 'center',
+          align: "center",
           width: 500,
         },
       );
@@ -1373,18 +1373,18 @@ export class ReportsService {
     if (startDate || endDate) {
       let periodText: string;
       if (startDate && endDate) {
-        periodText = `Período: ${new Date(startDate).toLocaleDateString('pt-BR')} a ${new Date(endDate).toLocaleDateString('pt-BR')}`;
+        periodText = `Período: ${new Date(startDate).toLocaleDateString("pt-BR")} a ${new Date(endDate).toLocaleDateString("pt-BR")}`;
       } else if (startDate) {
-        periodText = `A partir de: ${new Date(startDate).toLocaleDateString('pt-BR')}`;
+        periodText = `A partir de: ${new Date(startDate).toLocaleDateString("pt-BR")}`;
       } else {
-        periodText = `Até: ${new Date(endDate as string).toLocaleDateString('pt-BR')}`;
+        periodText = `Até: ${new Date(endDate as string).toLocaleDateString("pt-BR")}`;
       }
       if (periodText) {
         doc
           .fontSize(11)
-          .font('Helvetica-Bold')
-          .fillColor('#666666')
-          .text(periodText, 50, doc.y, { align: 'center', width: 500 });
+          .font("Helvetica-Bold")
+          .fillColor("#666666")
+          .text(periodText, 50, doc.y, { align: "center", width: 500 });
         doc.y += 20;
       }
     }
@@ -1392,24 +1392,24 @@ export class ReportsService {
     // Data de geração
     doc
       .fontSize(10)
-      .font('Helvetica')
-      .fillColor('#666666')
+      .font("Helvetica")
+      .fillColor("#666666")
       .text(
-        `Gerado em: ${new Date().toLocaleString('pt-BR', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
+        `Gerado em: ${new Date().toLocaleString("pt-BR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
         })}`,
         50,
         doc.y,
-        { align: 'center', width: 500 },
+        { align: "center", width: 500 },
       );
     doc.y += 25;
 
     // Linha separadora colorida
-    const primaryColor = '#00E0B8';
+    const primaryColor = "#00E0B8";
     doc
       .moveTo(50, doc.y)
       .lineTo(550, doc.y)
@@ -1428,9 +1428,9 @@ export class ReportsService {
     summary: Record<string, unknown>,
   ): void {
     if (Object.keys(summary).length > 0) {
-      doc.fontSize(14).fillColor('#00E0B8').text('Resumo', { underline: true });
+      doc.fontSize(14).fillColor("#00E0B8").text("Resumo", { underline: true });
       doc.moveDown();
-      doc.fontSize(10).fillColor('#000000');
+      doc.fontSize(10).fillColor("#000000");
       for (const [key, value] of Object.entries(summary)) {
         doc.text(`${this.formatKey(key)}: ${this.formatValue(value)}`);
       }
@@ -1461,7 +1461,7 @@ export class ReportsService {
       .moveTo(50, footerY - 20)
       .lineTo(550, footerY - 20)
       .lineWidth(1)
-      .strokeColor('#CCCCCC')
+      .strokeColor("#CCCCCC")
       .stroke();
 
     // Informações da oficina no rodapé
@@ -1482,10 +1482,10 @@ export class ReportsService {
     if (footerInfo.length > 0) {
       doc
         .fontSize(8)
-        .font('Helvetica')
-        .fillColor('#666666')
-        .text(footerInfo.join(' | '), 50, footerY - 15, {
-          align: 'center',
+        .font("Helvetica")
+        .fillColor("#666666")
+        .text(footerInfo.join(" | "), 50, footerY - 15, {
+          align: "center",
           width: 500,
         });
     }
@@ -1493,10 +1493,10 @@ export class ReportsService {
     // Rodapé com informação do sistema
     doc
       .fontSize(8)
-      .font('Helvetica')
-      .fillColor('#999999')
-      .text('Relatório gerado pelo sistema Mecânica365', 50, footerY - 5, {
-        align: 'center',
+      .font("Helvetica")
+      .fillColor("#999999")
+      .text("Relatório gerado pelo sistema Mecânica365", 50, footerY - 5, {
+        align: "center",
         width: 500,
       });
   }
@@ -1511,7 +1511,7 @@ export class ReportsService {
     doc
       .fontSize(14)
       .fillColor(primaryColor)
-      .text('Detalhes', { underline: true });
+      .text("Detalhes", { underline: true });
     doc.moveDown();
 
     // Formatar dados baseado no tipo de relatório
@@ -1562,9 +1562,9 @@ export class ReportsService {
     const col2 = 300;
 
     // Cabeçalho da tabela
-    doc.fontSize(10).font('Helvetica-Bold').fillColor(primaryColor);
-    doc.text('Indicador', col1, tableTop);
-    doc.text('Valor', col2, tableTop);
+    doc.fontSize(10).font("Helvetica-Bold").fillColor(primaryColor);
+    doc.text("Indicador", col1, tableTop);
+    doc.text("Valor", col2, tableTop);
 
     // Linha separadora
     doc
@@ -1573,28 +1573,28 @@ export class ReportsService {
       .stroke();
 
     // Dados
-    doc.font('Helvetica').fillColor('#000000');
+    doc.font("Helvetica").fillColor("#000000");
     let y = tableTop + 25;
 
     const rows = [
       {
-        label: 'Total Faturado',
+        label: "Total Faturado",
         value: this.formatCurrency(data.totalInvoiced as number),
       },
       {
-        label: 'Total Recebido',
+        label: "Total Recebido",
         value: this.formatCurrency(data.totalPaid as number),
       },
       {
-        label: 'Total Pendente',
+        label: "Total Pendente",
         value: this.formatCurrency(data.totalPending as number),
       },
       {
-        label: 'Quantidade de Faturas',
+        label: "Quantidade de Faturas",
         value: String(Number(data.invoices) || 0),
       },
       {
-        label: 'Quantidade de Pagamentos',
+        label: "Quantidade de Pagamentos",
         value: String(Number(data.payments) || 0),
       },
     ];
@@ -1620,32 +1620,32 @@ export class ReportsService {
     const col1 = 50;
     const col2 = 300;
 
-    doc.fontSize(10).font('Helvetica-Bold').fillColor(primaryColor);
-    doc.text('Indicador', col1, tableTop);
-    doc.text('Valor', col2, tableTop);
+    doc.fontSize(10).font("Helvetica-Bold").fillColor(primaryColor);
+    doc.text("Indicador", col1, tableTop);
+    doc.text("Valor", col2, tableTop);
     doc
       .moveTo(col1, tableTop + 15)
       .lineTo(550, tableTop + 15)
       .stroke();
 
-    doc.font('Helvetica').fillColor('#000000');
+    doc.font("Helvetica").fillColor("#000000");
     let y = tableTop + 25;
 
     const rows = [
       {
-        label: 'Receita Total',
+        label: "Receita Total",
         value: this.formatCurrency(data.totalRevenue as number),
       },
       {
-        label: 'Total de Serviços',
+        label: "Total de Serviços",
         value: String(Number(data.totalServices) || 0),
       },
       {
-        label: 'OS Concluídas',
+        label: "OS Concluídas",
         value: String(Number(data.completedOrders) || 0),
       },
       {
-        label: 'Ticket Médio',
+        label: "Ticket Médio",
         value: this.formatCurrency(data.averageTicket as number),
       },
     ];
@@ -1657,16 +1657,16 @@ export class ReportsService {
     }
 
     // Se houver dados por mecânico
-    if (data.byMechanic && typeof data.byMechanic === 'object') {
+    if (data.byMechanic && typeof data.byMechanic === "object") {
       y += 20;
-      doc.fontSize(12).font('Helvetica-Bold').fillColor(primaryColor);
-      doc.text('Por Mecânico:', col1, y);
+      doc.fontSize(12).font("Helvetica-Bold").fillColor(primaryColor);
+      doc.text("Por Mecânico:", col1, y);
       y += 20;
 
-      doc.fontSize(10).font('Helvetica').fillColor('#000000');
+      doc.fontSize(10).font("Helvetica").fillColor("#000000");
       const byMechanic = data.byMechanic as Record<string, number>;
       for (const [mechanic, value] of Object.entries(byMechanic)) {
-        doc.text(mechanic || 'Não atribuído', col1, y);
+        doc.text(mechanic || "Não atribuído", col1, y);
         doc.text(this.formatCurrency(value), col2, y);
         y += 18;
       }
@@ -1687,35 +1687,35 @@ export class ReportsService {
     const col1 = 50;
     const col2 = 300;
 
-    doc.fontSize(10).font('Helvetica-Bold').fillColor(primaryColor);
-    doc.text('Indicador', col1, tableTop);
-    doc.text('Valor', col2, tableTop);
+    doc.fontSize(10).font("Helvetica-Bold").fillColor(primaryColor);
+    doc.text("Indicador", col1, tableTop);
+    doc.text("Valor", col2, tableTop);
     doc
       .moveTo(col1, tableTop + 15)
       .lineTo(550, tableTop + 15)
       .stroke();
 
-    doc.font('Helvetica').fillColor('#000000');
+    doc.font("Helvetica").fillColor("#000000");
     let y = tableTop + 25;
 
-    doc.text('Total de Ordens de Serviço', col1, y);
+    doc.text("Total de Ordens de Serviço", col1, y);
     doc.text(String(Number(data.total) || 0), col2, y);
     y += 25;
 
     // Status das OS
-    if (data.byStatus && typeof data.byStatus === 'object') {
-      doc.fontSize(12).font('Helvetica-Bold').fillColor(primaryColor);
-      doc.text('Por Status:', col1, y);
+    if (data.byStatus && typeof data.byStatus === "object") {
+      doc.fontSize(12).font("Helvetica-Bold").fillColor(primaryColor);
+      doc.text("Por Status:", col1, y);
       y += 20;
 
-      doc.fontSize(10).font('Helvetica').fillColor('#000000');
+      doc.fontSize(10).font("Helvetica").fillColor("#000000");
       const statusLabels: Record<string, string> = {
-        pending: 'Pendente',
-        in_progress: 'Em Andamento',
-        waiting_parts: 'Aguardando Peças',
-        waiting_approval: 'Aguardando Aprovação',
-        completed: 'Concluído',
-        cancelled: 'Cancelado',
+        pending: "Pendente",
+        in_progress: "Em Andamento",
+        waiting_parts: "Aguardando Peças",
+        waiting_approval: "Aguardando Aprovação",
+        completed: "Concluído",
+        cancelled: "Cancelado",
       };
 
       const byStatus = data.byStatus as Record<string, number>;
@@ -1741,29 +1741,29 @@ export class ReportsService {
     const col1 = 50;
     const col2 = 300;
 
-    doc.fontSize(10).font('Helvetica-Bold').fillColor(primaryColor);
-    doc.text('Indicador', col1, tableTop);
-    doc.text('Valor', col2, tableTop);
+    doc.fontSize(10).font("Helvetica-Bold").fillColor(primaryColor);
+    doc.text("Indicador", col1, tableTop);
+    doc.text("Valor", col2, tableTop);
     doc
       .moveTo(col1, tableTop + 15)
       .lineTo(550, tableTop + 15)
       .stroke();
 
-    doc.font('Helvetica').fillColor('#000000');
+    doc.font("Helvetica").fillColor("#000000");
     let y = tableTop + 25;
 
     const rows = [
-      { label: 'Total de Itens', value: String(Number(data.totalItems) || 0) },
+      { label: "Total de Itens", value: String(Number(data.totalItems) || 0) },
       {
-        label: 'Valor Total em Estoque',
+        label: "Valor Total em Estoque",
         value: this.formatCurrency(data.totalValue as number),
       },
       {
-        label: 'Itens com Estoque Baixo',
+        label: "Itens com Estoque Baixo",
         value: String(Number(data.lowStockItems) || 0),
       },
       {
-        label: 'Itens Sem Estoque',
+        label: "Itens Sem Estoque",
         value: String(Number(data.outOfStockItems) || 0),
       },
     ];
@@ -1789,32 +1789,32 @@ export class ReportsService {
     const col1 = 50;
     const col2 = 300;
 
-    doc.fontSize(10).font('Helvetica-Bold').fillColor(primaryColor);
-    doc.text('Indicador', col1, tableTop);
-    doc.text('Valor', col2, tableTop);
+    doc.fontSize(10).font("Helvetica-Bold").fillColor(primaryColor);
+    doc.text("Indicador", col1, tableTop);
+    doc.text("Valor", col2, tableTop);
     doc
       .moveTo(col1, tableTop + 15)
       .lineTo(550, tableTop + 15)
       .stroke();
 
-    doc.font('Helvetica').fillColor('#000000');
+    doc.font("Helvetica").fillColor("#000000");
     let y = tableTop + 25;
 
     const rows = [
       {
-        label: 'Total de Clientes',
+        label: "Total de Clientes",
         value: String(Number(data.totalCustomers) || 0),
       },
       {
-        label: 'Novos Clientes (período)',
+        label: "Novos Clientes (período)",
         value: String(Number(data.newCustomers) || 0),
       },
       {
-        label: 'Clientes com Veículos',
+        label: "Clientes com Veículos",
         value: String(Number(data.customersWithVehicles) || 0),
       },
       {
-        label: 'Total de Veículos',
+        label: "Total de Veículos",
         value: String(Number(data.totalVehicles) || 0),
       },
     ];
@@ -1840,38 +1840,38 @@ export class ReportsService {
     const col1 = 50;
     const col2 = 300;
 
-    doc.fontSize(10).font('Helvetica-Bold').fillColor(primaryColor);
-    doc.text('Indicador', col1, tableTop);
-    doc.text('Valor', col2, tableTop);
+    doc.fontSize(10).font("Helvetica-Bold").fillColor(primaryColor);
+    doc.text("Indicador", col1, tableTop);
+    doc.text("Valor", col2, tableTop);
     doc
       .moveTo(col1, tableTop + 15)
       .lineTo(550, tableTop + 15)
       .stroke();
 
-    doc.font('Helvetica').fillColor('#000000');
+    doc.font("Helvetica").fillColor("#000000");
     let y = tableTop + 25;
 
-    doc.text('Total de Mecânicos', col1, y);
+    doc.text("Total de Mecânicos", col1, y);
     doc.text(String(Number(data.totalMechanics) || 0), col2, y);
     y += 25;
 
     // Produtividade por mecânico
     if (data.mechanics && Array.isArray(data.mechanics)) {
-      doc.fontSize(12).font('Helvetica-Bold').fillColor(primaryColor);
-      doc.text('Produtividade por Mecânico:', col1, y);
+      doc.fontSize(12).font("Helvetica-Bold").fillColor(primaryColor);
+      doc.text("Produtividade por Mecânico:", col1, y);
       y += 20;
 
       // Cabeçalho da tabela
-      doc.fontSize(9).font('Helvetica-Bold').fillColor('#666666');
-      doc.text('Mecânico', 50, y);
-      doc.text('OS Atribuídas', 200, y);
-      doc.text('OS Concluídas', 300, y);
-      doc.text('Receita', 420, y);
+      doc.fontSize(9).font("Helvetica-Bold").fillColor("#666666");
+      doc.text("Mecânico", 50, y);
+      doc.text("OS Atribuídas", 200, y);
+      doc.text("OS Concluídas", 300, y);
+      doc.text("Receita", 420, y);
       y += 15;
       doc.moveTo(50, y).lineTo(550, y).lineWidth(0.5).stroke();
       y += 5;
 
-      doc.font('Helvetica').fillColor('#000000');
+      doc.font("Helvetica").fillColor("#000000");
       const mechanics = data.mechanics as Array<{
         name?: string;
         totalOrders?: number;
@@ -1881,7 +1881,7 @@ export class ReportsService {
 
       for (const mech of mechanics.slice(0, 10)) {
         // Limitar a 10 mecânicos
-        doc.text(mech.name || 'N/A', 50, y, { width: 140 });
+        doc.text(mech.name || "N/A", 50, y, { width: 140 });
         doc.text(String(mech.totalOrders ?? 0), 200, y);
         doc.text(String(mech.completedOrders ?? 0), 300, y);
         doc.text(this.formatCurrency(mech.revenue ?? 0), 420, y);
@@ -1904,36 +1904,36 @@ export class ReportsService {
     const col1 = 50;
     const col2 = 300;
 
-    doc.fontSize(10).font('Helvetica-Bold').fillColor(primaryColor);
-    doc.text('Indicador', col1, tableTop);
-    doc.text('Valor', col2, tableTop);
+    doc.fontSize(10).font("Helvetica-Bold").fillColor(primaryColor);
+    doc.text("Indicador", col1, tableTop);
+    doc.text("Valor", col2, tableTop);
     doc
       .moveTo(col1, tableTop + 15)
       .lineTo(550, tableTop + 15)
       .stroke();
 
-    doc.font('Helvetica').fillColor('#000000');
+    doc.font("Helvetica").fillColor("#000000");
     let y = tableTop + 25;
 
     const rows = [
       {
-        label: 'Total de Orçamentos',
+        label: "Total de Orçamentos",
         value: String(Number(data.totalQuotes) || 0),
       },
       {
-        label: 'Valor Total',
+        label: "Valor Total",
         value: this.formatCurrency(data.totalValue as number),
       },
       {
-        label: 'Orçamentos Aprovados',
+        label: "Orçamentos Aprovados",
         value: String(Number(data.approvedQuotes) || 0),
       },
       {
-        label: 'Orçamentos Rejeitados',
+        label: "Orçamentos Rejeitados",
         value: String(Number(data.rejectedQuotes) || 0),
       },
       {
-        label: 'Taxa de Conversão',
+        label: "Taxa de Conversão",
         value: `${Number(data.conversionRate) || 0}%`,
       },
     ];
@@ -1959,33 +1959,33 @@ export class ReportsService {
     const col1 = 50;
     const col2 = 300;
 
-    doc.fontSize(10).font('Helvetica-Bold').fillColor(primaryColor);
-    doc.text('Indicador', col1, tableTop);
-    doc.text('Valor', col2, tableTop);
+    doc.fontSize(10).font("Helvetica-Bold").fillColor(primaryColor);
+    doc.text("Indicador", col1, tableTop);
+    doc.text("Valor", col2, tableTop);
     doc
       .moveTo(col1, tableTop + 15)
       .lineTo(550, tableTop + 15)
       .stroke();
 
-    doc.font('Helvetica').fillColor('#000000');
+    doc.font("Helvetica").fillColor("#000000");
     let y = tableTop + 25;
 
     const rows = [
       {
-        label: 'Total de Faturas',
+        label: "Total de Faturas",
         value: String(Number(data.totalInvoices) || 0),
       },
       {
-        label: 'Valor Total',
+        label: "Valor Total",
         value: this.formatCurrency(data.totalAmount as number),
       },
-      { label: 'Faturas Pagas', value: String(Number(data.paidInvoices) || 0) },
+      { label: "Faturas Pagas", value: String(Number(data.paidInvoices) || 0) },
       {
-        label: 'Faturas Pendentes',
+        label: "Faturas Pendentes",
         value: String(Number(data.pendingInvoices) || 0),
       },
       {
-        label: 'Faturas Vencidas',
+        label: "Faturas Vencidas",
         value: String(Number(data.overdueInvoices) || 0),
       },
     ];
@@ -2011,24 +2011,24 @@ export class ReportsService {
     const col1 = 50;
     const col2 = 300;
 
-    doc.fontSize(10).font('Helvetica-Bold').fillColor(primaryColor);
-    doc.text('Indicador', col1, tableTop);
-    doc.text('Valor', col2, tableTop);
+    doc.fontSize(10).font("Helvetica-Bold").fillColor(primaryColor);
+    doc.text("Indicador", col1, tableTop);
+    doc.text("Valor", col2, tableTop);
     doc
       .moveTo(col1, tableTop + 15)
       .lineTo(550, tableTop + 15)
       .stroke();
 
-    doc.font('Helvetica').fillColor('#000000');
+    doc.font("Helvetica").fillColor("#000000");
     let y = tableTop + 25;
 
     const rows = [
       {
-        label: 'Total de Pagamentos',
+        label: "Total de Pagamentos",
         value: String(Number(data.totalPayments) || 0),
       },
       {
-        label: 'Valor Total Recebido',
+        label: "Valor Total Recebido",
         value: this.formatCurrency(data.totalReceived as number),
       },
     ];
@@ -2040,23 +2040,23 @@ export class ReportsService {
     }
 
     // Por método de pagamento
-    if (data.byMethod && typeof data.byMethod === 'object') {
+    if (data.byMethod && typeof data.byMethod === "object") {
       y += 15;
-      doc.fontSize(12).font('Helvetica-Bold').fillColor(primaryColor);
-      doc.text('Por Método de Pagamento:', col1, y);
+      doc.fontSize(12).font("Helvetica-Bold").fillColor(primaryColor);
+      doc.text("Por Método de Pagamento:", col1, y);
       y += 20;
 
       const methodLabels: Record<string, string> = {
-        cash: 'Dinheiro',
-        credit_card: 'Cartão de Crédito',
-        debit_card: 'Cartão de Débito',
-        pix: 'PIX',
-        bank_transfer: 'Transferência',
-        check: 'Cheque',
-        other: 'Outro',
+        cash: "Dinheiro",
+        credit_card: "Cartão de Crédito",
+        debit_card: "Cartão de Débito",
+        pix: "PIX",
+        bank_transfer: "Transferência",
+        check: "Cheque",
+        other: "Outro",
       };
 
-      doc.fontSize(10).font('Helvetica').fillColor('#000000');
+      doc.fontSize(10).font("Helvetica").fillColor("#000000");
       const byMethod = data.byMethod as Record<string, number>;
       for (const [method, amount] of Object.entries(byMethod)) {
         doc.text(methodLabels[method] || method, col1, y);
@@ -2075,11 +2075,11 @@ export class ReportsService {
     doc: InstanceType<typeof PDFDocument>,
     data: Record<string, unknown>,
   ): void {
-    doc.fontSize(10).font('Helvetica').fillColor('#000000');
+    doc.fontSize(10).font("Helvetica").fillColor("#000000");
     let y = doc.y;
 
     for (const [key, value] of Object.entries(data)) {
-      if (typeof value === 'object' && value !== null) {
+      if (typeof value === "object" && value !== null) {
         continue; // Pular objetos complexos
       }
       doc.text(`${this.formatKey(key)}: ${this.formatValue(value)}`, 50, y);
@@ -2094,11 +2094,11 @@ export class ReportsService {
    */
   private formatCurrency(value: number | undefined | null): string {
     if (value === undefined || value === null || Number.isNaN(value)) {
-      return 'R$ 0,00';
+      return "R$ 0,00";
     }
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
     }).format(value);
   }
 
@@ -2108,24 +2108,24 @@ export class ReportsService {
   private getLogoPath(logoUrl: string): string | null {
     try {
       // Se for URL completa, retornar null (não suportado para PDF)
-      if (logoUrl.startsWith('http://') || logoUrl.startsWith('https://')) {
+      if (logoUrl.startsWith("http://") || logoUrl.startsWith("https://")) {
         return null;
       }
 
       // Se for caminho relativo, construir caminho absoluto
-      if (logoUrl.startsWith('/uploads/')) {
+      if (logoUrl.startsWith("/uploads/")) {
         return join(process.cwd(), logoUrl);
       }
 
       // Se já for caminho absoluto
       const absolutePathRegex = /^[A-Z]:/;
 
-      if (logoUrl.startsWith('/') || absolutePathRegex.test(logoUrl)) {
+      if (logoUrl.startsWith("/") || absolutePathRegex.test(logoUrl)) {
         return logoUrl;
       }
 
       // Caminho relativo a partir de uploads
-      return join(process.cwd(), 'uploads', logoUrl);
+      return join(process.cwd(), "uploads", logoUrl);
     } catch {
       return null;
     }

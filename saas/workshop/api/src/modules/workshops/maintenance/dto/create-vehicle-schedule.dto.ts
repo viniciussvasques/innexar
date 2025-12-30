@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import {
   IsString,
   IsOptional,
@@ -8,42 +8,42 @@ import {
   IsUUID,
   Min,
   MaxLength,
-} from 'class-validator';
+} from "class-validator";
 import {
   MaintenanceCategory,
   MaintenanceStatus,
   MaintenancePriority,
-} from './maintenance-category.enum';
+} from "./maintenance-category.enum";
 
 export class CreateVehicleScheduleDto {
-  @ApiProperty({ description: 'ID do veículo' })
+  @ApiProperty({ description: "ID do veículo" })
   @IsUUID()
   vehicleId: string;
 
-  @ApiPropertyOptional({ description: 'ID do template (opcional)' })
+  @ApiPropertyOptional({ description: "ID do template (opcional)" })
   @IsUUID()
   @IsOptional()
   templateId?: string;
 
-  @ApiProperty({ description: 'Nome da manutenção' })
+  @ApiProperty({ description: "Nome da manutenção" })
   @IsString()
   @MaxLength(100)
   name: string;
 
-  @ApiPropertyOptional({ description: 'Descrição' })
+  @ApiPropertyOptional({ description: "Descrição" })
   @IsString()
   @IsOptional()
   description?: string;
 
   @ApiProperty({
-    description: 'Categoria da manutenção',
+    description: "Categoria da manutenção",
     enum: MaintenanceCategory,
   })
   @IsEnum(MaintenanceCategory)
   category: MaintenanceCategory;
 
   @ApiPropertyOptional({
-    description: 'Quilometragem para próxima manutenção',
+    description: "Quilometragem para próxima manutenção",
     example: 50000,
   })
   @IsNumber()
@@ -52,38 +52,38 @@ export class CreateVehicleScheduleDto {
   nextDueKm?: number;
 
   @ApiPropertyOptional({
-    description: 'Data para próxima manutenção',
-    example: '2025-06-01',
+    description: "Data para próxima manutenção",
+    example: "2025-06-01",
   })
   @IsDateString()
   @IsOptional()
   nextDueDate?: string;
 
   @ApiPropertyOptional({
-    description: 'Status',
+    description: "Status",
     enum: MaintenanceStatus,
-    default: 'pending',
+    default: "pending",
   })
   @IsEnum(MaintenanceStatus)
   @IsOptional()
   status?: MaintenanceStatus;
 
   @ApiPropertyOptional({
-    description: 'Prioridade',
+    description: "Prioridade",
     enum: MaintenancePriority,
-    default: 'normal',
+    default: "normal",
   })
   @IsEnum(MaintenancePriority)
   @IsOptional()
   priority?: MaintenancePriority;
 
-  @ApiPropertyOptional({ description: 'Custo estimado' })
+  @ApiPropertyOptional({ description: "Custo estimado" })
   @IsNumber()
   @IsOptional()
   @Min(0)
   estimatedCost?: number;
 
-  @ApiPropertyOptional({ description: 'Notas' })
+  @ApiPropertyOptional({ description: "Notas" })
   @IsString()
   @IsOptional()
   notes?: string;

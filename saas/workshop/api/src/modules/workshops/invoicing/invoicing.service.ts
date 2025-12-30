@@ -3,8 +3,8 @@ import {
   NotFoundException,
   BadRequestException,
   Logger,
-} from '@nestjs/common';
-import { PrismaService } from '@database/prisma.service';
+} from "@nestjs/common";
+import { PrismaService } from "@database/prisma.service";
 import {
   CreateInvoiceDto,
   UpdateInvoiceDto,
@@ -14,11 +14,11 @@ import {
   PaymentStatus,
   InvoiceType,
   PaymentPreference,
-} from './dto';
-import { PaymentGatewayType } from '../payment-gateways/dto/payment-gateway-types.enum';
-import { Prisma } from '@prisma/client';
-import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
-import { Decimal } from '@prisma/client/runtime/library';
+} from "./dto";
+import { PaymentGatewayType } from "../payment-gateways/dto/payment-gateway-types.enum";
+import { Prisma } from "@prisma/client";
+import { getErrorMessage, getErrorStack } from "@common/utils/error.utils";
+import { Decimal } from "@prisma/client/runtime/library";
 
 @Injectable()
 export class InvoicingService {
@@ -58,25 +58,25 @@ export class InvoicingService {
   private async generateInvoiceNumber(tenantId: string): Promise<string> {
     const lastInvoice = await this.prisma.invoice.findFirst({
       where: { tenantId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     if (!lastInvoice) {
-      return 'FAT-001';
+      return "FAT-001";
     }
 
     const lastNumber = Number.parseInt(
-      lastInvoice.invoiceNumber.replace('FAT-', ''),
+      lastInvoice.invoiceNumber.replace("FAT-", ""),
       10,
     );
     const nextNumber = lastNumber + 1;
-    return `FAT-${nextNumber.toString().padStart(3, '0')}`;
+    return `FAT-${nextNumber.toString().padStart(3, "0")}`;
   }
 
   /**
    * Calcula o total dos itens
    */
-  private calculateTotal(items: CreateInvoiceDto['items']): number {
+  private calculateTotal(items: CreateInvoiceDto["items"]): number {
     return items.reduce((sum, item) => sum + item.totalPrice, 0);
   }
 
@@ -104,7 +104,7 @@ export class InvoicingService {
 
     if (requested && !gateway) {
       throw new BadRequestException(
-        'Selecione um gateway para esta preferência de pagamento',
+        "Selecione um gateway para esta preferência de pagamento",
       );
     }
 
@@ -112,7 +112,7 @@ export class InvoicingService {
       const inferred = this.getPreferenceForGateway(gateway);
       if (requested !== inferred) {
         throw new BadRequestException(
-          'O gateway selecionado não suporta esta preferência',
+          "O gateway selecionado não suporta esta preferência",
         );
       }
       return requested;
@@ -135,7 +135,7 @@ export class InvoicingService {
     });
 
     if (!gateway) {
-      throw new NotFoundException('Gateway de pagamento não encontrado');
+      throw new NotFoundException("Gateway de pagamento não encontrado");
     }
 
     return gateway;
@@ -151,7 +151,7 @@ export class InvoicingService {
       invoiceStatus === InvoiceStatus.PAID
     ) {
       throw new BadRequestException(
-        'Não é possível atualizar uma fatura emitida ou paga',
+        "Não é possível atualizar uma fatura emitida ou paga",
       );
     }
   }
@@ -175,7 +175,7 @@ export class InvoicingService {
     });
 
     if (!customer) {
-      throw new NotFoundException('Cliente não encontrado');
+      throw new NotFoundException("Cliente não encontrado");
     }
   }
 
@@ -184,8 +184,8 @@ export class InvoicingService {
    */
   private async prepareInvoiceItemsUpdate(
     invoiceId: string,
-    items?: UpdateInvoiceDto['items'],
-  ): Promise<Prisma.InvoiceUpdateInput['items'] | undefined> {
+    items?: UpdateInvoiceDto["items"],
+  ): Promise<Prisma.InvoiceUpdateInput["items"] | undefined> {
     if (!items) {
       return undefined;
     }
@@ -384,7 +384,7 @@ export class InvoicingService {
         throw error;
       }
 
-      throw new BadRequestException('Erro ao criar fatura');
+      throw new BadRequestException("Erro ao criar fatura");
     }
   }
 
@@ -407,7 +407,7 @@ export class InvoicingService {
     }
 
     if (!createInvoiceDto.items || createInvoiceDto.items.length === 0) {
-      throw new BadRequestException('A fatura deve ter pelo menos um item');
+      throw new BadRequestException("A fatura deve ter pelo menos um item");
     }
 
     if (
@@ -415,7 +415,7 @@ export class InvoicingService {
       createInvoiceDto.paymentGatewayId
     ) {
       throw new BadRequestException(
-        'Selecione um gateway apenas para pagamentos online ou com maquininha',
+        "Selecione um gateway apenas para pagamentos online ou com maquininha",
       );
     }
   }
@@ -432,7 +432,7 @@ export class InvoicingService {
     });
 
     if (!serviceOrder) {
-      throw new NotFoundException('Ordem de serviço não encontrada');
+      throw new NotFoundException("Ordem de serviço não encontrada");
     }
 
     const existingInvoice = await this.prisma.invoice.findFirst({
@@ -444,7 +444,7 @@ export class InvoicingService {
 
     if (existingInvoice) {
       throw new BadRequestException(
-        'Já existe uma fatura para esta ordem de serviço',
+        "Já existe uma fatura para esta ordem de serviço",
       );
     }
   }
@@ -461,7 +461,7 @@ export class InvoicingService {
     const finalTotal = total - discount + taxAmount;
 
     if (finalTotal < 0) {
-      throw new BadRequestException('O valor total não pode ser negativo');
+      throw new BadRequestException("O valor total não pode ser negativo");
     }
 
     return { finalTotal, discount, taxAmount };
@@ -479,7 +479,7 @@ export class InvoicingService {
     });
 
     if (existingNumber) {
-      throw new BadRequestException('Já existe uma fatura com este número');
+      throw new BadRequestException("Já existe uma fatura com este número");
     }
 
     return invoiceNumber;
@@ -585,7 +585,7 @@ export class InvoicingService {
       const where: Prisma.InvoiceWhereInput = {
         tenantId,
         ...(invoiceNumber && {
-          invoiceNumber: { contains: invoiceNumber, mode: 'insensitive' },
+          invoiceNumber: { contains: invoiceNumber, mode: "insensitive" },
         }),
         ...(customerId && { customerId }),
         ...(serviceOrderId && { serviceOrderId }),
@@ -614,7 +614,7 @@ export class InvoicingService {
           where,
           skip,
           take: limit,
-          orderBy: { createdAt: 'desc' },
+          orderBy: { createdAt: "desc" },
           include: this.invoiceInclude,
         }),
         this.prisma.invoice.count({ where }),
@@ -634,7 +634,7 @@ export class InvoicingService {
         `Erro ao listar faturas: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new BadRequestException('Erro ao listar faturas');
+      throw new BadRequestException("Erro ao listar faturas");
     }
   }
 
@@ -652,7 +652,7 @@ export class InvoicingService {
       });
 
       if (invoice === null) {
-        throw new NotFoundException('Fatura não encontrada');
+        throw new NotFoundException("Fatura não encontrada");
       }
 
       return this.toResponseDto(invoice);
@@ -666,7 +666,7 @@ export class InvoicingService {
         throw error;
       }
 
-      throw new BadRequestException('Erro ao buscar fatura');
+      throw new BadRequestException("Erro ao buscar fatura");
     }
   }
 
@@ -718,7 +718,7 @@ export class InvoicingService {
         throw error;
       }
 
-      throw new BadRequestException('Erro ao atualizar fatura');
+      throw new BadRequestException("Erro ao atualizar fatura");
     }
   }
 
@@ -731,7 +731,7 @@ export class InvoicingService {
     });
 
     if (!invoice) {
-      throw new NotFoundException('Fatura não encontrada');
+      throw new NotFoundException("Fatura não encontrada");
     }
 
     this.validateInvoiceCanBeUpdated(invoice);
@@ -791,7 +791,7 @@ export class InvoicingService {
       updateInvoiceDto.paymentGatewayId
     ) {
       throw new BadRequestException(
-        'Não selecione um gateway ao usar pagamento manual',
+        "Não selecione um gateway ao usar pagamento manual",
       );
     }
   }
@@ -832,7 +832,7 @@ export class InvoicingService {
       });
 
       if (invoice === null) {
-        throw new NotFoundException('Fatura não encontrada');
+        throw new NotFoundException("Fatura não encontrada");
       }
 
       // Não permitir remover fatura emitida ou paga
@@ -842,7 +842,7 @@ export class InvoicingService {
         invoiceStatus === InvoiceStatus.PAID
       ) {
         throw new BadRequestException(
-          'Não é possível remover uma fatura emitida ou paga',
+          "Não é possível remover uma fatura emitida ou paga",
         );
       }
 
@@ -864,7 +864,7 @@ export class InvoicingService {
         throw error;
       }
 
-      throw new BadRequestException('Erro ao remover fatura');
+      throw new BadRequestException("Erro ao remover fatura");
     }
   }
 
@@ -881,17 +881,17 @@ export class InvoicingService {
       });
 
       if (invoice === null) {
-        throw new NotFoundException('Fatura não encontrada');
+        throw new NotFoundException("Fatura não encontrada");
       }
 
       const invoiceStatus = invoice.status as InvoiceStatus;
       if (invoiceStatus === InvoiceStatus.ISSUED) {
-        throw new BadRequestException('Fatura já foi emitida');
+        throw new BadRequestException("Fatura já foi emitida");
       }
 
       if (invoiceStatus === InvoiceStatus.CANCELLED) {
         throw new BadRequestException(
-          'Não é possível emitir uma fatura cancelada',
+          "Não é possível emitir uma fatura cancelada",
         );
       }
 
@@ -920,7 +920,7 @@ export class InvoicingService {
         throw error;
       }
 
-      throw new BadRequestException('Erro ao emitir fatura');
+      throw new BadRequestException("Erro ao emitir fatura");
     }
   }
 
@@ -937,18 +937,18 @@ export class InvoicingService {
       });
 
       if (invoice === null) {
-        throw new NotFoundException('Fatura não encontrada');
+        throw new NotFoundException("Fatura não encontrada");
       }
 
       const invoiceStatus = invoice.status as InvoiceStatus;
       if (invoiceStatus === InvoiceStatus.CANCELLED) {
-        throw new BadRequestException('Fatura já está cancelada');
+        throw new BadRequestException("Fatura já está cancelada");
       }
 
       const paymentStatus = invoice.paymentStatus as PaymentStatus;
       if (paymentStatus === PaymentStatus.PAID) {
         throw new BadRequestException(
-          'Não é possível cancelar uma fatura já paga',
+          "Não é possível cancelar uma fatura já paga",
         );
       }
 
@@ -976,7 +976,7 @@ export class InvoicingService {
         throw error;
       }
 
-      throw new BadRequestException('Erro ao cancelar fatura');
+      throw new BadRequestException("Erro ao cancelar fatura");
     }
   }
 
@@ -1056,15 +1056,15 @@ export class InvoicingService {
         : undefined,
       type: invoice.type as InvoiceType,
       total:
-        typeof invoice.total === 'object' && 'toNumber' in invoice.total
+        typeof invoice.total === "object" && "toNumber" in invoice.total
           ? invoice.total.toNumber()
           : Number(invoice.total),
       discount:
-        typeof invoice.discount === 'object' && 'toNumber' in invoice.discount
+        typeof invoice.discount === "object" && "toNumber" in invoice.discount
           ? invoice.discount.toNumber()
           : Number(invoice.discount),
       taxAmount:
-        typeof invoice.taxAmount === 'object' && 'toNumber' in invoice.taxAmount
+        typeof invoice.taxAmount === "object" && "toNumber" in invoice.taxAmount
           ? invoice.taxAmount.toNumber()
           : Number(invoice.taxAmount),
       nfeKey: invoice.nfeKey || undefined,
@@ -1095,11 +1095,11 @@ export class InvoicingService {
         description: item.description || undefined,
         quantity: item.quantity,
         unitPrice:
-          typeof item.unitPrice === 'object' && 'toNumber' in item.unitPrice
+          typeof item.unitPrice === "object" && "toNumber" in item.unitPrice
             ? item.unitPrice.toNumber()
             : Number(item.unitPrice),
         totalPrice:
-          typeof item.totalPrice === 'object' && 'toNumber' in item.totalPrice
+          typeof item.totalPrice === "object" && "toNumber" in item.totalPrice
             ? item.totalPrice.toNumber()
             : Number(item.totalPrice),
       })),

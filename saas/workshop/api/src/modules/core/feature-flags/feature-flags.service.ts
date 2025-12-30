@@ -1,25 +1,25 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '@database/prisma.service';
-import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
+import { Injectable, Logger } from "@nestjs/common";
+import { PrismaService } from "@database/prisma.service";
+import { getErrorMessage, getErrorStack } from "@common/utils/error.utils";
 
 export type FeatureName =
-  | 'elevators'
-  | 'inventory'
-  | 'service_orders'
-  | 'quotes'
-  | 'customers'
-  | 'vehicles'
-  | 'appointments'
-  | 'bodywork'
-  | 'diagnostics'
-  | 'reports'
-  | 'suppliers'
-  | 'parts_catalog'
-  | 'documents'
-  | 'invoices'
-  | 'payments'
-  | 'vehicle_history'
-  | 'automations';
+  | "elevators"
+  | "inventory"
+  | "service_orders"
+  | "quotes"
+  | "customers"
+  | "vehicles"
+  | "appointments"
+  | "bodywork"
+  | "diagnostics"
+  | "reports"
+  | "suppliers"
+  | "parts_catalog"
+  | "documents"
+  | "invoices"
+  | "payments"
+  | "vehicle_history"
+  | "automations";
 
 export interface FeatureConfig {
   enabled: boolean;

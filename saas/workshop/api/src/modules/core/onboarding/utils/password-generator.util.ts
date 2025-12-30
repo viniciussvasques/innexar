@@ -1,4 +1,4 @@
-import * as crypto from 'node:crypto';
+import * as crypto from "node:crypto";
 
 /**
  * Gera uma senha aleatória segura
@@ -6,14 +6,14 @@ import * as crypto from 'node:crypto';
  * @returns Senha aleatória com maiúsculas, minúsculas, números e símbolos
  */
 export function generateRandomPassword(length: number = 12): string {
-  const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const lowercase = 'abcdefghijklmnopqrstuvwxyz';
-  const numbers = '0123456789';
-  const symbols = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+  const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const lowercase = "abcdefghijklmnopqrstuvwxyz";
+  const numbers = "0123456789";
+  const symbols = "!@#$%^&*()_+-=[]{}|;:,.<>?";
   const allChars = uppercase + lowercase + numbers + symbols;
 
   // Garantir que tenha pelo menos um de cada tipo
-  let password = '';
+  let password = "";
   password += uppercase[Math.floor(Math.random() * uppercase.length)];
   password += lowercase[Math.floor(Math.random() * lowercase.length)];
   password += numbers[Math.floor(Math.random() * numbers.length)];
@@ -27,7 +27,7 @@ export function generateRandomPassword(length: number = 12): string {
 
   // Embaralhar a senha
   return password
-    .split('')
+    .split("")
     .sort(() => crypto.randomInt(3) - 1)
-    .join('');
+    .join("");
 }

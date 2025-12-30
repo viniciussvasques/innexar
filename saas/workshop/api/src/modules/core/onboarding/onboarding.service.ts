@@ -3,26 +3,26 @@ import {
   BadRequestException,
   Logger,
   NotFoundException,
-} from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import Stripe from 'stripe';
-import { PrismaService } from '../../../database/prisma.service';
-import { TenantsService } from '../tenants/tenants.service';
-import { BillingService } from '../billing/billing.service';
-import { UsersService } from '../users/users.service';
-import { EmailService } from '../../shared/email/email.service';
-import { CloudflareService } from '../../shared/cloudflare/cloudflare.service';
-import { EncryptionService } from '../../shared/encryption/encryption.service';
-import { CreateCheckoutDto } from './dto/create-checkout.dto';
-import { CreateOnboardingDto } from './dto/create-onboarding.dto';
-import { generateRandomPassword } from './utils/password-generator.util';
-import { UserRole } from '../users/dto/create-user.dto';
+} from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import Stripe from "stripe";
+import { PrismaService } from "../../../database/prisma.service";
+import { TenantsService } from "../tenants/tenants.service";
+import { BillingService } from "../billing/billing.service";
+import { UsersService } from "../users/users.service";
+import { EmailService } from "../../shared/email/email.service";
+import { CloudflareService } from "../../shared/cloudflare/cloudflare.service";
+import { EncryptionService } from "../../shared/encryption/encryption.service";
+import { CreateCheckoutDto } from "./dto/create-checkout.dto";
+import { CreateOnboardingDto } from "./dto/create-onboarding.dto";
+import { generateRandomPassword } from "./utils/password-generator.util";
+import { UserRole } from "../users/dto/create-user.dto";
 import {
   BillingCycle,
   SubscriptionPlan,
   SubscriptionStatus,
-} from '../billing/dto/subscription-response.dto';
-import { TenantStatus, TenantPlan } from '../tenants/dto/create-tenant.dto';
+} from "../billing/dto/subscription-response.dto";
+import { TenantStatus, TenantPlan } from "../tenants/dto/create-tenant.dto";
 
 // Type helpers para evitar warnings de type safety com Stripe e Prisma
 type StripeError = {
@@ -87,18 +87,18 @@ export class OnboardingService {
     // Buscar gateway de pagamento global ativo do tipo Stripe
     const gateway = await this.prisma.systemPaymentGateway.findFirst({
       where: {
-        type: 'stripe',
+        type: "stripe",
         isActive: true,
       },
       orderBy: [
-        { isDefault: 'desc' }, // Padrão primeiro
-        { createdAt: 'desc' }, // Mais recente depois
+        { isDefault: "desc" }, // Padrão primeiro
+        { createdAt: "desc" }, // Mais recente depois
       ],
     });
 
     if (!gateway) {
       throw new BadRequestException(
-        'Gateway de pagamento Stripe não configurado. Configure em Payment Gateways no painel admin.',
+        "Gateway de pagamento Stripe não configurado. Configure em Payment Gateways no painel admin.",
       );
     }
 
@@ -106,7 +106,7 @@ export class OnboardingService {
 
     if (!secretKey) {
       throw new BadRequestException(
-        'Secret Key do Stripe não encontrada no gateway configurado.',
+        "Secret Key do Stripe não encontrada no gateway configurado.",
       );
     }
 
@@ -114,7 +114,7 @@ export class OnboardingService {
     const decryptedSecretKey = this.encryptionService.decrypt(secretKey);
 
     this.stripe = new Stripe(decryptedSecretKey, {
-      apiVersion: '2025-11-17.clover',
+      apiVersion: "2025-11-17.clover",
     });
 
     this.logger.log(`Stripe inicializado com gateway: ${gateway.name}`);
@@ -127,18 +127,15 @@ export class OnboardingService {
   private async getStripeWebhookSecret(): Promise<string> {
     const gateway = await this.prisma.systemPaymentGateway.findFirst({
       where: {
-        type: 'stripe',
+        type: "stripe",
         isActive: true,
       },
-      orderBy: [
-        { isDefault: 'desc' },
-        { createdAt: 'desc' },
-      ],
+      orderBy: [{ isDefault: "desc" }, { createdAt: "desc" }],
     });
 
     if (!gateway) {
       throw new BadRequestException(
-        'Gateway de pagamento Stripe não configurado.',
+        "Gateway de pagamento Stripe não configurado.",
       );
     }
 
@@ -146,7 +143,7 @@ export class OnboardingService {
 
     if (!webhookSecret) {
       throw new BadRequestException(
-        'Webhook Secret do Stripe não encontrado no gateway configurado.',
+        "Webhook Secret do Stripe não encontrado no gateway configurado.",
       );
     }
 
@@ -158,7 +155,10 @@ export class OnboardingService {
    * Método público para uso no webhook controller
    * Retorna instância do Stripe e webhook secret
    */
-  async getStripeForWebhook(): Promise<{ stripe: Stripe; webhookSecret: string }> {
+  async getStripeForWebhook(): Promise<{
+    stripe: Stripe;
+    webhookSecret: string;
+  }> {
     const stripe = await this.getStripeInstance();
     const webhookSecret = await this.getStripeWebhookSecret();
     return { stripe, webhookSecret };
@@ -267,11 +267,11 @@ export class OnboardingService {
     });
 
     if (!tenant) {
-      throw new BadRequestException('Tenant não encontrado');
+      throw new BadRequestException("Tenant não encontrado");
     }
 
     const tenantStatus = tenant.status;
-    if (tenantStatus !== 'pending') {
+    if (tenantStatus !== "pending") {
       throw new BadRequestException(
         `Tenant já foi processado. Status atual: ${tenantStatus}`,
       );
@@ -286,9 +286,9 @@ export class OnboardingService {
           where: { tenantId: tenant.id },
         })
       )?.email ||
-      tenantName.toLowerCase().replaceAll(/\s+/g, '.') + '@temp.com';
+      tenantName.toLowerCase().replaceAll(/\s+/g, ".") + "@temp.com";
 
-    if (!tenantEmail || tenantEmail.includes('@temp.com')) {
+    if (!tenantEmail || tenantEmail.includes("@temp.com")) {
       this.logger.warn(
         `Email do admin não encontrado para tenant ${tenant.id}. Usando email temporário: ${tenantEmail}`,
       );
@@ -302,12 +302,12 @@ export class OnboardingService {
 
     // Criar sessão de checkout
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      mode: 'subscription',
+      payment_method_types: ["card"],
+      mode: "subscription",
       line_items: [
         {
           price_data: {
-            currency: 'brl',
+            currency: "brl",
             product_data: {
               name: `Plano ${createCheckoutDto.plan}`,
               description: `Assinatura ${createCheckoutDto.plan} - Mecânica365`,
@@ -316,8 +316,8 @@ export class OnboardingService {
             recurring: {
               interval:
                 createCheckoutDto.billingCycle === BillingCycle.ANNUAL
-                  ? 'year'
-                  : 'month',
+                  ? "year"
+                  : "month",
             },
           },
           quantity: 1,
@@ -330,8 +330,8 @@ export class OnboardingService {
         plan: createCheckoutDto.plan,
         billingCycle: createCheckoutDto.billingCycle || BillingCycle.MONTHLY,
       },
-      success_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/onboarding/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/onboarding/cancel`,
+      success_url: `${process.env.FRONTEND_URL || "http://localhost:3000"}/onboarding/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.FRONTEND_URL || "http://localhost:3000"}/onboarding/cancel`,
       customer_email: tenantEmail,
       expires_at: Math.floor(Date.now() / 1000) + 3600, // Expira em 1 hora
       allow_promotion_codes: true,
@@ -357,7 +357,7 @@ export class OnboardingService {
         `Sessão criada mas URL não disponível. Session ID: ${session.id}`,
       );
       throw new BadRequestException(
-        'Erro ao criar sessão de checkout. URL não disponível.',
+        "Erro ao criar sessão de checkout. URL não disponível.",
       );
     }
 
@@ -377,14 +377,14 @@ export class OnboardingService {
     try {
       const metadata = session.metadata;
       if (!metadata) {
-        throw new BadRequestException('Metadata não encontrada na sessão');
+        throw new BadRequestException("Metadata não encontrada na sessão");
       }
 
       const { tenantId, tenantName, tenantEmail, plan, billingCycle } =
         metadata;
 
       if (!tenantId) {
-        throw new BadRequestException('Tenant ID não encontrado na metadata');
+        throw new BadRequestException("Tenant ID não encontrado na metadata");
       }
 
       // Buscar tenant existente
@@ -397,7 +397,7 @@ export class OnboardingService {
         throw new BadRequestException(`Tenant não encontrado: ${tenantId}`);
       }
 
-      if (tenant.status !== 'pending') {
+      if (tenant.status !== "pending") {
         this.logger.warn(
           `Tenant ${tenantId} já foi processado. Status atual: ${tenant.status}`,
         );
@@ -420,36 +420,40 @@ export class OnboardingService {
       if (updatedTenant.referredByLinkId) {
         try {
           const amount = session.amount_total ? session.amount_total / 100 : 0;
-          const commissionRate = 0.10; // 10% de comissão
+          const commissionRate = 0.1; // 10% de comissão
           const commissionAmount = amount * commissionRate;
 
           // Buscar dados do link para pegar o affiliateId
-          const affiliateLink = await (this.prisma as any).affiliateLink.findUnique({
+          const affiliateLink = await this.prisma.affiliateLink.findUnique({
             where: { id: updatedTenant.referredByLinkId },
           });
 
           if (affiliateLink) {
-            await (this.prisma as any).affiliateCommission.create({
+            await this.prisma.affiliateCommission.create({
               data: {
                 affiliateId: affiliateLink.affiliateId,
                 linkId: affiliateLink.id,
                 orderId: session.id,
                 amount: commissionAmount,
-                status: 'pending',
+                status: "pending",
                 description: `Comissão referente ao plano ${plan} do tenant ${tenant.subdomain}`,
               },
             });
-            this.logger.log(`Comissão de afiliado registrada: ${commissionAmount} para link ${updatedTenant.referredByLinkId}`);
+            this.logger.log(
+              `Comissão de afiliado registrada: ${commissionAmount} para link ${updatedTenant.referredByLinkId}`,
+            );
           }
         } catch (commError: unknown) {
-          this.logger.error(`Erro ao registrar comissão de afiliado: ${(commError as Error).message}`);
+          this.logger.error(
+            `Erro ao registrar comissão de afiliado: ${(commError as Error).message}`,
+          );
         }
       }
 
       // 1.5. Copiar configuração de email do tenant admin para o novo tenant
       try {
         const adminTenant = await this.prisma.tenant.findFirst({
-          where: { subdomain: 'admin' },
+          where: { subdomain: "admin" },
         });
 
         if (adminTenant) {
@@ -477,7 +481,9 @@ export class OnboardingService {
                 isDefault: true,
               },
             });
-            this.logger.log(`Configuração de email copiada para tenant ${tenant.id}`);
+            this.logger.log(
+              `Configuração de email copiada para tenant ${tenant.id}`,
+            );
           }
         }
       } catch (emailError: unknown) {
@@ -539,7 +545,7 @@ export class OnboardingService {
       }
 
       // 3. Criar User Admin (se ainda não existe)
-      let adminUser = tenant.users.find((u) => u.role === 'admin');
+      let adminUser = tenant.users.find((u) => u.role === "admin");
       let userPassword: string | undefined;
 
       if (adminUser == null) {
@@ -567,7 +573,7 @@ export class OnboardingService {
         });
 
         if (!newAdminUser) {
-          throw new BadRequestException('Erro ao criar usuário admin');
+          throw new BadRequestException("Erro ao criar usuário admin");
         }
 
         adminUser = newAdminUser;
@@ -575,17 +581,22 @@ export class OnboardingService {
         this.logger.log(`Usuário admin criado: ${createdAdminUser.id}`);
 
         // 4. Enviar email de boas-vindas (apenas se usuário foi criado agora)
-        const frontendUrl = this.configService.get<string>('TENANT_APP_URL') || 'https://app.mecanica365.com';
+        const frontendUrl =
+          this.configService.get<string>("TENANT_APP_URL") ||
+          "https://app.mecanica365.com";
         const loginUrl = `${frontendUrl}/login?subdomain=${tenant.subdomain}`;
 
-        await this.emailService.sendWelcomeEmail({
-          to: createdAdminUser.email,
-          name: createdAdminUser.name,
-          subdomain: tenant.subdomain,
-          email: createdAdminUser.email,
-          password: userPassword,
-          loginUrl,
-        }, tenant.id);
+        await this.emailService.sendWelcomeEmail(
+          {
+            to: createdAdminUser.email,
+            name: createdAdminUser.name,
+            subdomain: tenant.subdomain,
+            email: createdAdminUser.email,
+            password: userPassword,
+            loginUrl,
+          },
+          tenant.id,
+        );
 
         this.logger.log(
           `Email de boas-vindas enviado para: ${createdAdminUser.email}`,
@@ -600,7 +611,7 @@ export class OnboardingService {
       // Garantir que adminUser não é undefined (TypeScript narrowing)
       if (!adminUser) {
         throw new BadRequestException(
-          'Erro: usuário admin não encontrado após processamento',
+          "Erro: usuário admin não encontrado após processamento",
         );
       }
 
@@ -612,7 +623,7 @@ export class OnboardingService {
     } catch (error: unknown) {
       const err = error as StripeError;
       this.logger.error(
-        `Erro ao processar checkout: ${err.message || 'Erro desconhecido'}`,
+        `Erro ao processar checkout: ${err.message || "Erro desconhecido"}`,
         err.stack,
       );
       throw error;
@@ -680,7 +691,7 @@ export class OnboardingService {
         // ou tentar encontrar pela session de checkout mais recente
         const tenants = await this.prisma.tenant.findMany({
           where: {
-            status: 'pending',
+            status: "pending",
           },
           include: {
             users: {
@@ -689,7 +700,7 @@ export class OnboardingService {
             },
           },
           orderBy: {
-            createdAt: 'desc',
+            createdAt: "desc",
           },
           take: 10, // Buscar os 10 mais recentes
         });
@@ -726,7 +737,7 @@ export class OnboardingService {
       const metadata = session.metadata;
       if (!metadata?.tenantId) {
         this.logger.warn(
-          'Metadata não encontrada em checkout.session.async_payment_failed',
+          "Metadata não encontrada em checkout.session.async_payment_failed",
         );
         return;
       }
@@ -744,7 +755,7 @@ export class OnboardingService {
       }
 
       const adminUser = tenant.users[0];
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
       const retryUrl = `${frontendUrl}/onboarding/checkout?tenantId=${tenant.id}`;
 
       await this.emailService.sendPaymentFailedEmail({
@@ -752,14 +763,14 @@ export class OnboardingService {
         name: adminUser.name,
         subdomain: tenant.subdomain,
         amount: session.amount_total || 0,
-        currency: session.currency || 'brl',
+        currency: session.currency || "brl",
         invoiceUrl:
-          session.invoice && typeof session.invoice === 'string'
+          session.invoice && typeof session.invoice === "string"
             ? `https://dashboard.stripe.com/invoices/${session.invoice}`
             : undefined,
-        paymentMethod: 'Cartão de Crédito',
+        paymentMethod: "Cartão de Crédito",
         failureReason:
-          'O pagamento não pôde ser processado. Verifique os dados do seu cartão.',
+          "O pagamento não pôde ser processado. Verifique os dados do seu cartão.",
         retryUrl,
         supportUrl: `${frontendUrl}/suporte`,
       });
@@ -783,7 +794,7 @@ export class OnboardingService {
     try {
       const customerId = this.extractCustomerId(charge);
       if (!customerId) {
-        this.logger.warn('Customer ID não encontrado em charge.failed');
+        this.logger.warn("Customer ID não encontrado em charge.failed");
         return;
       }
 
@@ -811,7 +822,7 @@ export class OnboardingService {
   }
 
   private extractCustomerId(charge: Stripe.Charge): string | undefined {
-    return typeof charge.customer === 'string'
+    return typeof charge.customer === "string"
       ? charge.customer
       : charge.customer?.id;
   }
@@ -821,7 +832,7 @@ export class OnboardingService {
       `Processando charge.failed: ${charge.id}, customer: ${customerId}`,
     );
     this.logger.log(
-      `Billing email: ${charge.billing_details?.email || 'não disponível'}`,
+      `Billing email: ${charge.billing_details?.email || "não disponível"}`,
     );
   }
 
@@ -951,10 +962,10 @@ export class OnboardingService {
       const sessionTenantName =
         currentSessionMetadata?.tenantName ?? tenant.subdomain;
       return {
-        id: 'temp',
+        id: "temp",
         email: session.customer_email,
         name: sessionTenantName,
-        role: 'admin',
+        role: "admin",
       };
     }
 
@@ -1002,7 +1013,7 @@ export class OnboardingService {
     subscription: unknown;
     adminUser: AdminUser | null;
   } | null> {
-    this.logger.log('Buscando tenant pendente mais recente...');
+    this.logger.log("Buscando tenant pendente mais recente...");
     const pendingTenant = await this.prisma.tenant.findFirst({
       where: {
         status: TenantStatus.PENDING,
@@ -1013,12 +1024,12 @@ export class OnboardingService {
         },
       },
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
     });
 
     if (!pendingTenant) {
-      this.logger.warn('Nenhum tenant pendente encontrado');
+      this.logger.warn("Nenhum tenant pendente encontrado");
       return null;
     }
 
@@ -1066,10 +1077,10 @@ export class OnboardingService {
         `Usando email do billing: ${charge.billing_details.email}`,
       );
       return {
-        id: 'temp',
+        id: "temp",
         email: charge.billing_details.email,
         name: charge.billing_details.name || pendingTenant.subdomain,
-        role: 'admin',
+        role: "admin",
       };
     }
 
@@ -1077,20 +1088,20 @@ export class OnboardingService {
     if (sessionEmail) {
       this.logger.log(`Email da session: ${sessionEmail}`);
       return {
-        id: 'temp',
+        id: "temp",
         email: sessionEmail,
         name: pendingTenant.subdomain,
-        role: 'admin',
+        role: "admin",
       };
     }
 
     const tenantEmail = `${pendingTenant.subdomain}@temp.com`;
     this.logger.log(`Usando email gerado: ${tenantEmail}`);
     return {
-      id: 'temp',
+      id: "temp",
       email: tenantEmail,
       name: pendingTenant.subdomain,
-      role: 'admin',
+      role: "admin",
     };
   }
 
@@ -1122,13 +1133,13 @@ export class OnboardingService {
     tenant: TenantWithUsers,
     adminUser: AdminUser,
   ): Promise<void> {
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
     const retryUrl = `${frontendUrl}/onboarding/checkout?tenantId=${tenant.id}`;
 
     const failureReason =
       charge.failure_message ||
       charge.outcome?.reason ||
-      'Falha no processamento do pagamento. Verifique os dados do seu cartão.';
+      "Falha no processamento do pagamento. Verifique os dados do seu cartão.";
 
     await this.emailService.sendPaymentFailedEmail({
       to: adminUser.email,
@@ -1137,7 +1148,7 @@ export class OnboardingService {
       amount: charge.amount,
       currency: charge.currency,
       paymentMethod:
-        (charge.payment_method_details as { type?: string })?.type || 'Cartão',
+        (charge.payment_method_details as { type?: string })?.type || "Cartão",
       failureReason,
       retryUrl,
       supportUrl: `${frontendUrl}/suporte`,
@@ -1152,13 +1163,13 @@ export class OnboardingService {
   ): Promise<void> {
     try {
       const customerId =
-        typeof paymentIntent.customer === 'string'
+        typeof paymentIntent.customer === "string"
           ? paymentIntent.customer
           : paymentIntent.customer?.id;
 
       if (!customerId) {
         this.logger.warn(
-          'Customer ID não encontrado em payment_intent.payment_failed',
+          "Customer ID não encontrado em payment_intent.payment_failed",
         );
         return;
       }
@@ -1176,7 +1187,7 @@ export class OnboardingService {
         );
         return;
       }
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
       const retryUrl = `${frontendUrl}/onboarding/checkout?tenantId=${tenant.id}`;
 
       await this.emailService.sendPaymentFailedEmail({
@@ -1185,10 +1196,10 @@ export class OnboardingService {
         subdomain: tenant.subdomain,
         amount: paymentIntent.amount,
         currency: paymentIntent.currency,
-        paymentMethod: paymentIntent.payment_method_types[0] || 'Cartão',
+        paymentMethod: paymentIntent.payment_method_types[0] || "Cartão",
         failureReason:
           paymentIntent.last_payment_error?.message ||
-          'Falha no processamento do pagamento',
+          "Falha no processamento do pagamento",
         retryUrl,
         supportUrl: `${frontendUrl}/suporte`,
       });
@@ -1211,7 +1222,7 @@ export class OnboardingService {
   async handleInvoicePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
     try {
       const customerId =
-        typeof invoice.customer === 'string'
+        typeof invoice.customer === "string"
           ? invoice.customer
           : invoice.customer?.id;
       type InvoiceData = {
@@ -1221,13 +1232,13 @@ export class OnboardingService {
       };
       const invoiceData = invoice as unknown as InvoiceData;
       const subscriptionId =
-        typeof invoiceData.subscription === 'string'
+        typeof invoiceData.subscription === "string"
           ? invoiceData.subscription
           : invoiceData.subscription?.id || undefined;
 
       if (!customerId && !subscriptionId) {
         this.logger.warn(
-          'Customer ou Subscription ID não encontrado em invoice.payment_failed',
+          "Customer ou Subscription ID não encontrado em invoice.payment_failed",
         );
         return;
       }
@@ -1251,7 +1262,7 @@ export class OnboardingService {
         );
         return;
       }
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
       const retryUrl = `${frontendUrl}/billing/update-payment?tenantId=${tenant.id}`;
 
       // Atualizar status da subscription para past_due
@@ -1266,10 +1277,10 @@ export class OnboardingService {
         amount: invoice.amount_due,
         currency: invoice.currency,
         invoiceUrl: invoice.hosted_invoice_url || undefined,
-        paymentMethod: invoiceData.payment_method_types?.[0] || 'Cartão',
+        paymentMethod: invoiceData.payment_method_types?.[0] || "Cartão",
         failureReason:
           invoiceData.last_finalization_error?.message ||
-          'Falha no processamento da fatura',
+          "Falha no processamento da fatura",
         retryUrl,
         supportUrl: `${frontendUrl}/suporte`,
       });
@@ -1292,7 +1303,7 @@ export class OnboardingService {
   async handleInvoicePaymentSucceeded(invoice: Stripe.Invoice): Promise<void> {
     try {
       const customerId =
-        typeof invoice.customer === 'string'
+        typeof invoice.customer === "string"
           ? invoice.customer
           : invoice.customer?.id;
       const invoiceData = invoice as unknown as {
@@ -1300,13 +1311,13 @@ export class OnboardingService {
         receipt_url?: string;
       };
       const subscriptionId =
-        typeof invoiceData.subscription === 'string'
+        typeof invoiceData.subscription === "string"
           ? invoiceData.subscription
           : invoiceData.subscription?.id || undefined;
 
       if (!customerId && !subscriptionId) {
         this.logger.warn(
-          'Customer ou Subscription ID não encontrado em invoice.payment_succeeded',
+          "Customer ou Subscription ID não encontrado em invoice.payment_succeeded",
         );
         return;
       }
@@ -1371,20 +1382,20 @@ export class OnboardingService {
   async handleInvoiceUpcoming(invoice: Stripe.Invoice): Promise<void> {
     try {
       const customerId =
-        typeof invoice.customer === 'string'
+        typeof invoice.customer === "string"
           ? invoice.customer
           : invoice.customer?.id;
       const invoiceData = invoice as unknown as {
         subscription?: string | { id: string } | null;
       };
       const subscriptionId =
-        typeof invoiceData.subscription === 'string'
+        typeof invoiceData.subscription === "string"
           ? invoiceData.subscription
           : invoiceData.subscription?.id || undefined;
 
       if (!customerId && !subscriptionId) {
         this.logger.warn(
-          'Customer ou Subscription ID não encontrado em invoice.upcoming',
+          "Customer ou Subscription ID não encontrado em invoice.upcoming",
         );
         return;
       }
@@ -1408,7 +1419,7 @@ export class OnboardingService {
         );
         return;
       }
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
 
       await this.emailService.sendInvoiceUpcomingEmail({
         to: adminUser.email,
@@ -1467,7 +1478,7 @@ export class OnboardingService {
         );
         return;
       }
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
 
       // Atualizar status da subscription para cancelled
       await this.billingService.update(tenant.id, {
@@ -1477,7 +1488,7 @@ export class OnboardingService {
       // Suspender tenant
       await this.tenantsService.suspend(tenant.id);
 
-      const planName = dbSubscription.plan || 'Plano';
+      const planName = dbSubscription.plan || "Plano";
       const subscriptionData = subscription as unknown as {
         canceled_at?: number | null;
         current_period_end?: number;
@@ -1546,24 +1557,24 @@ export class OnboardingService {
         );
         return;
       }
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
 
       // Buscar plano atualizado do Stripe
       const planName =
         subscription.items.data[0]?.price?.nickname || dbSubscription.plan;
       const billingCycle =
-        subscription.items.data[0]?.price?.recurring?.interval === 'year'
+        subscription.items.data[0]?.price?.recurring?.interval === "year"
           ? BillingCycle.ANNUAL
           : BillingCycle.MONTHLY;
       const amount = subscription.items.data[0]?.price?.unit_amount || 0;
-      const currency = subscription.items.data[0]?.price?.currency || 'brl';
+      const currency = subscription.items.data[0]?.price?.currency || "brl";
 
       // Atualizar subscription no banco
       await this.billingService.update(tenant.id, {
         plan: planName as SubscriptionPlan,
         billingCycle,
         status:
-          subscription.status === 'active'
+          subscription.status === "active"
             ? SubscriptionStatus.ACTIVE
             : (dbSubscription.status as SubscriptionStatus),
       });
@@ -1626,14 +1637,14 @@ export class OnboardingService {
         );
         return;
       }
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
 
-      const planName = dbSubscription.plan || 'Plano';
+      const planName = dbSubscription.plan || "Plano";
       const trialEndDate = new Date(
         subscription.trial_end ? subscription.trial_end * 1000 : Date.now(),
       );
       const amount = subscription.items.data[0]?.price?.unit_amount || 0;
-      const currency = subscription.items.data[0]?.price?.currency || 'brl';
+      const currency = subscription.items.data[0]?.price?.currency || "brl";
 
       await this.emailService.sendTrialEndingEmail({
         to: adminUser.email,

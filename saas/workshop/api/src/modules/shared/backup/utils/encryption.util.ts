@@ -3,9 +3,9 @@ import {
   createDecipheriv,
   randomBytes,
   scrypt,
-} from 'node:crypto';
-import { promisify } from 'node:util';
-import { readFileSync, writeFileSync, existsSync, statSync } from 'node:fs';
+} from "node:crypto";
+import { promisify } from "node:util";
+import { readFileSync, writeFileSync, existsSync, statSync } from "node:fs";
 
 const scryptAsync = promisify(scrypt);
 
@@ -13,7 +13,7 @@ const scryptAsync = promisify(scrypt);
  * Utilitário para criptografia AES-256-GCM
  */
 export class EncryptionUtil {
-  private static readonly ALGORITHM = 'aes-256-gcm';
+  private static readonly ALGORITHM = "aes-256-gcm";
   private static readonly KEY_LENGTH = 32; // 256 bits
   private static readonly IV_LENGTH = 16; // 128 bits
   private static readonly SALT_LENGTH = 64;

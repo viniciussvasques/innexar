@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
-import { PrismaService } from '@database/prisma.service';
-import { Prisma } from '@prisma/client';
+import { Injectable, NotFoundException, Logger } from "@nestjs/common";
+import { PrismaService } from "@database/prisma.service";
+import { Prisma } from "@prisma/client";
 import {
   CreateKnowledgeDto,
   UpdateKnowledgeDto,
@@ -8,8 +8,8 @@ import {
   KnowledgeSummaryDto,
   KnowledgeFiltersDto,
   RateKnowledgeDto,
-} from './dto';
-import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
+} from "./dto";
+import { getErrorMessage, getErrorStack } from "@common/utils/error.utils";
 
 @Injectable()
 export class KnowledgeService {
@@ -177,15 +177,15 @@ export class KnowledgeService {
     filters: KnowledgeFiltersDto,
   ): Prisma.KnowledgeBaseOrderByWithRelationInput {
     const orderBy: Prisma.KnowledgeBaseOrderByWithRelationInput = {};
-    const sortBy = filters.sortBy || 'createdAt';
-    const sortOrder = filters.sortOrder || 'desc';
-    const direction = sortOrder === 'desc' ? 'desc' : 'asc';
+    const sortBy = filters.sortBy || "createdAt";
+    const sortOrder = filters.sortOrder || "desc";
+    const direction = sortOrder === "desc" ? "desc" : "asc";
 
-    if (sortBy === 'rating') {
+    if (sortBy === "rating") {
       orderBy.rating = direction;
-    } else if (sortBy === 'successCount') {
+    } else if (sortBy === "successCount") {
       orderBy.successCount = direction;
-    } else if (sortBy === 'viewCount') {
+    } else if (sortBy === "viewCount") {
       orderBy.viewCount = direction;
     } else {
       orderBy.createdAt = direction;
@@ -283,9 +283,9 @@ export class KnowledgeService {
       const symptoms = Array.isArray(item.symptoms) ? item.symptoms : [];
       const symptomText = symptoms
         .map((s: { symptom?: string } | string) =>
-          typeof s === 'string' ? s : s.symptom || '',
+          typeof s === "string" ? s : s.symptom || "",
         )
-        .join(' ')
+        .join(" ")
         .toLowerCase();
       return (
         item.problemTitle.toLowerCase().includes(searchLower) ||
@@ -336,7 +336,7 @@ export class KnowledgeService {
 
       if (!knowledge) {
         throw new NotFoundException(
-          'Entrada na base de conhecimento não encontrada',
+          "Entrada na base de conhecimento não encontrada",
         );
       }
 
@@ -371,7 +371,7 @@ export class KnowledgeService {
 
       if (!existing) {
         throw new NotFoundException(
-          'Entrada na base de conhecimento não encontrada',
+          "Entrada na base de conhecimento não encontrada",
         );
       }
 
@@ -443,7 +443,7 @@ export class KnowledgeService {
 
       if (!existing) {
         throw new NotFoundException(
-          'Entrada na base de conhecimento não encontrada',
+          "Entrada na base de conhecimento não encontrada",
         );
       }
 
@@ -489,7 +489,7 @@ export class KnowledgeService {
 
       if (!existing) {
         throw new NotFoundException(
-          'Entrada na base de conhecimento não encontrada',
+          "Entrada na base de conhecimento não encontrada",
         );
       }
 
@@ -520,7 +520,7 @@ export class KnowledgeService {
           tenantId,
           isActive: true,
         },
-        orderBy: [{ successCount: 'desc' }, { rating: 'desc' }],
+        orderBy: [{ successCount: "desc" }, { rating: "desc" }],
         select: {
           id: true,
           problemTitle: true,
@@ -544,7 +544,7 @@ export class KnowledgeService {
           return symptoms.some((searchSymptom) =>
             itemSymptoms.some((itemSymptom: { symptom?: string } | string) => {
               const symptom =
-                typeof itemSymptom === 'string'
+                typeof itemSymptom === "string"
                   ? itemSymptom
                   : itemSymptom.symptom;
               return symptom

@@ -12,10 +12,10 @@ export function toNumber(
   if (value == null) {
     return undefined;
   }
-  if (typeof value === 'number') {
+  if (typeof value === "number") {
     return value;
   }
-  if (typeof value === 'object' && 'toNumber' in value) {
+  if (typeof value === "object" && "toNumber" in value) {
     return value.toNumber();
   }
   return undefined;

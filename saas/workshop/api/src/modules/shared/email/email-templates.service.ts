@@ -20,7 +20,7 @@ export class EmailTemplatesService {
         <a href="${buttonUrl}" style="background: #667eea; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">${buttonText}</a>
       </div>
       `
-        : '';
+        : "";
 
     return `
 <!DOCTYPE html>
@@ -52,8 +52,8 @@ export class EmailTemplatesService {
   <div style="text-align: center; margin-top: 20px; color: #999; font-size: 12px;">
     <p>© ${new Date().getFullYear()} Mecânica365. Todos os direitos reservados.</p>
     <p style="margin: 5px 0;">
-      <a href="${process.env.FRONTEND_URL || 'https://mecanica365.com'}" style="color: #667eea; text-decoration: none;">Acesse nosso site</a> | 
-      <a href="${process.env.FRONTEND_URL || 'https://mecanica365.com'}/suporte" style="color: #667eea; text-decoration: none;">Suporte</a>
+      <a href="${process.env.FRONTEND_URL || "https://mecanica365.com"}" style="color: #667eea; text-decoration: none;">Acesse nosso site</a> | 
+      <a href="${process.env.FRONTEND_URL || "https://mecanica365.com"}/suporte" style="color: #667eea; text-decoration: none;">Suporte</a>
     </p>
   </div>
 </body>
@@ -64,10 +64,10 @@ export class EmailTemplatesService {
   /**
    * Formata valor monetário
    */
-  private formatCurrency(amount: number, currency: string = 'BRL'): string {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: currency === 'brl' ? 'BRL' : currency.toUpperCase(),
+  private formatCurrency(amount: number, currency: string = "BRL"): string {
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: currency === "brl" ? "BRL" : currency.toUpperCase(),
     }).format(amount / 100); // Stripe usa centavos
   }
 
@@ -75,12 +75,12 @@ export class EmailTemplatesService {
    * Formata data
    */
   private formatDate(date: Date): string {
-    return new Intl.DateTimeFormat('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    return new Intl.DateTimeFormat("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     }).format(date);
   }
 
@@ -126,9 +126,9 @@ export class EmailTemplatesService {
     `;
 
     return this.getBaseTemplate(
-      'Bem-vindo ao Mecânica365!',
+      "Bem-vindo ao Mecânica365!",
       content,
-      'Acessar Sistema',
+      "Acessar Sistema",
       data.loginUrl,
     );
   }
@@ -146,7 +146,7 @@ export class EmailTemplatesService {
   }): string {
     const formattedAmount = this.formatCurrency(data.amount, data.currency);
     const reason =
-      data.failureReason || 'Não foi possível processar o pagamento.';
+      data.failureReason || "Não foi possível processar o pagamento.";
 
     const content = `
       <p style="font-size: 16px; margin: 0 0 20px 0;">Olá <strong>${data.name}</strong>,</p>
@@ -160,7 +160,7 @@ export class EmailTemplatesService {
         <p style="margin: 10px 0; color: #721c24;">
           <strong>Valor:</strong> ${formattedAmount}<br>
           <strong>Motivo:</strong> ${reason}
-          ${data.paymentMethod ? `<br><strong>Método:</strong> ${data.paymentMethod}` : ''}
+          ${data.paymentMethod ? `<br><strong>Método:</strong> ${data.paymentMethod}` : ""}
         </p>
       </div>
       
@@ -183,19 +183,19 @@ export class EmailTemplatesService {
         </p>
       </div>
       `
-          : ''
+          : ""
       }
     `;
 
     const retryButton = data.retryUrl
       ? {
-          text: 'Tentar Pagamento Novamente',
+          text: "Tentar Pagamento Novamente",
           url: data.retryUrl,
         }
       : undefined;
 
     return this.getBaseTemplate(
-      'Pagamento Não Processado',
+      "Pagamento Não Processado",
       content,
       retryButton?.text,
       retryButton?.url,
@@ -248,9 +248,9 @@ export class EmailTemplatesService {
     `;
 
     return this.getBaseTemplate(
-      'Assinatura Cancelada',
+      "Assinatura Cancelada",
       content,
-      data.reactivateUrl ? 'Reativar Assinatura' : undefined,
+      data.reactivateUrl ? "Reativar Assinatura" : undefined,
       data.reactivateUrl,
     );
   }
@@ -267,7 +267,7 @@ export class EmailTemplatesService {
     loginUrl: string;
   }): string {
     const formattedAmount = this.formatCurrency(data.amount, data.currency);
-    const cycleText = data.billingCycle === 'annual' ? 'anual' : 'mensal';
+    const cycleText = data.billingCycle === "annual" ? "anual" : "mensal";
 
     const content = `
       <p style="font-size: 16px; margin: 0 0 20px 0;">Olá <strong>${data.name}</strong>,</p>
@@ -308,9 +308,9 @@ export class EmailTemplatesService {
     `;
 
     return this.getBaseTemplate(
-      'Assinatura Atualizada',
+      "Assinatura Atualizada",
       content,
-      'Acessar Sistema',
+      "Acessar Sistema",
       data.loginUrl,
     );
   }
@@ -353,7 +353,7 @@ export class EmailTemplatesService {
             <td style="padding: 8px 0; color: #155724;">${this.formatDate(data.nextBillingDate)}</td>
           </tr>
           `
-              : ''
+              : ""
           }
         </table>
       </div>
@@ -365,7 +365,7 @@ export class EmailTemplatesService {
       </p>
     `;
 
-    return this.getBaseTemplate('Pagamento Confirmado', content);
+    return this.getBaseTemplate("Pagamento Confirmado", content);
   }
 
   getInvoiceUpcomingEmailTemplate(data: {
@@ -405,7 +405,7 @@ export class EmailTemplatesService {
         <ul style="padding-left: 20px; color: #555;">
           <li style="margin: 10px 0;">Certifique-se de que há saldo suficiente no método de pagamento cadastrado</li>
           <li style="margin: 10px 0;">Verifique se seus dados de pagamento estão atualizados</li>
-          ${data.updatePaymentMethodUrl ? `<li style="margin: 10px 0;">Se necessário, <a href="${data.updatePaymentMethodUrl}" style="color: #667eea;">atualize seu método de pagamento</a></li>` : ''}
+          ${data.updatePaymentMethodUrl ? `<li style="margin: 10px 0;">Se necessário, <a href="${data.updatePaymentMethodUrl}" style="color: #667eea;">atualize seu método de pagamento</a></li>` : ""}
         </ul>
       </div>
       
@@ -418,14 +418,14 @@ export class EmailTemplatesService {
         </p>
       </div>
       `
-          : ''
+          : ""
       }
     `;
 
     return this.getBaseTemplate(
-      'Próxima Cobrança Programada',
+      "Próxima Cobrança Programada",
       content,
-      data.updatePaymentMethodUrl ? 'Atualizar Método de Pagamento' : undefined,
+      data.updatePaymentMethodUrl ? "Atualizar Método de Pagamento" : undefined,
       data.updatePaymentMethodUrl,
     );
   }
@@ -482,9 +482,9 @@ export class EmailTemplatesService {
     `;
 
     return this.getBaseTemplate(
-      'Seu Período de Teste Está Terminando',
+      "Seu Período de Teste Está Terminando",
       content,
-      data.subscribeUrl ? 'Continuar Assinatura' : undefined,
+      data.subscribeUrl ? "Continuar Assinatura" : undefined,
       data.subscribeUrl,
     );
   }
@@ -525,9 +525,9 @@ export class EmailTemplatesService {
     `;
 
     return this.getBaseTemplate(
-      'Conta Suspensa',
+      "Conta Suspensa",
       content,
-      data.reactivateUrl ? 'Reativar Conta' : undefined,
+      data.reactivateUrl ? "Reativar Conta" : undefined,
       data.reactivateUrl,
     );
   }
@@ -581,7 +581,7 @@ Olá ${data.name},
 Infelizmente, não conseguimos processar o pagamento da sua assinatura.
 
 VALOR: ${formattedAmount}
-MOTIVO: ${data.failureReason || 'Não foi possível processar o pagamento.'}
+MOTIVO: ${data.failureReason || "Não foi possível processar o pagamento."}
 
 O QUE FAZER AGORA:
 1. Verifique se há saldo suficiente no seu cartão
@@ -589,7 +589,7 @@ O QUE FAZER AGORA:
 3. Entre em contato com seu banco se o problema persistir
 4. Tente novamente ou atualize seu método de pagamento
 
-${data.retryUrl ? `Tentar novamente: ${data.retryUrl}` : ''}
+${data.retryUrl ? `Tentar novamente: ${data.retryUrl}` : ""}
 
 Se você tiver dúvidas, entre em contato com nosso suporte.
 
@@ -602,15 +602,15 @@ Se você tiver dúvidas, entre em contato com nosso suporte.
     receiptUrl?: string;
   }): string {
     if (!data.invoiceUrl && !data.receiptUrl) {
-      return '';
+      return "";
     }
 
     const invoiceLink = data.invoiceUrl
       ? `<strong>📄 Visualizar Fatura:</strong> <a href="${data.invoiceUrl}" style="color: #0066cc;">Clique aqui</a><br>`
-      : '';
+      : "";
     const receiptLink = data.receiptUrl
       ? `<strong>🧾 Recibo:</strong> <a href="${data.receiptUrl}" style="color: #0066cc;">Baixar recibo</a>`
-      : '';
+      : "";
 
     return `
       <div style="background: #e7f3ff; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #0066cc;">
@@ -635,7 +635,7 @@ Se você tiver dúvidas, entre em contato com nosso suporte.
       <p style="font-size: 16px; margin: 0 0 20px 0;">Olá <strong>${data.name}</strong>,</p>
       
       <p style="font-size: 16px; color: #555; margin: 0 0 20px 0;">
-        Recebemos uma solicitação para redefinir a senha da sua conta${data.workshopName ? ` na oficina <strong>${data.workshopName}</strong>` : ''}.
+        Recebemos uma solicitação para redefinir a senha da sua conta${data.workshopName ? ` na oficina <strong>${data.workshopName}</strong>` : ""}.
       </p>
 
       <div style="background: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffcc00;">
@@ -652,9 +652,9 @@ Se você tiver dúvidas, entre em contato com nosso suporte.
     `;
 
     return this.getBaseTemplate(
-      '🔐 Recuperação de Senha',
+      "🔐 Recuperação de Senha",
       content,
-      'Redefinir Minha Senha',
+      "Redefinir Minha Senha",
       data.resetUrl,
     );
   }
@@ -673,7 +673,7 @@ Se você tiver dúvidas, entre em contato com nosso suporte.
       <div style="background: #d4edda; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #28a745;">
         <p style="margin: 0; color: #155724;">
           <strong>✅ Senha Alterada com Sucesso!</strong><br>
-          Sua senha foi alterada em ${this.formatDate(data.changedAt)}${data.workshopName ? ` para a oficina <strong>${data.workshopName}</strong>` : ''}.
+          Sua senha foi alterada em ${this.formatDate(data.changedAt)}${data.workshopName ? ` para a oficina <strong>${data.workshopName}</strong>` : ""}.
         </p>
       </div>
 
@@ -690,7 +690,7 @@ Se você tiver dúvidas, entre em contato com nosso suporte.
       </div>
     `;
 
-    return this.getBaseTemplate('🔐 Senha Alterada', content);
+    return this.getBaseTemplate("🔐 Senha Alterada", content);
   }
 
   /**
@@ -726,9 +726,9 @@ Se você tiver dúvidas, entre em contato com nosso suporte.
     `;
 
     return this.getBaseTemplate(
-      '🔐 Sua Senha Foi Redefinida',
+      "🔐 Sua Senha Foi Redefinida",
       content,
-      'Acessar Sistema',
+      "Acessar Sistema",
       data.loginUrl,
     );
   }

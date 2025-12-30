@@ -1,10 +1,10 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
-import request from 'supertest';
-import { AppModule } from '../src/app/app.module';
-import { PrismaService } from '../src/database/prisma.service';
+import { Test, TestingModule } from "@nestjs/testing";
+import { INestApplication } from "@nestjs/common";
+import request from "supertest";
+import { AppModule } from "../src/app/app.module";
+import { PrismaService } from "../src/database/prisma.service";
 
-describe('QuotesController (e2e)', () => {
+describe("QuotesController (e2e)", () => {
   let app: INestApplication;
   let prisma: PrismaService;
   let accessToken: string;
@@ -26,10 +26,10 @@ describe('QuotesController (e2e)', () => {
     // Criar tenant e usuário para testes
     const tenant = await prisma.tenant.create({
       data: {
-        name: 'Test Tenant Quotes',
-        subdomain: 'test-quotes',
-        plan: 'professional',
-        document: '12345678000199',
+        name: "Test Tenant Quotes",
+        subdomain: "test-quotes",
+        plan: "professional",
+        document: "12345678000199",
       },
     });
     tenantId = tenant.id;
@@ -37,38 +37,38 @@ describe('QuotesController (e2e)', () => {
     await prisma.user.create({
       data: {
         tenantId,
-        email: 'test-quotes@test.com',
-        name: 'Test User',
+        email: "test-quotes@test.com",
+        name: "Test User",
         password:
-          '$2b$10$rQZ8vJZ8vJZ8vJZ8vJZ8vOeZ8vJZ8vJZ8vJZ8vJZ8vJZ8vJZ8vJZ8v',
-        role: 'admin',
+          "$2b$10$rQZ8vJZ8vJZ8vJZ8vJZ8vOeZ8vJZ8vJZ8vJZ8vJZ8vJZ8vJZ8vJZ8v",
+        role: "admin",
       },
     });
 
     // Login para obter token
     const loginResponse = await request(app.getHttpServer())
-      .post('/api/auth/login')
+      .post("/api/auth/login")
       .send({
-        email: 'test-quotes@test.com',
-        password: 'password123',
+        email: "test-quotes@test.com",
+        password: "password123",
       });
 
     if (loginResponse.status === 200) {
       accessToken = loginResponse.body.accessToken;
     } else {
       // Se login falhar, criar token manualmente (para testes)
-      accessToken = 'test-token';
+      accessToken = "test-token";
     }
 
     // Criar cliente e veículo para testes
     const customer = await prisma.customer.create({
       data: {
         tenantId,
-        name: 'Cliente Teste Quotes',
-        phone: '(11) 99999-9999',
-        email: 'cliente@test.com',
-        documentType: 'cpf',
-        cpf: '12345678901',
+        name: "Cliente Teste Quotes",
+        phone: "(11) 99999-9999",
+        email: "cliente@test.com",
+        documentType: "cpf",
+        cpf: "12345678901",
       },
     });
     customerId = customer.id;
@@ -76,9 +76,9 @@ describe('QuotesController (e2e)', () => {
     const vehicle = await prisma.customerVehicle.create({
       data: {
         customerId,
-        placa: 'TEST123',
-        make: 'Honda',
-        model: 'Civic',
+        placa: "TEST123",
+        make: "Honda",
+        model: "Civic",
         year: 2020,
       },
     });
@@ -98,20 +98,20 @@ describe('QuotesController (e2e)', () => {
     await app.close();
   });
 
-  describe('/quotes (POST)', () => {
-    it('deve criar um orçamento', () => {
+  describe("/quotes (POST)", () => {
+    it("deve criar um orçamento", () => {
       return request(app.getHttpServer())
-        .post('/api/quotes')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .set('X-Tenant-Id', tenantId)
+        .post("/api/quotes")
+        .set("Authorization", `Bearer ${accessToken}`)
+        .set("X-Tenant-Id", tenantId)
         .send({
           customerId,
           vehicleId,
           items: [
             {
-              type: 'service',
-              name: 'Troca de óleo',
-              description: 'Troca de óleo do motor',
+              type: "service",
+              name: "Troca de óleo",
+              description: "Troca de óleo do motor",
               quantity: 1,
               unitCost: 150,
               hours: 1.5,
@@ -122,18 +122,18 @@ describe('QuotesController (e2e)', () => {
         })
         .expect(201)
         .expect((res) => {
-          expect(res.body).toHaveProperty('id');
-          expect(res.body).toHaveProperty('number');
+          expect(res.body).toHaveProperty("id");
+          expect(res.body).toHaveProperty("number");
           expect(res.body.number).toMatch(/^ORC-/);
           quoteId = res.body.id;
         });
     });
 
-    it('deve retornar erro 400 se não houver itens', async () => {
+    it("deve retornar erro 400 se não houver itens", async () => {
       const response = await request(app.getHttpServer())
-        .post('/api/quotes')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .set('X-Tenant-Id', tenantId)
+        .post("/api/quotes")
+        .set("Authorization", `Bearer ${accessToken}`)
+        .set("X-Tenant-Id", tenantId)
         .send({
           customerId,
           vehicleId,
@@ -141,68 +141,68 @@ describe('QuotesController (e2e)', () => {
         })
         .expect(400);
 
-      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty("message");
       expect(
         Array.isArray(response.body.message) ||
-          typeof response.body.message === 'string',
+          typeof response.body.message === "string",
       ).toBe(true);
     });
   });
 
-  describe('/quotes (GET)', () => {
-    it('deve listar orçamentos', () => {
+  describe("/quotes (GET)", () => {
+    it("deve listar orçamentos", () => {
       return request(app.getHttpServer())
-        .get('/api/quotes')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .set('X-Tenant-Id', tenantId)
+        .get("/api/quotes")
+        .set("Authorization", `Bearer ${accessToken}`)
+        .set("X-Tenant-Id", tenantId)
         .expect(200)
         .expect((res) => {
-          expect(res.body).toHaveProperty('data');
-          expect(res.body).toHaveProperty('total');
-          expect(res.body).toHaveProperty('page');
-          expect(res.body).toHaveProperty('limit');
+          expect(res.body).toHaveProperty("data");
+          expect(res.body).toHaveProperty("total");
+          expect(res.body).toHaveProperty("page");
+          expect(res.body).toHaveProperty("limit");
         });
     });
   });
 
-  describe('/quotes/:id (GET)', () => {
-    it('deve retornar orçamento por ID', () => {
+  describe("/quotes/:id (GET)", () => {
+    it("deve retornar orçamento por ID", () => {
       return request(app.getHttpServer())
         .get(`/api/quotes/${quoteId}`)
-        .set('Authorization', `Bearer ${accessToken}`)
-        .set('X-Tenant-Id', tenantId)
+        .set("Authorization", `Bearer ${accessToken}`)
+        .set("X-Tenant-Id", tenantId)
         .expect(200)
         .expect((res) => {
-          expect(res.body).toHaveProperty('id', quoteId);
+          expect(res.body).toHaveProperty("id", quoteId);
         });
     });
 
-    it('deve retornar 404 se orçamento não existir', async () => {
+    it("deve retornar 404 se orçamento não existir", async () => {
       const response = await request(app.getHttpServer())
-        .get('/api/quotes/non-existent-id')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .set('X-Tenant-Id', tenantId)
+        .get("/api/quotes/non-existent-id")
+        .set("Authorization", `Bearer ${accessToken}`)
+        .set("X-Tenant-Id", tenantId)
         .expect(404);
 
-      expect(response.body).toHaveProperty('message');
+      expect(response.body).toHaveProperty("message");
       expect(response.body.message).toBeTruthy();
     });
   });
 
-  describe('/quotes/:id/approve (POST)', () => {
-    it('deve aprovar orçamento e criar Service Order', () => {
+  describe("/quotes/:id/approve (POST)", () => {
+    it("deve aprovar orçamento e criar Service Order", () => {
       return request(app.getHttpServer())
         .post(`/api/quotes/${quoteId}/approve`)
-        .set('Authorization', `Bearer ${accessToken}`)
-        .set('X-Tenant-Id', tenantId)
+        .set("Authorization", `Bearer ${accessToken}`)
+        .set("X-Tenant-Id", tenantId)
         .send({
-          customerSignature: 'data:image/png;base64,test',
+          customerSignature: "data:image/png;base64,test",
         })
         .expect(200)
         .expect((res) => {
-          expect(res.body).toHaveProperty('quote');
-          expect(res.body).toHaveProperty('serviceOrder');
-          expect(res.body.quote.status).toBe('accepted');
+          expect(res.body).toHaveProperty("quote");
+          expect(res.body).toHaveProperty("serviceOrder");
+          expect(res.body.quote.status).toBe("accepted");
         });
     });
   });

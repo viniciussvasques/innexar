@@ -1,5 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '@database/prisma.service';
+import { Injectable, Logger } from "@nestjs/common";
+import { PrismaService } from "@database/prisma.service";
 import {
   DashboardAnalyticsDto,
   OverviewMetricsDto,
@@ -9,8 +9,8 @@ import {
   TopPartDto,
   MechanicPerformanceDto,
   AlertDto,
-} from './dto/analytics-response.dto';
-import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
+} from "./dto/analytics-response.dto";
+import { getErrorMessage, getErrorStack } from "@common/utils/error.utils";
 
 @Injectable()
 export class AnalyticsService {
@@ -91,7 +91,7 @@ export class AnalyticsService {
           gte: today,
           lt: tomorrow,
         },
-        status: 'completed',
+        status: "completed",
       },
       _sum: {
         totalCost: true,
@@ -127,7 +127,7 @@ export class AnalyticsService {
     const avgTimeResult = await this.prisma.serviceOrder.aggregate({
       where: {
         tenantId,
-        status: 'completed',
+        status: "completed",
         startedAt: { not: null },
         completedAt: { not: null },
         createdAt: {
@@ -152,7 +152,7 @@ export class AnalyticsService {
     const completedOrders = await this.prisma.serviceOrder.count({
       where: {
         tenantId,
-        status: 'completed',
+        status: "completed",
         createdAt: {
           gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
         },
@@ -170,7 +170,7 @@ export class AnalyticsService {
     const currentMonthRevenueResult = await this.prisma.serviceOrder.aggregate({
       where: {
         tenantId,
-        status: 'completed',
+        status: "completed",
         completedAt: {
           gte: currentMonthStart,
         },
@@ -193,7 +193,7 @@ export class AnalyticsService {
     const lastMonthRevenueResult = await this.prisma.serviceOrder.aggregate({
       where: {
         tenantId,
-        status: 'completed',
+        status: "completed",
         completedAt: {
           gte: lastMonthStart,
           lt: lastMonthEnd,
@@ -231,7 +231,7 @@ export class AnalyticsService {
     tenantId: string,
   ): Promise<StatusDistributionDto[]> {
     const statusCounts = await this.prisma.serviceOrder.groupBy({
-      by: ['status'],
+      by: ["status"],
       where: { tenantId },
       _count: {
         status: true,
@@ -357,7 +357,7 @@ export class AnalyticsService {
           createdAt: {
             gte: thirtyDaysAgo,
           },
-          status: 'completed',
+          status: "completed",
         },
       },
       select: {
@@ -404,7 +404,7 @@ export class AnalyticsService {
     const mechanicData = await this.prisma.serviceOrder.findMany({
       where: {
         tenantId,
-        status: 'completed',
+        status: "completed",
         completedAt: {
           gte: thirtyDaysAgo,
         },
@@ -476,7 +476,7 @@ export class AnalyticsService {
     const overdueServiceOrders = await this.prisma.serviceOrder.findMany({
       where: {
         tenantId,
-        status: 'in_progress',
+        status: "in_progress",
         startedAt: {
           lt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
         },
@@ -493,10 +493,10 @@ export class AnalyticsService {
 
     for (const order of overdueServiceOrders) {
       alerts.push({
-        type: 'overdue_service_order',
-        severity: 'high',
+        type: "overdue_service_order",
+        severity: "high",
         title: `OS #${order.number} atrasada`,
-        description: `Cliente: ${order.customer?.name || 'N/A'} - Iniciada há ${Math.floor((Date.now() - order.startedAt!.getTime()) / (24 * 60 * 60 * 1000))} dias`,
+        description: `Cliente: ${order.customer?.name || "N/A"} - Iniciada há ${Math.floor((Date.now() - order.startedAt!.getTime()) / (24 * 60 * 60 * 1000))} dias`,
         data: { serviceOrderId: order.id },
       });
     }
@@ -515,9 +515,9 @@ export class AnalyticsService {
 
     for (const part of lowStockParts) {
       alerts.push({
-        type: 'low_stock',
-        severity: part.quantity === 0 ? 'urgent' : 'medium',
-        title: part.quantity === 0 ? 'Peça sem estoque' : 'Estoque baixo',
+        type: "low_stock",
+        severity: part.quantity === 0 ? "urgent" : "medium",
+        title: part.quantity === 0 ? "Peça sem estoque" : "Estoque baixo",
         description: `${part.name} - Quantidade: ${part.quantity}`,
         data: { partId: part.id },
       });
@@ -528,7 +528,7 @@ export class AnalyticsService {
       await this.prisma.vehicleMaintenanceSchedule.findMany({
         where: {
           tenantId,
-          status: 'overdue',
+          status: "overdue",
         },
         include: {
           vehicle: {
@@ -544,10 +544,10 @@ export class AnalyticsService {
 
     for (const schedule of overdueMaintenances) {
       alerts.push({
-        type: 'due_maintenance',
-        severity: 'high',
-        title: 'Manutenção vencida',
-        description: `${schedule.vehicle.placa || 'Veículo'} - ${schedule.name}`,
+        type: "due_maintenance",
+        severity: "high",
+        title: "Manutenção vencida",
+        description: `${schedule.vehicle.placa || "Veículo"} - ${schedule.name}`,
         data: { scheduleId: schedule.id, vehicleId: schedule.vehicleId },
       });
     }
@@ -556,7 +556,7 @@ export class AnalyticsService {
     const pendingQuotes = await this.prisma.quote.findMany({
       where: {
         tenantId,
-        status: 'sent',
+        status: "sent",
         updatedAt: {
           lt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
         },
@@ -573,10 +573,10 @@ export class AnalyticsService {
 
     for (const quote of pendingQuotes) {
       alerts.push({
-        type: 'pending_quote',
-        severity: 'medium',
-        title: 'Orçamento aguardando',
-        description: `Cliente: ${quote.customer?.name || 'N/A'} - ${quote.number}`,
+        type: "pending_quote",
+        severity: "medium",
+        title: "Orçamento aguardando",
+        description: `Cliente: ${quote.customer?.name || "N/A"} - ${quote.number}`,
         data: { quoteId: quote.id },
       });
     }

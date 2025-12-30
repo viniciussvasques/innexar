@@ -1,53 +1,53 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { AttachmentsService } from './attachments.service';
-import { PrismaService } from '@database/prisma.service';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { CreateAttachmentDto, AttachmentType } from './dto';
+import { Test, TestingModule } from "@nestjs/testing";
+import { AttachmentsService } from "./attachments.service";
+import { PrismaService } from "@database/prisma.service";
+import { NotFoundException, BadRequestException } from "@nestjs/common";
+import { CreateAttachmentDto, AttachmentType } from "./dto";
 
-jest.mock('node:fs', () => ({
+jest.mock("node:fs", () => ({
   existsSync: jest.fn(),
   unlinkSync: jest.fn(),
 }));
-jest.mock('fs', () => ({
+jest.mock("fs", () => ({
   existsSync: jest.fn(),
   unlinkSync: jest.fn(),
 }));
-jest.mock('node:fs/promises', () => ({
+jest.mock("node:fs/promises", () => ({
   mkdir: jest.fn(),
   writeFile: jest.fn(),
 }));
-jest.mock('fs/promises', () => ({
+jest.mock("fs/promises", () => ({
   mkdir: jest.fn(),
   writeFile: jest.fn(),
 }));
 
-import * as fs from 'node:fs';
-import * as fsPromises from 'node:fs/promises';
+import * as fs from "node:fs";
+import * as fsPromises from "node:fs/promises";
 
-describe('AttachmentsService', () => {
+describe("AttachmentsService", () => {
   let service: AttachmentsService;
 
-  const mockTenantId = 'tenant-123';
-  const mockAttachmentId = 'attachment-123';
-  const mockQuoteId = 'quote-123';
+  const mockTenantId = "tenant-123";
+  const mockAttachmentId = "attachment-123";
+  const mockQuoteId = "quote-123";
 
   const mockFile = {
-    originalname: 'test-image.jpg',
-    mimetype: 'image/jpeg',
+    originalname: "test-image.jpg",
+    mimetype: "image/jpeg",
     size: 1024000,
-    buffer: Buffer.from('test-image-data'),
+    buffer: Buffer.from("test-image-data"),
   } as unknown;
 
   const mockAttachment = {
     id: mockAttachmentId,
     tenantId: mockTenantId,
     type: AttachmentType.PHOTO_BEFORE,
-    fileName: 'attachment-1234567890-123456789.jpg',
-    originalName: 'test-image.jpg',
-    mimeType: 'image/jpeg',
+    fileName: "attachment-1234567890-123456789.jpg",
+    originalName: "test-image.jpg",
+    mimeType: "image/jpeg",
     fileSize: 1024000,
-    filePath: 'attachments/tenant-123/attachment-1234567890-123456789.jpg',
-    url: '/uploads/attachments/tenant-123/attachment-1234567890-123456789.jpg',
+    filePath: "attachments/tenant-123/attachment-1234567890-123456789.jpg",
+    url: "/uploads/attachments/tenant-123/attachment-1234567890-123456789.jpg",
     quoteId: mockQuoteId,
     serviceOrderId: null,
     customerId: null,
@@ -89,13 +89,13 @@ describe('AttachmentsService', () => {
     jest.clearAllMocks();
   });
 
-  describe('create', () => {
+  describe("create", () => {
     const createDto: CreateAttachmentDto = {
       type: AttachmentType.PHOTO_BEFORE,
       quoteId: mockQuoteId,
     };
 
-    it('deve criar um anexo com sucesso', async () => {
+    it("deve criar um anexo com sucesso", async () => {
       mockPrismaService.attachment.create.mockResolvedValue(mockAttachment);
 
       // Mock fs/promises
@@ -110,7 +110,7 @@ describe('AttachmentsService', () => {
       expect(mockPrismaService.attachment.create).toHaveBeenCalled();
     });
 
-    it('deve lançar BadRequestException se nenhum relacionamento for fornecido', async () => {
+    it("deve lançar BadRequestException se nenhum relacionamento for fornecido", async () => {
       const createDtoWithoutRelations: CreateAttachmentDto = {
         type: AttachmentType.PHOTO_BEFORE,
       };
@@ -120,16 +120,16 @@ describe('AttachmentsService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve lançar BadRequestException se arquivo não for fornecido', async () => {
+    it("deve lançar BadRequestException se arquivo não for fornecido", async () => {
       await expect(
         service.create(mockTenantId, createDto, null as unknown),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve lançar BadRequestException se tipo de arquivo for inválido para foto', async () => {
+    it("deve lançar BadRequestException se tipo de arquivo for inválido para foto", async () => {
       const invalidFile = {
         ...(mockFile as Record<string, unknown>),
-        mimetype: 'application/pdf',
+        mimetype: "application/pdf",
       };
 
       await expect(
@@ -137,14 +137,14 @@ describe('AttachmentsService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve lançar BadRequestException se tipo de arquivo for inválido para documento', async () => {
+    it("deve lançar BadRequestException se tipo de arquivo for inválido para documento", async () => {
       const documentDto: CreateAttachmentDto = {
         type: AttachmentType.DOCUMENT,
         quoteId: mockQuoteId,
       };
       const invalidFile = {
         ...(mockFile as Record<string, unknown>),
-        mimetype: 'image/jpeg',
+        mimetype: "image/jpeg",
       };
 
       await expect(
@@ -153,8 +153,8 @@ describe('AttachmentsService', () => {
     });
   });
 
-  describe('findAll', () => {
-    it('deve listar anexos com paginação', async () => {
+  describe("findAll", () => {
+    it("deve listar anexos com paginação", async () => {
       const mockAttachments = [mockAttachment];
       mockPrismaService.attachment.findMany.mockResolvedValue(mockAttachments);
       mockPrismaService.attachment.count.mockResolvedValue(1);
@@ -175,7 +175,7 @@ describe('AttachmentsService', () => {
       expect(mockPrismaService.attachment.count).toHaveBeenCalled();
     });
 
-    it('deve filtrar anexos por tipo', async () => {
+    it("deve filtrar anexos por tipo", async () => {
       mockPrismaService.attachment.findMany.mockResolvedValue([]);
       mockPrismaService.attachment.count.mockResolvedValue(0);
 
@@ -196,7 +196,7 @@ describe('AttachmentsService', () => {
       );
     });
 
-    it('deve filtrar anexos por quoteId', async () => {
+    it("deve filtrar anexos por quoteId", async () => {
       mockPrismaService.attachment.findMany.mockResolvedValue([]);
       mockPrismaService.attachment.count.mockResolvedValue(0);
 
@@ -218,8 +218,8 @@ describe('AttachmentsService', () => {
     });
   });
 
-  describe('findOne', () => {
-    it('deve buscar um anexo por ID', async () => {
+  describe("findOne", () => {
+    it("deve buscar um anexo por ID", async () => {
       mockPrismaService.attachment.findFirst.mockResolvedValue(mockAttachment);
 
       const result = await service.findOne(mockTenantId, mockAttachmentId);
@@ -236,7 +236,7 @@ describe('AttachmentsService', () => {
       );
     });
 
-    it('deve lançar NotFoundException se anexo não for encontrado', async () => {
+    it("deve lançar NotFoundException se anexo não for encontrado", async () => {
       mockPrismaService.attachment.findFirst.mockResolvedValue(null);
 
       await expect(
@@ -245,15 +245,15 @@ describe('AttachmentsService', () => {
     });
   });
 
-  describe('update', () => {
+  describe("update", () => {
     const updateDto = {
-      description: 'Nova descrição',
+      description: "Nova descrição",
     };
 
-    it('deve atualizar um anexo com sucesso', async () => {
+    it("deve atualizar um anexo com sucesso", async () => {
       const updatedAttachment = {
         ...mockAttachment,
-        description: 'Nova descrição',
+        description: "Nova descrição",
       };
       mockPrismaService.attachment.findFirst.mockResolvedValue(mockAttachment);
       mockPrismaService.attachment.update.mockResolvedValue(updatedAttachment);
@@ -265,11 +265,11 @@ describe('AttachmentsService', () => {
       );
 
       expect(result).toBeDefined();
-      expect(result.description).toBe('Nova descrição');
+      expect(result.description).toBe("Nova descrição");
       expect(mockPrismaService.attachment.update).toHaveBeenCalled();
     });
 
-    it('deve lançar NotFoundException se anexo não for encontrado', async () => {
+    it("deve lançar NotFoundException se anexo não for encontrado", async () => {
       mockPrismaService.attachment.findFirst.mockResolvedValue(null);
 
       await expect(
@@ -278,12 +278,12 @@ describe('AttachmentsService', () => {
     });
   });
 
-  describe('remove', () => {
-    it('deve remover um anexo com sucesso', async () => {
+  describe("remove", () => {
+    it("deve remover um anexo com sucesso", async () => {
       mockPrismaService.attachment.findFirst.mockResolvedValue(mockAttachment);
       mockPrismaService.attachment.delete.mockResolvedValue(mockAttachment);
       (fs.existsSync as jest.Mock).mockReturnValue(true);
-      (fs.unlinkSync as jest.Mock).mockImplementation(() => { });
+      (fs.unlinkSync as jest.Mock).mockImplementation(() => {});
 
       await service.remove(mockTenantId, mockAttachmentId);
 
@@ -292,7 +292,7 @@ describe('AttachmentsService', () => {
       });
     });
 
-    it('deve lançar NotFoundException se anexo não for encontrado', async () => {
+    it("deve lançar NotFoundException se anexo não for encontrado", async () => {
       mockPrismaService.attachment.findFirst.mockResolvedValue(null);
 
       await expect(
@@ -300,18 +300,18 @@ describe('AttachmentsService', () => {
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('deve remover arquivo físico se existir', async () => {
+    it("deve remover arquivo físico se existir", async () => {
       mockPrismaService.attachment.findFirst.mockResolvedValue(mockAttachment);
       mockPrismaService.attachment.delete.mockResolvedValue(mockAttachment);
       (fs.existsSync as jest.Mock).mockReturnValue(true);
-      (fs.unlinkSync as jest.Mock).mockImplementation(() => { });
+      (fs.unlinkSync as jest.Mock).mockImplementation(() => {});
 
       await service.remove(mockTenantId, mockAttachmentId);
 
       expect(fs.unlinkSync).toHaveBeenCalled();
     });
 
-    it('não deve falhar se arquivo físico não existir', async () => {
+    it("não deve falhar se arquivo físico não existir", async () => {
       mockPrismaService.attachment.findFirst.mockResolvedValue(mockAttachment);
       mockPrismaService.attachment.delete.mockResolvedValue(mockAttachment);
       (fs.existsSync as jest.Mock).mockReturnValue(false);

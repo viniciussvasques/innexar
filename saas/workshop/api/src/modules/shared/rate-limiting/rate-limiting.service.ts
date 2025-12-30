@@ -1,5 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Injectable, Logger } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 
 /**
  * RateLimitingService - Serviço para rate limiting
@@ -20,8 +20,8 @@ export class RateLimitingService {
     limit: number;
   } {
     return {
-      ttl: this.configService.get<number>('RATE_LIMIT_TTL', 60000), // 1 minuto padrão
-      limit: this.configService.get<number>('RATE_LIMIT_MAX', 100), // 100 requisições padrão
+      ttl: this.configService.get<number>("RATE_LIMIT_TTL", 60000), // 1 minuto padrão
+      limit: this.configService.get<number>("RATE_LIMIT_MAX", 100), // 100 requisições padrão
     };
   }
 

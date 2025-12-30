@@ -1,4 +1,4 @@
-import { BackupType } from '../dto';
+import { BackupType } from "../dto";
 
 export interface BackupResult {
   path: string;

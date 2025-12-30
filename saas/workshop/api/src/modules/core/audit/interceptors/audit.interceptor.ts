@@ -4,12 +4,12 @@ import {
   ExecutionContext,
   CallHandler,
   Logger,
-} from '@nestjs/common';
-import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
-import { AuditService } from '../audit.service';
-import { CreateAuditLogDto, AuditAction } from '../dto';
-import { getErrorMessage } from '@common/utils/error.utils';
+} from "@nestjs/common";
+import { Observable } from "rxjs";
+import { tap } from "rxjs/operators";
+import { AuditService } from "../audit.service";
+import { CreateAuditLogDto, AuditAction } from "../dto";
+import { getErrorMessage } from "@common/utils/error.utils";
 
 interface AuditRequest {
   method: string;
@@ -46,23 +46,23 @@ export class AuditInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest<AuditRequest>();
 
     const { method, url, user, body, params, query } = request;
-    const ipAddress = request.ip || request.connection?.remoteAddress || '';
-    const userAgent = request.get?.('user-agent') || '';
+    const ipAddress = request.ip || request.connection?.remoteAddress || "";
+    const userAgent = request.get?.("user-agent") || "";
 
     // Determinar ação baseada no método HTTP
     let action: AuditAction;
     switch (method) {
-      case 'POST':
+      case "POST":
         action = AuditAction.CREATE;
         break;
-      case 'PUT':
-      case 'PATCH':
+      case "PUT":
+      case "PATCH":
         action = AuditAction.UPDATE;
         break;
-      case 'DELETE':
+      case "DELETE":
         action = AuditAction.DELETE;
         break;
-      case 'GET':
+      case "GET":
         action = AuditAction.VIEW;
         break;
       default:
@@ -94,7 +94,7 @@ export class AuditInterceptor implements NestInterceptor {
           }).catch((error: unknown) => {
             // Não falhar a requisição se o log falhar
             this.logger.error(
-              'Erro ao criar log de auditoria:',
+              "Erro ao criar log de auditoria:",
               getErrorMessage(error),
             );
           });
@@ -118,7 +118,7 @@ export class AuditInterceptor implements NestInterceptor {
             error,
           ).catch((logError: unknown) => {
             this.logger.error(
-              'Erro ao criar log de erro:',
+              "Erro ao criar log de erro:",
               getErrorMessage(logError),
             );
           });
@@ -155,7 +155,7 @@ export class AuditInterceptor implements NestInterceptor {
     } catch (error: unknown) {
       // Não falhar a requisição se o log falhar
       this.logger.error(
-        'Erro ao criar log de auditoria:',
+        "Erro ao criar log de auditoria:",
         getErrorMessage(error),
       );
     }
@@ -193,7 +193,7 @@ export class AuditInterceptor implements NestInterceptor {
       );
     } catch (logError: unknown) {
       this.logger.error(
-        'Erro ao criar log de erro:',
+        "Erro ao criar log de erro:",
         getErrorMessage(logError),
       );
     }
@@ -203,20 +203,20 @@ export class AuditInterceptor implements NestInterceptor {
     // Extrair tipo de recurso da URL (ex: /api/customers -> customers)
     const regex = /\/api\/([^/]+)/;
     const match = regex.exec(url);
-    return match ? match[1].replaceAll(/s$/, '') : undefined; // Remove plural
+    return match ? match[1].replaceAll(/s$/, "") : undefined; // Remove plural
   }
 
   private sanitizeChanges(body: unknown): Record<string, unknown> | undefined {
-    if (!body || typeof body !== 'object') return undefined;
+    if (!body || typeof body !== "object") return undefined;
 
     // Remover campos sensíveis
-    const sensitiveFields = ['password', 'token', 'secret', 'apiKey'];
+    const sensitiveFields = ["password", "token", "secret", "apiKey"];
 
     const sanitized = { ...(body as Record<string, unknown>) };
 
     for (const field of sensitiveFields) {
       if (sanitized[field]) {
-        sanitized[field] = '***REDACTED***';
+        sanitized[field] = "***REDACTED***";
       }
     }
 

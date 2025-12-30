@@ -4,27 +4,27 @@ import {
   ConflictException,
   BadRequestException,
   Logger,
-} from '@nestjs/common';
-import { PrismaService } from '../../../database/prisma.service';
+} from "@nestjs/common";
+import { PrismaService } from "../../../database/prisma.service";
 import {
   CreateTenantDto,
   UpdateTenantDto,
   TenantResponseDto,
   DocumentType,
-} from './dto';
-import { BillingService } from '../billing/billing.service';
-import { UsersService } from '../users/users.service';
+} from "./dto";
+import { BillingService } from "../billing/billing.service";
+import { UsersService } from "../users/users.service";
 import {
   BillingCycle,
   SubscriptionPlan,
-} from '../billing/dto/subscription-response.dto';
-import { UserRole } from '../users/dto/create-user.dto';
+} from "../billing/dto/subscription-response.dto";
+import { UserRole } from "../users/dto/create-user.dto";
 import {
   getErrorMessage,
   getErrorStack,
-} from '../../../common/utils/error.utils';
-import { Prisma } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
+} from "../../../common/utils/error.utils";
+import { Prisma } from "@prisma/client";
+import * as bcrypt from "bcrypt";
 
 // Tipo para Tenant com subscription incluída
 type TenantWithSubscription = Prisma.TenantGetPayload<{
@@ -39,7 +39,7 @@ export class TenantsService {
     private readonly prisma: PrismaService,
     private readonly billingService: BillingService,
     private readonly usersService: UsersService,
-  ) { }
+  ) {}
 
   async create(createTenantDto: CreateTenantDto): Promise<TenantResponseDto> {
     try {
@@ -73,7 +73,7 @@ export class TenantsService {
       });
 
       if (!tenantWithSubscription) {
-        throw new NotFoundException('Tenant não encontrado após criação');
+        throw new NotFoundException("Tenant não encontrado após criação");
       }
 
       return this.toResponseDto(tenantWithSubscription);
@@ -90,7 +90,7 @@ export class TenantsService {
     try {
       const tenants = await this.prisma.tenant.findMany({
         include: { subscription: true },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
       });
 
       return tenants.map((tenant) => this.toResponseDto(tenant));
@@ -111,7 +111,7 @@ export class TenantsService {
       });
 
       if (!tenant) {
-        throw new NotFoundException('Tenant não encontrado');
+        throw new NotFoundException("Tenant não encontrado");
       }
 
       return this.toResponseDto(tenant);
@@ -151,10 +151,10 @@ export class TenantsService {
   private validateDocument(documentType: DocumentType, document: string): void {
     if (documentType === DocumentType.CPF) {
       if (!this.isValidCPF(document)) {
-        throw new BadRequestException('CPF inválido');
+        throw new BadRequestException("CPF inválido");
       }
     } else if (!this.isValidCNPJ(document)) {
-      throw new BadRequestException('CNPJ inválido');
+      throw new BadRequestException("CNPJ inválido");
     }
   }
 
@@ -179,7 +179,7 @@ export class TenantsService {
     });
 
     if (existingBySubdomain) {
-      throw new ConflictException('Subdomain já está em uso');
+      throw new ConflictException("Subdomain já está em uso");
     }
   }
 
@@ -195,8 +195,8 @@ export class TenantsService {
         documentType,
         document,
         subdomain: normalizedSubdomain,
-        plan: createTenantDto.plan || 'workshops_starter',
-        status: createTenantDto.status || 'pending',
+        plan: createTenantDto.plan || "workshops_starter",
+        status: createTenantDto.status || "pending",
         adminEmail: createTenantDto.adminEmail
           ? createTenantDto.adminEmail.toLowerCase().trim()
           : null,
@@ -213,7 +213,7 @@ export class TenantsService {
     try {
       await this.billingService.create({
         tenantId,
-        plan: (plan || 'workshops_starter') as SubscriptionPlan,
+        plan: (plan || "workshops_starter") as SubscriptionPlan,
         billingCycle: BillingCycle.MONTHLY,
       });
       this.logger.log(
@@ -266,7 +266,7 @@ export class TenantsService {
       });
 
       if (!tenant) {
-        throw new NotFoundException('Tenant não encontrado');
+        throw new NotFoundException("Tenant não encontrado");
       }
 
       const updateData: Prisma.TenantUpdateInput = {};
@@ -307,12 +307,12 @@ export class TenantsService {
       });
 
       if (!tenant) {
-        throw new NotFoundException('Tenant não encontrado');
+        throw new NotFoundException("Tenant não encontrado");
       }
 
       const updatedTenant = await this.prisma.tenant.update({
         where: { id },
-        data: { status: 'active' },
+        data: { status: "active" },
         include: { subscription: true },
       });
 
@@ -334,12 +334,12 @@ export class TenantsService {
       });
 
       if (!tenant) {
-        throw new NotFoundException('Tenant não encontrado');
+        throw new NotFoundException("Tenant não encontrado");
       }
 
       const updatedTenant = await this.prisma.tenant.update({
         where: { id },
-        data: { status: 'suspended' },
+        data: { status: "suspended" },
         include: { subscription: true },
       });
 
@@ -361,12 +361,12 @@ export class TenantsService {
       });
 
       if (!tenant) {
-        throw new NotFoundException('Tenant não encontrado');
+        throw new NotFoundException("Tenant não encontrado");
       }
 
       const updatedTenant = await this.prisma.tenant.update({
         where: { id },
-        data: { status: 'cancelled' },
+        data: { status: "cancelled" },
         include: { subscription: true },
       });
 
@@ -383,7 +383,7 @@ export class TenantsService {
 
   private isValidCPF(cpf: string): boolean {
     // Remove caracteres não numéricos
-    const cleanCPF = cpf.replaceAll(/\D/g, '');
+    const cleanCPF = cpf.replaceAll(/\D/g, "");
 
     // Verifica se tem 11 dígitos
     if (cleanCPF.length !== 11) {
@@ -421,7 +421,7 @@ export class TenantsService {
 
   private isValidCNPJ(cnpj: string): boolean {
     // Remove caracteres não numéricos
-    const cleanCNPJ = cnpj.replaceAll(/\D/g, '');
+    const cleanCNPJ = cnpj.replaceAll(/\D/g, "");
 
     // Verifica se tem 14 dígitos
     if (cleanCNPJ.length !== 14) {
@@ -468,8 +468,8 @@ export class TenantsService {
     tenant:
       | TenantWithSubscription
       | Prisma.TenantGetPayload<{
-        include: { subscription: true };
-      }>,
+          include: { subscription: true };
+        }>,
   ): TenantResponseDto {
     return {
       id: tenant.id,
@@ -477,16 +477,16 @@ export class TenantsService {
       documentType: tenant.documentType,
       document: tenant.document,
       subdomain: tenant.subdomain,
-      plan: tenant.plan as TenantResponseDto['plan'],
-      status: tenant.status as TenantResponseDto['status'],
+      plan: tenant.plan as TenantResponseDto["plan"],
+      status: tenant.status as TenantResponseDto["status"],
       subscription: tenant.subscription
         ? {
-          id: tenant.subscription.id,
-          plan: tenant.subscription.plan,
-          status: tenant.subscription.status,
-          currentPeriodStart: tenant.subscription.currentPeriodStart,
-          currentPeriodEnd: tenant.subscription.currentPeriodEnd,
-        }
+            id: tenant.subscription.id,
+            plan: tenant.subscription.plan,
+            status: tenant.subscription.status,
+            currentPeriodStart: tenant.subscription.currentPeriodStart,
+            currentPeriodEnd: tenant.subscription.currentPeriodEnd,
+          }
         : undefined,
       createdAt: tenant.createdAt,
       updatedAt: tenant.updatedAt,
@@ -524,7 +524,7 @@ export class TenantsService {
         isActive: true,
         createdAt: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     return users;
@@ -556,7 +556,7 @@ export class TenantsService {
     }
 
     if (user.tenantId !== tenantId) {
-      throw new BadRequestException('Usuário não pertence a este tenant');
+      throw new BadRequestException("Usuário não pertence a este tenant");
     }
 
     // Gerar senha temporária
@@ -587,9 +587,9 @@ export class TenantsService {
    * Gera uma senha temporária segura
    */
   private generateTempPassword(): string {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-    const specials = '!@#$%';
-    let password = '';
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+    const specials = "!@#$%";
+    let password = "";
 
     // 6 caracteres alfanuméricos
     for (let i = 0; i < 6; i++) {

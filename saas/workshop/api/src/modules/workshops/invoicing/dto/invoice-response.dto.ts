@@ -1,52 +1,52 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import {
   InvoiceStatus,
   PaymentStatus,
   InvoiceType,
   PaymentPreference,
-} from './invoice-status.enum';
+} from "./invoice-status.enum";
 
 export class InvoiceItemResponseDto {
-  @ApiProperty({ description: 'ID do item' })
+  @ApiProperty({ description: "ID do item" })
   id: string;
 
-  @ApiProperty({ description: 'Tipo do item', enum: ['service', 'part'] })
+  @ApiProperty({ description: "Tipo do item", enum: ["service", "part"] })
   type: string;
 
-  @ApiProperty({ description: 'Nome do item' })
+  @ApiProperty({ description: "Nome do item" })
   name: string;
 
-  @ApiPropertyOptional({ description: 'Descrição do item' })
+  @ApiPropertyOptional({ description: "Descrição do item" })
   description?: string;
 
-  @ApiProperty({ description: 'Quantidade' })
+  @ApiProperty({ description: "Quantidade" })
   quantity: number;
 
-  @ApiProperty({ description: 'Preço unitário' })
+  @ApiProperty({ description: "Preço unitário" })
   unitPrice: number;
 
-  @ApiProperty({ description: 'Preço total' })
+  @ApiProperty({ description: "Preço total" })
   totalPrice: number;
 }
 
 export class InvoiceResponseDto {
-  @ApiProperty({ description: 'ID da fatura' })
+  @ApiProperty({ description: "ID da fatura" })
   id: string;
 
-  @ApiProperty({ description: 'ID do tenant' })
+  @ApiProperty({ description: "ID do tenant" })
   tenantId: string;
 
-  @ApiProperty({ description: 'Número da fatura' })
+  @ApiProperty({ description: "Número da fatura" })
   invoiceNumber: string;
 
-  @ApiPropertyOptional({ description: 'ID da ordem de serviço' })
+  @ApiPropertyOptional({ description: "ID da ordem de serviço" })
   serviceOrderId?: string;
 
-  @ApiPropertyOptional({ description: 'ID do cliente' })
+  @ApiPropertyOptional({ description: "ID do cliente" })
   customerId?: string;
 
   @ApiPropertyOptional({
-    description: 'Dados do cliente',
+    description: "Dados do cliente",
   })
   customer?: {
     id: string;
@@ -56,7 +56,7 @@ export class InvoiceResponseDto {
   };
 
   @ApiPropertyOptional({
-    description: 'Dados da ordem de serviço',
+    description: "Dados da ordem de serviço",
   })
   serviceOrder?: {
     id: string;
@@ -64,44 +64,44 @@ export class InvoiceResponseDto {
     status: string;
   };
 
-  @ApiProperty({ description: 'Tipo de fatura', enum: InvoiceType })
+  @ApiProperty({ description: "Tipo de fatura", enum: InvoiceType })
   type: InvoiceType;
 
-  @ApiProperty({ description: 'Valor total' })
+  @ApiProperty({ description: "Valor total" })
   total: number;
 
-  @ApiProperty({ description: 'Valor do desconto' })
+  @ApiProperty({ description: "Valor do desconto" })
   discount: number;
 
-  @ApiProperty({ description: 'Valor do imposto' })
+  @ApiProperty({ description: "Valor do imposto" })
   taxAmount: number;
 
-  @ApiPropertyOptional({ description: 'Chave da NFe' })
+  @ApiPropertyOptional({ description: "Chave da NFe" })
   nfeKey?: string;
 
-  @ApiPropertyOptional({ description: 'URL do XML da NFe' })
+  @ApiPropertyOptional({ description: "URL do XML da NFe" })
   nfeXmlUrl?: string;
 
-  @ApiPropertyOptional({ description: 'URL do PDF da NFe' })
+  @ApiPropertyOptional({ description: "URL do PDF da NFe" })
   nfePdfUrl?: string;
 
-  @ApiPropertyOptional({ description: 'Status da NFe' })
+  @ApiPropertyOptional({ description: "Status da NFe" })
   nfeStatus?: string;
 
-  @ApiPropertyOptional({ description: 'Método de pagamento' })
+  @ApiPropertyOptional({ description: "Método de pagamento" })
   paymentMethod?: string;
 
   @ApiPropertyOptional({
-    description: 'Preferência de pagamento',
+    description: "Preferência de pagamento",
     enum: PaymentPreference,
   })
   paymentPreference?: PaymentPreference;
 
-  @ApiPropertyOptional({ description: 'ID do gateway associado' })
+  @ApiPropertyOptional({ description: "ID do gateway associado" })
   paymentGatewayId?: string;
 
   @ApiPropertyOptional({
-    description: 'Gateway associado',
+    description: "Gateway associado",
     type: Object,
   })
   paymentGateway?: {
@@ -110,30 +110,30 @@ export class InvoiceResponseDto {
     type: string;
   };
 
-  @ApiProperty({ description: 'Status do pagamento', enum: PaymentStatus })
+  @ApiProperty({ description: "Status do pagamento", enum: PaymentStatus })
   paymentStatus: PaymentStatus;
 
-  @ApiPropertyOptional({ description: 'Data de pagamento' })
+  @ApiPropertyOptional({ description: "Data de pagamento" })
   paidAt?: Date;
 
-  @ApiProperty({ description: 'Status da fatura', enum: InvoiceStatus })
+  @ApiProperty({ description: "Status da fatura", enum: InvoiceStatus })
   status: InvoiceStatus;
 
-  @ApiPropertyOptional({ description: 'Data de emissão' })
+  @ApiPropertyOptional({ description: "Data de emissão" })
   issuedAt?: Date;
 
-  @ApiPropertyOptional({ description: 'Data de vencimento' })
+  @ApiPropertyOptional({ description: "Data de vencimento" })
   dueDate?: Date;
 
   @ApiProperty({
-    description: 'Itens da fatura',
+    description: "Itens da fatura",
     type: [InvoiceItemResponseDto],
   })
   items: InvoiceItemResponseDto[];
 
-  @ApiProperty({ description: 'Data de criação' })
+  @ApiProperty({ description: "Data de criação" })
   createdAt: Date;
 
-  @ApiProperty({ description: 'Data de atualização' })
+  @ApiProperty({ description: "Data de atualização" })
   updatedAt: Date;
 }

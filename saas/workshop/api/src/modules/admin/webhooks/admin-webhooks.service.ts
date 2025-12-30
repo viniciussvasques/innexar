@@ -1,13 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../../../database/prisma.service';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { PrismaService } from "../../../database/prisma.service";
 
 @Injectable()
 export class AdminWebhooksService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async findAll() {
     return this.prisma.adminWebhook.findMany({
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
   }
 
@@ -17,19 +17,19 @@ export class AdminWebhooksService {
     });
 
     if (!webhook) {
-      throw new NotFoundException('Webhook não encontrado');
+      throw new NotFoundException("Webhook não encontrado");
     }
 
     return webhook;
   }
 
-  async create(data: any) {
-    return this.prisma.adminWebhook.create({ data });
+  async create(data: unknown) {
+    return this.prisma.adminWebhook.create({ data: data as any });
   }
 
-  async update(id: string, data: any) {
+  async update(id: string, data: unknown) {
     await this.findOne(id);
-    return this.prisma.adminWebhook.update({ where: { id }, data });
+    return this.prisma.adminWebhook.update({ where: { id }, data: data as any });
   }
 
   async remove(id: string) {

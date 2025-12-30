@@ -1,7 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '../../../database/prisma.service';
-import { EmailService } from '../../shared/email/email.service';
-import { SendBulkEmailDto } from './dto/send-bulk-email.dto';
+import { Injectable, Logger } from "@nestjs/common";
+import { PrismaService } from "../../../database/prisma.service";
+import { EmailService } from "../../shared/email/email.service";
+import { SendBulkEmailDto } from "./dto/send-bulk-email.dto";
 
 @Injectable()
 export class AdminCommunicationsService {
@@ -10,10 +10,10 @@ export class AdminCommunicationsService {
   constructor(
     private prisma: PrismaService,
     private emailService: EmailService,
-  ) {}
+  ) { }
 
   async sendBulkEmail(dto: SendBulkEmailDto) {
-    this.logger.log('Iniciando envio de e-mail em massa');
+    this.logger.log("Iniciando envio de e-mail em massa");
 
     // Buscar tenants baseado nos filtros
     const where: any = {};
@@ -37,7 +37,7 @@ export class AdminCommunicationsService {
         name: true,
         adminEmail: true,
         users: {
-          where: { role: 'admin', isActive: true },
+          where: { role: "admin", isActive: true },
           select: { email: true, name: true },
           take: 1,
         },
@@ -48,13 +48,15 @@ export class AdminCommunicationsService {
 
     // Coletar e-mails únicos
     const emailSet = new Set<string>();
-    
-    tenants.forEach(tenant => {
+
+    tenants.forEach((tenant) => {
       if (tenant.adminEmail) {
         emailSet.add(tenant.adminEmail);
       }
-      if (tenant.users[0]?.email) {
-        emailSet.add(tenant.users[0].email);
+      // users array exists because of select above
+      const adminUser = tenant.users && tenant.users[0];
+      if (adminUser?.email) {
+        emailSet.add(adminUser.email);
       }
     });
 
@@ -64,7 +66,7 @@ export class AdminCommunicationsService {
     if (recipients.length === 0) {
       return {
         success: false,
-        message: 'Nenhum destinatário encontrado com os filtros aplicados',
+        message: "Nenhum destinatário encontrado com os filtros aplicados",
         sent: 0,
         failed: 0,
       };
@@ -81,9 +83,9 @@ export class AdminCommunicationsService {
     // Registrar no audit log
     await this.prisma.auditLog.create({
       data: {
-        userId: 'system',
-        action: 'bulk_email_sent',
-        resourceId: 'communications',
+        userId: "system",
+        action: "bulk_email_sent",
+        resourceId: "communications",
         metadata: {
           subject: dto.subject,
           filters: dto.filters,
@@ -117,10 +119,11 @@ export class AdminCommunicationsService {
         
         <div style="background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px;">
           <div style="background: white; padding: 25px; border-radius: 8px; margin-bottom: 20px;">
-            ${dto.message.replace(/\n/g, '<br>')}
+            ${dto.message.replace(/\n/g, "<br>")}
           </div>
           
-          ${dto.ctaText && dto.ctaUrl ? `
+          ${dto.ctaText && dto.ctaUrl
+        ? `
             <div style="text-align: center; margin: 30px 0;">
               <a href="${dto.ctaUrl}" 
                  style="display: inline-block; padding: 15px 40px; background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%); 
@@ -128,7 +131,9 @@ export class AdminCommunicationsService {
                 ${dto.ctaText}
               </a>
             </div>
-          ` : ''}
+          `
+        : ""
+      }
           
           <hr style="border: none; border-top: 1px solid #ddd; margin: 30px 0;">
           

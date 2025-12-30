@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import {
   IsString,
   IsOptional,
@@ -6,12 +6,12 @@ import {
   IsInt,
   Min,
   MaxLength,
-} from 'class-validator';
+} from "class-validator";
 
 export class ChecklistItemDto {
   @ApiProperty({
-    description: 'Título do item',
-    example: 'Verificar nível de óleo',
+    description: "Título do item",
+    example: "Verificar nível de óleo",
     maxLength: 255,
   })
   @IsString()
@@ -19,8 +19,8 @@ export class ChecklistItemDto {
   title: string;
 
   @ApiPropertyOptional({
-    description: 'Descrição do item',
-    example: 'Verificar se o nível de óleo está entre o mínimo e máximo',
+    description: "Descrição do item",
+    example: "Verificar se o nível de óleo está entre o mínimo e máximo",
     maxLength: 1000,
   })
   @IsOptional()
@@ -29,7 +29,7 @@ export class ChecklistItemDto {
   description?: string;
 
   @ApiPropertyOptional({
-    description: 'Se o item é obrigatório',
+    description: "Se o item é obrigatório",
     example: true,
     default: false,
   })
@@ -38,7 +38,7 @@ export class ChecklistItemDto {
   isRequired?: boolean;
 
   @ApiPropertyOptional({
-    description: 'Ordem de exibição',
+    description: "Ordem de exibição",
     example: 1,
     minimum: 0,
     default: 0,
@@ -51,53 +51,53 @@ export class ChecklistItemDto {
 
 export class ChecklistItemResponseDto extends ChecklistItemDto {
   @ApiProperty({
-    description: 'ID do item',
-    example: '123e4567-e89b-12d3-a456-426614174000',
+    description: "ID do item",
+    example: "123e4567-e89b-12d3-a456-426614174000",
   })
   id: string;
 
   @ApiProperty({
-    description: 'ID do checklist',
-    example: '123e4567-e89b-12d3-a456-426614174000',
+    description: "ID do checklist",
+    example: "123e4567-e89b-12d3-a456-426614174000",
   })
   checklistId: string;
 
   @ApiProperty({
-    description: 'Se o item está completo',
+    description: "Se o item está completo",
     example: false,
   })
   isCompleted: boolean;
 
   @ApiPropertyOptional({
-    description: 'Data de conclusão',
-    example: '2025-12-01T10:00:00.000Z',
+    description: "Data de conclusão",
+    example: "2025-12-01T10:00:00.000Z",
   })
   completedAt?: Date;
 
   @ApiPropertyOptional({
-    description: 'Notas do item',
-    example: 'Óleo está no nível correto',
+    description: "Notas do item",
+    example: "Óleo está no nível correto",
     maxLength: 1000,
   })
   notes?: string;
 
   @ApiProperty({
-    description: 'Data de criação',
-    example: '2025-12-01T10:00:00.000Z',
+    description: "Data de criação",
+    example: "2025-12-01T10:00:00.000Z",
   })
   createdAt: Date;
 
   @ApiProperty({
-    description: 'Data de atualização',
-    example: '2025-12-01T10:00:00.000Z',
+    description: "Data de atualização",
+    example: "2025-12-01T10:00:00.000Z",
   })
   updatedAt: Date;
 }
 
 export class UpdateChecklistItemDto {
   @ApiPropertyOptional({
-    description: 'Título do item',
-    example: 'Verificar nível de óleo',
+    description: "Título do item",
+    example: "Verificar nível de óleo",
   })
   @IsOptional()
   @IsString()
@@ -105,8 +105,8 @@ export class UpdateChecklistItemDto {
   title?: string;
 
   @ApiPropertyOptional({
-    description: 'Descrição do item',
-    example: 'Verificar se o nível de óleo está entre o mínimo e máximo',
+    description: "Descrição do item",
+    example: "Verificar se o nível de óleo está entre o mínimo e máximo",
   })
   @IsOptional()
   @IsString()
@@ -114,7 +114,7 @@ export class UpdateChecklistItemDto {
   description?: string;
 
   @ApiPropertyOptional({
-    description: 'Se o item é obrigatório',
+    description: "Se o item é obrigatório",
     example: true,
   })
   @IsOptional()
@@ -122,7 +122,7 @@ export class UpdateChecklistItemDto {
   isRequired?: boolean;
 
   @ApiPropertyOptional({
-    description: 'Se o item está completo',
+    description: "Se o item está completo",
     example: true,
   })
   @IsOptional()
@@ -130,8 +130,8 @@ export class UpdateChecklistItemDto {
   isCompleted?: boolean;
 
   @ApiPropertyOptional({
-    description: 'Notas do item',
-    example: 'Óleo está no nível correto',
+    description: "Notas do item",
+    example: "Óleo está no nível correto",
   })
   @IsOptional()
   @IsString()
@@ -139,7 +139,7 @@ export class UpdateChecklistItemDto {
   notes?: string;
 
   @ApiPropertyOptional({
-    description: 'Ordem de exibição',
+    description: "Ordem de exibição",
     example: 1,
   })
   @IsOptional()

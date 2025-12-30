@@ -1,7 +1,7 @@
-import { Module } from '@nestjs/common';
-import { ChecklistsService } from './checklists.service';
-import { ChecklistsController } from './checklists.controller';
-import { PrismaModule } from '@database/prisma.module';
+import { Module } from "@nestjs/common";
+import { ChecklistsService } from "./checklists.service";
+import { ChecklistsController } from "./checklists.controller";
+import { PrismaModule } from "@database/prisma.module";
 
 @Module({
   imports: [PrismaModule],

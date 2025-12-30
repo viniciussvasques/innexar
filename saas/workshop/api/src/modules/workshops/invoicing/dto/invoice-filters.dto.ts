@@ -1,4 +1,4 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from "@nestjs/swagger";
 import {
   IsString,
   IsOptional,
@@ -6,38 +6,38 @@ import {
   IsDateString,
   IsNumber,
   Min,
-} from 'class-validator';
-import { Type } from 'class-transformer';
+} from "class-validator";
+import { Type } from "class-transformer";
 import {
   InvoiceStatus,
   PaymentStatus,
   InvoiceType,
-} from './invoice-status.enum';
+} from "./invoice-status.enum";
 
 export class InvoiceFiltersDto {
   @ApiPropertyOptional({
-    description: 'Número da fatura',
+    description: "Número da fatura",
   })
   @IsOptional()
   @IsString()
   invoiceNumber?: string;
 
   @ApiPropertyOptional({
-    description: 'ID do cliente',
+    description: "ID do cliente",
   })
   @IsOptional()
   @IsString()
   customerId?: string;
 
   @ApiPropertyOptional({
-    description: 'ID da ordem de serviço',
+    description: "ID da ordem de serviço",
   })
   @IsOptional()
   @IsString()
   serviceOrderId?: string;
 
   @ApiPropertyOptional({
-    description: 'Tipo de fatura',
+    description: "Tipo de fatura",
     enum: InvoiceType,
   })
   @IsOptional()
@@ -45,7 +45,7 @@ export class InvoiceFiltersDto {
   type?: InvoiceType;
 
   @ApiPropertyOptional({
-    description: 'Status da fatura',
+    description: "Status da fatura",
     enum: InvoiceStatus,
   })
   @IsOptional()
@@ -53,7 +53,7 @@ export class InvoiceFiltersDto {
   status?: InvoiceStatus;
 
   @ApiPropertyOptional({
-    description: 'Status do pagamento',
+    description: "Status do pagamento",
     enum: PaymentStatus,
   })
   @IsOptional()
@@ -61,21 +61,21 @@ export class InvoiceFiltersDto {
   paymentStatus?: PaymentStatus;
 
   @ApiPropertyOptional({
-    description: 'Data inicial (filtro por data de criação)',
+    description: "Data inicial (filtro por data de criação)",
   })
   @IsOptional()
   @IsDateString()
   startDate?: string;
 
   @ApiPropertyOptional({
-    description: 'Data final (filtro por data de criação)',
+    description: "Data final (filtro por data de criação)",
   })
   @IsOptional()
   @IsDateString()
   endDate?: string;
 
   @ApiPropertyOptional({
-    description: 'Página',
+    description: "Página",
     minimum: 1,
     default: 1,
   })
@@ -86,7 +86,7 @@ export class InvoiceFiltersDto {
   page?: number;
 
   @ApiPropertyOptional({
-    description: 'Limite de itens por página',
+    description: "Limite de itens por página",
     minimum: 1,
     maximum: 100,
     default: 20,

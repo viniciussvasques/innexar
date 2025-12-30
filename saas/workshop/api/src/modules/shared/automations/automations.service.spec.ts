@@ -1,33 +1,33 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException } from '@nestjs/common';
-import { AutomationsService } from './automations.service';
-import { PrismaService } from '@database/prisma.service';
+import { Test, TestingModule } from "@nestjs/testing";
+import { NotFoundException } from "@nestjs/common";
+import { AutomationsService } from "./automations.service";
+import { PrismaService } from "@database/prisma.service";
 import {
   CreateAutomationDto,
   UpdateAutomationDto,
   AutomationTrigger,
   AutomationAction,
-} from './dto';
-import { EmailService } from '../email/email.service';
-import { NotificationsService } from '@modules/core/notifications/notifications.service';
-import { JobsService } from '../jobs/jobs.service';
+} from "./dto";
+import { EmailService } from "../email/email.service";
+import { NotificationsService } from "@modules/core/notifications/notifications.service";
+import { JobsService } from "../jobs/jobs.service";
 
-describe('AutomationsService', () => {
+describe("AutomationsService", () => {
   let service: AutomationsService;
 
-  const mockTenantId = 'tenant-id';
+  const mockTenantId = "tenant-id";
   const mockAutomation = {
-    id: 'automation-id',
+    id: "automation-id",
     tenantId: mockTenantId,
-    name: 'Notificar cliente',
-    description: 'Envia email quando orçamento é aprovado',
+    name: "Notificar cliente",
+    description: "Envia email quando orçamento é aprovado",
     trigger: AutomationTrigger.QUOTE_APPROVED,
     action: AutomationAction.SEND_EMAIL,
     conditions: {},
     actionConfig: {
-      template: 'quote-approved',
-      to: 'customer@example.com',
-      subject: 'Orçamento aprovado',
+      template: "quote-approved",
+      to: "customer@example.com",
+      subject: "Orçamento aprovado",
     },
     isActive: true,
     createdAt: new Date(),
@@ -86,22 +86,22 @@ describe('AutomationsService', () => {
     jest.clearAllMocks();
   });
 
-  describe('create', () => {
+  describe("create", () => {
     const createAutomationDto: CreateAutomationDto = {
-      name: 'Notificar cliente',
-      description: 'Envia email quando orçamento é aprovado',
+      name: "Notificar cliente",
+      description: "Envia email quando orçamento é aprovado",
       trigger: AutomationTrigger.QUOTE_APPROVED,
       action: AutomationAction.SEND_EMAIL,
       actionConfig: {
-        template: 'quote-approved',
-        to: '{{customer.email}}',
+        template: "quote-approved",
+        to: "{{customer.email}}",
       },
       isActive: true,
     };
 
-    it('deve criar uma automação com sucesso', async () => {
+    it("deve criar uma automação com sucesso", async () => {
       const mockAutomationCreated = {
-        id: 'automation-id',
+        id: "automation-id",
         tenantId: mockTenantId,
         name: createAutomationDto.name,
         description: createAutomationDto.description,
@@ -120,10 +120,10 @@ describe('AutomationsService', () => {
 
       const result = await service.create(mockTenantId, createAutomationDto);
 
-      expect(result).toHaveProperty('id');
-      expect(result.name).toBe('Notificar cliente');
+      expect(result).toHaveProperty("id");
+      expect(result.name).toBe("Notificar cliente");
       expect(result.description).toBe(
-        'Envia email quando orçamento é aprovado',
+        "Envia email quando orçamento é aprovado",
       );
       expect(result.trigger).toBe(AutomationTrigger.QUOTE_APPROVED);
       expect(result.action).toBe(AutomationAction.SEND_EMAIL);
@@ -131,17 +131,17 @@ describe('AutomationsService', () => {
       expect(result.isActive).toBe(true);
     });
 
-    it('deve criar automação sem condições', async () => {
+    it("deve criar automação sem condições", async () => {
       const dtoWithoutConditions: CreateAutomationDto = {
-        name: 'Automação simples',
-        description: 'Descrição simples',
+        name: "Automação simples",
+        description: "Descrição simples",
         trigger: AutomationTrigger.SERVICE_ORDER_COMPLETED,
         action: AutomationAction.CREATE_NOTIFICATION,
         actionConfig: {},
       };
 
       const mockAutomationWithoutConditions = {
-        id: 'automation-simple',
+        id: "automation-simple",
         tenantId: mockTenantId,
         name: dtoWithoutConditions.name,
         description: dtoWithoutConditions.description,
@@ -163,22 +163,22 @@ describe('AutomationsService', () => {
       expect(result.conditions).toEqual({});
     });
 
-    it('deve criar automação com condições', async () => {
+    it("deve criar automação com condições", async () => {
       const dtoWithConditions: CreateAutomationDto = {
-        name: 'Automação com condições',
-        description: 'Descrição',
+        name: "Automação com condições",
+        description: "Descrição",
         trigger: AutomationTrigger.QUOTE_APPROVED,
         action: AutomationAction.SEND_EMAIL,
         conditions: {
           quoteTotal: { gt: 1000 },
         },
         actionConfig: {
-          template: 'quote-approved',
+          template: "quote-approved",
         },
       };
 
       const mockAutomationWithConditions = {
-        id: 'automation-with-conditions',
+        id: "automation-with-conditions",
         tenantId: mockTenantId,
         name: dtoWithConditions.name,
         description: dtoWithConditions.description,
@@ -200,10 +200,10 @@ describe('AutomationsService', () => {
       expect(result.conditions).toEqual(dtoWithConditions.conditions);
     });
 
-    it('deve criar automação inativa quando isActive false', async () => {
+    it("deve criar automação inativa quando isActive false", async () => {
       const dtoInactive: CreateAutomationDto = {
-        name: 'Automação inativa',
-        description: 'Descrição',
+        name: "Automação inativa",
+        description: "Descrição",
         trigger: AutomationTrigger.INVOICE_ISSUED,
         action: AutomationAction.SEND_SMS,
         actionConfig: {},
@@ -211,7 +211,7 @@ describe('AutomationsService', () => {
       };
 
       const mockAutomationInactive = {
-        id: 'automation-inactive',
+        id: "automation-inactive",
         tenantId: mockTenantId,
         name: dtoInactive.name,
         description: dtoInactive.description,
@@ -233,17 +233,17 @@ describe('AutomationsService', () => {
       expect(result.isActive).toBe(false);
     });
 
-    it('deve criar automação ativa por padrão', async () => {
+    it("deve criar automação ativa por padrão", async () => {
       const dtoWithoutActive: CreateAutomationDto = {
-        name: 'Automação padrão',
-        description: 'Descrição',
+        name: "Automação padrão",
+        description: "Descrição",
         trigger: AutomationTrigger.PAYMENT_RECEIVED,
         action: AutomationAction.CREATE_JOB,
         actionConfig: {},
       };
 
       const mockAutomationDefault = {
-        id: 'automation-default',
+        id: "automation-default",
         tenantId: mockTenantId,
         name: dtoWithoutActive.name,
         description: dtoWithoutActive.description,
@@ -265,7 +265,7 @@ describe('AutomationsService', () => {
       expect(result.isActive).toBe(true);
     });
 
-    it('deve criar automação com todos os triggers', async () => {
+    it("deve criar automação com todos os triggers", async () => {
       const triggers = [
         AutomationTrigger.QUOTE_APPROVED,
         AutomationTrigger.SERVICE_ORDER_COMPLETED,
@@ -279,7 +279,7 @@ describe('AutomationsService', () => {
       for (const trigger of triggers) {
         const dto: CreateAutomationDto = {
           name: `Automação ${trigger}`,
-          description: 'Descrição',
+          description: "Descrição",
           trigger,
           action: AutomationAction.SEND_EMAIL,
           actionConfig: {},
@@ -308,7 +308,7 @@ describe('AutomationsService', () => {
       }
     });
 
-    it('deve criar automação com todas as ações', async () => {
+    it("deve criar automação com todas as ações", async () => {
       const actions = [
         AutomationAction.SEND_EMAIL,
         AutomationAction.SEND_SMS,
@@ -321,7 +321,7 @@ describe('AutomationsService', () => {
       for (const action of actions) {
         const dto: CreateAutomationDto = {
           name: `Automação ${action}`,
-          description: 'Descrição',
+          description: "Descrição",
           trigger: AutomationTrigger.QUOTE_APPROVED,
           action,
           actionConfig: {},
@@ -351,13 +351,13 @@ describe('AutomationsService', () => {
     });
   });
 
-  describe('findAll', () => {
-    it('deve listar automações com sucesso', async () => {
+  describe("findAll", () => {
+    it("deve listar automações com sucesso", async () => {
       const mockAutomation = {
-        id: 'automation-id',
+        id: "automation-id",
         tenantId: mockTenantId,
-        name: 'Automação Test',
-        description: 'Descrição',
+        name: "Automação Test",
+        description: "Descrição",
         trigger: AutomationTrigger.QUOTE_APPROVED,
         action: AutomationAction.SEND_EMAIL,
         conditions: {},
@@ -373,17 +373,17 @@ describe('AutomationsService', () => {
 
       expect(Array.isArray(result)).toBe(true);
       expect(result).toHaveLength(1);
-      expect(result[0]).toHaveProperty('id', 'automation-id');
+      expect(result[0]).toHaveProperty("id", "automation-id");
     });
   });
 
-  describe('findOne', () => {
-    it('deve buscar automação por ID com sucesso', async () => {
+  describe("findOne", () => {
+    it("deve buscar automação por ID com sucesso", async () => {
       const mockAutomation = {
-        id: 'automation-id',
+        id: "automation-id",
         tenantId: mockTenantId,
-        name: 'Automação Test',
-        description: 'Descrição',
+        name: "Automação Test",
+        description: "Descrição",
         trigger: AutomationTrigger.QUOTE_APPROVED,
         action: AutomationAction.SEND_EMAIL,
         conditions: {},
@@ -395,33 +395,33 @@ describe('AutomationsService', () => {
 
       mockPrismaService.automation.findFirst.mockResolvedValue(mockAutomation);
 
-      const result = await service.findOne(mockTenantId, 'automation-id');
+      const result = await service.findOne(mockTenantId, "automation-id");
 
-      expect(result).toHaveProperty('id', 'automation-id');
-      expect(result.name).toBe('Automação Test');
+      expect(result).toHaveProperty("id", "automation-id");
+      expect(result.name).toBe("Automação Test");
     });
 
-    it('deve lançar erro se automação não encontrada', async () => {
+    it("deve lançar erro se automação não encontrada", async () => {
       mockPrismaService.automation.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.findOne(mockTenantId, 'non-existent'),
+        service.findOne(mockTenantId, "non-existent"),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('update', () => {
-    it('deve atualizar automação com sucesso', async () => {
+  describe("update", () => {
+    it("deve atualizar automação com sucesso", async () => {
       const updateDto: UpdateAutomationDto = {
-        name: 'Nome atualizado',
+        name: "Nome atualizado",
         isActive: false,
       };
 
       const mockAutomation = {
-        id: 'automation-id',
+        id: "automation-id",
         tenantId: mockTenantId,
-        name: 'Automação Test',
-        description: 'Descrição',
+        name: "Automação Test",
+        description: "Descrição",
         trigger: AutomationTrigger.QUOTE_APPROVED,
         action: AutomationAction.SEND_EMAIL,
         conditions: {},
@@ -433,7 +433,7 @@ describe('AutomationsService', () => {
 
       const updatedAutomation = {
         ...mockAutomation,
-        name: 'Nome atualizado',
+        name: "Nome atualizado",
         isActive: false,
       };
 
@@ -442,35 +442,35 @@ describe('AutomationsService', () => {
 
       const result = await service.update(
         mockTenantId,
-        'automation-id',
+        "automation-id",
         updateDto,
       );
 
-      expect(result.name).toBe('Nome atualizado');
+      expect(result.name).toBe("Nome atualizado");
       expect(result.isActive).toBe(false);
       expect(mockPrismaService.automation.update).toHaveBeenCalled();
     });
 
-    it('deve lançar erro se automação não encontrada', async () => {
+    it("deve lançar erro se automação não encontrada", async () => {
       const updateDto: UpdateAutomationDto = {
-        name: 'Nome atualizado',
+        name: "Nome atualizado",
       };
 
       mockPrismaService.automation.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.update(mockTenantId, 'non-existent', updateDto),
+        service.update(mockTenantId, "non-existent", updateDto),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('remove', () => {
-    it('deve remover automação com sucesso', async () => {
+  describe("remove", () => {
+    it("deve remover automação com sucesso", async () => {
       const mockAutomation = {
-        id: 'automation-id',
+        id: "automation-id",
         tenantId: mockTenantId,
-        name: 'Automação Test',
-        description: 'Descrição',
+        name: "Automação Test",
+        description: "Descrição",
         trigger: AutomationTrigger.QUOTE_APPROVED,
         action: AutomationAction.SEND_EMAIL,
         conditions: {},
@@ -483,70 +483,70 @@ describe('AutomationsService', () => {
       mockPrismaService.automation.findFirst.mockResolvedValue(mockAutomation);
       mockPrismaService.automation.delete.mockResolvedValue(mockAutomation);
 
-      await service.remove(mockTenantId, 'automation-id');
+      await service.remove(mockTenantId, "automation-id");
 
       expect(mockPrismaService.automation.delete).toHaveBeenCalledWith({
-        where: { id: 'automation-id' },
+        where: { id: "automation-id" },
       });
     });
 
-    it('deve lançar erro se automação não encontrada', async () => {
+    it("deve lançar erro se automação não encontrada", async () => {
       mockPrismaService.automation.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.remove(mockTenantId, 'non-existent'),
+        service.remove(mockTenantId, "non-existent"),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('execute', () => {
-    it('deve lançar erro se automação não encontrada', async () => {
-      const data = { quoteId: 'quote-123' };
+  describe("execute", () => {
+    it("deve lançar erro se automação não encontrada", async () => {
+      const data = { quoteId: "quote-123" };
 
       await expect(
-        service.execute(mockTenantId, 'non-existent', data),
+        service.execute(mockTenantId, "non-existent", data),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('deve retornar erro se automação não está ativa', async () => {
-      jest.spyOn(service, 'findOne').mockResolvedValue({
+    it("deve retornar erro se automação não está ativa", async () => {
+      jest.spyOn(service, "findOne").mockResolvedValue({
         ...mockAutomation,
         isActive: false,
       });
 
-      const data = { quoteId: 'quote-123' };
+      const data = { quoteId: "quote-123" };
 
-      const result = await service.execute(mockTenantId, 'automation-id', data);
+      const result = await service.execute(mockTenantId, "automation-id", data);
 
       expect(result.success).toBe(false);
-      expect(result.message).toContain('não está ativa');
+      expect(result.message).toContain("não está ativa");
     });
 
-    it('deve executar automação ativa com sucesso', async () => {
-      jest.spyOn(service, 'findOne').mockResolvedValue(mockAutomation);
+    it("deve executar automação ativa com sucesso", async () => {
+      jest.spyOn(service, "findOne").mockResolvedValue(mockAutomation);
 
-      const data = { quoteId: 'quote-123', customerId: 'customer-456' };
+      const data = { quoteId: "quote-123", customerId: "customer-456" };
 
-      const result = await service.execute(mockTenantId, 'automation-id', data);
+      const result = await service.execute(mockTenantId, "automation-id", data);
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('sucesso');
+      expect(result.message).toContain("sucesso");
     });
 
-    it('deve executar automação com diferentes dados', async () => {
-      jest.spyOn(service, 'findOne').mockResolvedValue(mockAutomation);
+    it("deve executar automação com diferentes dados", async () => {
+      jest.spyOn(service, "findOne").mockResolvedValue(mockAutomation);
 
       const dataSets = [
-        { quoteId: 'quote-123' },
-        { serviceOrderId: 'so-456' },
-        { invoiceId: 'inv-789' },
-        { paymentId: 'pay-012' },
+        { quoteId: "quote-123" },
+        { serviceOrderId: "so-456" },
+        { invoiceId: "inv-789" },
+        { paymentId: "pay-012" },
       ];
 
       for (const data of dataSets) {
         const result = await service.execute(
           mockTenantId,
-          'automation-id',
+          "automation-id",
           data,
         );
 
@@ -555,75 +555,75 @@ describe('AutomationsService', () => {
     });
   });
 
-  describe('toResponseDto', () => {
-    it('deve converter automação completa para DTO', async () => {
+  describe("toResponseDto", () => {
+    it("deve converter automação completa para DTO", async () => {
       const createDto: CreateAutomationDto = {
-        name: 'Automação completa',
-        description: 'Descrição completa',
+        name: "Automação completa",
+        description: "Descrição completa",
         trigger: AutomationTrigger.QUOTE_APPROVED,
         action: AutomationAction.SEND_EMAIL,
         conditions: { total: { gt: 1000 } },
         actionConfig: {
-          template: 'quote-approved',
-          to: '{{customer.email}}',
+          template: "quote-approved",
+          to: "{{customer.email}}",
         },
         isActive: true,
       };
 
       const result = await service.create(mockTenantId, createDto);
 
-      expect(result).toHaveProperty('id');
-      expect(result).toHaveProperty('name');
-      expect(result).toHaveProperty('description');
-      expect(result).toHaveProperty('trigger');
-      expect(result).toHaveProperty('action');
-      expect(result).toHaveProperty('conditions');
-      expect(result).toHaveProperty('actionConfig');
-      expect(result).toHaveProperty('isActive');
-      expect(result).toHaveProperty('createdAt');
-      expect(result).toHaveProperty('updatedAt');
+      expect(result).toHaveProperty("id");
+      expect(result).toHaveProperty("name");
+      expect(result).toHaveProperty("description");
+      expect(result).toHaveProperty("trigger");
+      expect(result).toHaveProperty("action");
+      expect(result).toHaveProperty("conditions");
+      expect(result).toHaveProperty("actionConfig");
+      expect(result).toHaveProperty("isActive");
+      expect(result).toHaveProperty("createdAt");
+      expect(result).toHaveProperty("updatedAt");
     });
   });
 
-  describe('error handling', () => {
-    it('deve lidar com erros ao criar automação', async () => {
+  describe("error handling", () => {
+    it("deve lidar com erros ao criar automação", async () => {
       const createDto: CreateAutomationDto = {
-        name: 'Automação Test',
-        description: 'Descrição',
+        name: "Automação Test",
+        description: "Descrição",
         trigger: AutomationTrigger.QUOTE_APPROVED,
         action: AutomationAction.SEND_EMAIL,
         actionConfig: {},
       };
 
       mockPrismaService.automation.create.mockRejectedValue(
-        new Error('Database error'),
+        new Error("Database error"),
       );
 
       await expect(service.create(mockTenantId, createDto)).rejects.toThrow(
-        'Database error',
+        "Database error",
       );
     });
 
-    it('deve lidar com erros ao listar automações', async () => {
+    it("deve lidar com erros ao listar automações", async () => {
       mockPrismaService.automation.findMany.mockRejectedValue(
-        new Error('Database error'),
+        new Error("Database error"),
       );
 
       await expect(service.findAll(mockTenantId)).rejects.toThrow(
-        'Database error',
+        "Database error",
       );
     });
 
-    it('deve lidar com erros ao atualizar automação', async () => {
+    it("deve lidar com erros ao atualizar automação", async () => {
       const updateDto: UpdateAutomationDto = {
-        name: 'Nome atualizado',
+        name: "Nome atualizado",
       };
 
       const mockAutomation = {
-        id: 'automation-id',
+        id: "automation-id",
         tenantId: mockTenantId,
-        name: 'Automação Test',
-        description: 'Descrição',
+        name: "Automação Test",
+        description: "Descrição",
         trigger: AutomationTrigger.QUOTE_APPROVED,
         action: AutomationAction.SEND_EMAIL,
         conditions: {},
@@ -635,20 +635,20 @@ describe('AutomationsService', () => {
 
       mockPrismaService.automation.findFirst.mockResolvedValue(mockAutomation);
       mockPrismaService.automation.update.mockRejectedValue(
-        new Error('Database error'),
+        new Error("Database error"),
       );
 
       await expect(
-        service.update(mockTenantId, 'automation-id', updateDto),
-      ).rejects.toThrow('Database error');
+        service.update(mockTenantId, "automation-id", updateDto),
+      ).rejects.toThrow("Database error");
     });
 
-    it('deve lidar com erros ao remover automação', async () => {
+    it("deve lidar com erros ao remover automação", async () => {
       const mockAutomation = {
-        id: 'automation-id',
+        id: "automation-id",
         tenantId: mockTenantId,
-        name: 'Automação Test',
-        description: 'Descrição',
+        name: "Automação Test",
+        description: "Descrição",
         trigger: AutomationTrigger.QUOTE_APPROVED,
         action: AutomationAction.SEND_EMAIL,
         conditions: {},
@@ -660,26 +660,26 @@ describe('AutomationsService', () => {
 
       mockPrismaService.automation.findFirst.mockResolvedValue(mockAutomation);
       mockPrismaService.automation.delete.mockRejectedValue(
-        new Error('Database error'),
+        new Error("Database error"),
       );
 
       await expect(
-        service.remove(mockTenantId, 'automation-id'),
-      ).rejects.toThrow('Database error');
+        service.remove(mockTenantId, "automation-id"),
+      ).rejects.toThrow("Database error");
     });
   });
 
-  describe('processTrigger', () => {
-    it('deve processar trigger e executar automações correspondentes', async () => {
+  describe("processTrigger", () => {
+    it("deve processar trigger e executar automações correspondentes", async () => {
       const automations = [
         {
           ...mockAutomation,
-          id: 'automation-1',
+          id: "automation-1",
           trigger: AutomationTrigger.QUOTE_APPROVED,
         },
         {
           ...mockAutomation,
-          id: 'automation-2',
+          id: "automation-2",
           trigger: AutomationTrigger.QUOTE_APPROVED,
         },
       ];
@@ -691,8 +691,8 @@ describe('AutomationsService', () => {
 
       const payload = {
         tenantId: mockTenantId,
-        quoteId: 'quote-123',
-        customer: { email: 'customer@example.com' },
+        quoteId: "quote-123",
+        customer: { email: "customer@example.com" },
       };
 
       const result = await service.processTrigger(
@@ -707,13 +707,13 @@ describe('AutomationsService', () => {
       expect(mockEmailService.sendEmail).toHaveBeenCalledTimes(2);
     });
 
-    it('deve filtrar automações por condições', async () => {
+    it("deve filtrar automações por condições", async () => {
       const automationWithCondition = {
         ...mockAutomation,
         conditions: {
-          field: 'quoteId',
-          operator: 'equals',
-          value: 'quote-123',
+          field: "quoteId",
+          operator: "equals",
+          value: "quote-123",
         },
       };
 
@@ -724,8 +724,8 @@ describe('AutomationsService', () => {
 
       const payload = {
         tenantId: mockTenantId,
-        quoteId: 'quote-123',
-        customer: { email: 'customer@example.com' },
+        quoteId: "quote-123",
+        customer: { email: "customer@example.com" },
       };
 
       const result = await service.processTrigger(
@@ -738,13 +738,13 @@ describe('AutomationsService', () => {
       expect(result.succeeded).toBe(1);
     });
 
-    it('deve não executar automação se condições não forem atendidas', async () => {
+    it("deve não executar automação se condições não forem atendidas", async () => {
       const automationWithCondition = {
         ...mockAutomation,
         conditions: {
-          field: 'quoteId',
-          operator: 'equals',
-          value: 'quote-999',
+          field: "quoteId",
+          operator: "equals",
+          value: "quote-999",
         },
       };
 
@@ -754,8 +754,8 @@ describe('AutomationsService', () => {
 
       const payload = {
         tenantId: mockTenantId,
-        quoteId: 'quote-123',
-        customer: { email: 'customer@example.com' },
+        quoteId: "quote-123",
+        customer: { email: "customer@example.com" },
       };
 
       const result = await service.processTrigger(
@@ -770,27 +770,27 @@ describe('AutomationsService', () => {
       expect(mockEmailService.sendEmail).not.toHaveBeenCalled();
     });
 
-    it('deve lidar com falhas ao executar automações', async () => {
+    it("deve lidar com falhas ao executar automações", async () => {
       const automations = [
         {
           ...mockAutomation,
-          id: 'automation-1',
+          id: "automation-1",
           conditions: {}, // Sem condições = sempre executa
           actionConfig: {
-            to: 'test@example.com',
-            subject: 'Test',
+            to: "test@example.com",
+            subject: "Test",
           },
         },
       ];
 
       mockPrismaService.automation.findMany.mockResolvedValue(automations);
       mockEmailService.sendEmail.mockRejectedValue(
-        new Error('Email sending failed'),
+        new Error("Email sending failed"),
       );
 
       const payload = {
         tenantId: mockTenantId,
-        quoteId: 'quote-123',
+        quoteId: "quote-123",
       };
 
       const result = await service.processTrigger(
@@ -810,15 +810,15 @@ describe('AutomationsService', () => {
     });
   });
 
-  describe('execute - novas ações', () => {
-    it('deve executar ação CREATE_NOTIFICATION', async () => {
+  describe("execute - novas ações", () => {
+    it("deve executar ação CREATE_NOTIFICATION", async () => {
       const automation = {
         ...mockAutomation,
         action: AutomationAction.CREATE_NOTIFICATION,
         actionConfig: {
-          title: 'Orçamento aprovado',
-          message: 'Seu orçamento foi aprovado',
-          userId: 'user-id',
+          title: "Orçamento aprovado",
+          message: "Seu orçamento foi aprovado",
+          userId: "user-id",
         },
       };
 
@@ -827,12 +827,12 @@ describe('AutomationsService', () => {
 
       const payload = {
         tenantId: mockTenantId,
-        quoteId: 'quote-123',
+        quoteId: "quote-123",
       };
 
       const result = await service.execute(
         mockTenantId,
-        'automation-id',
+        "automation-id",
         payload,
       );
 
@@ -840,33 +840,33 @@ describe('AutomationsService', () => {
       expect(mockNotificationsService.create).toHaveBeenCalled();
     });
 
-    it('deve executar ação CREATE_JOB', async () => {
+    it("deve executar ação CREATE_JOB", async () => {
       const automation = {
         ...mockAutomation,
         action: AutomationAction.CREATE_JOB,
         actionConfig: {
-          type: 'email',
+          type: "email",
           priority: 5,
         },
       };
 
       mockPrismaService.automation.findFirst.mockResolvedValue(automation);
       mockJobsService.create.mockResolvedValue({
-        id: 'job-id',
-        type: 'email',
-        status: 'pending',
+        id: "job-id",
+        type: "email",
+        status: "pending",
         data: {},
         createdAt: new Date(),
       });
 
       const payload = {
         tenantId: mockTenantId,
-        quoteId: 'quote-123',
+        quoteId: "quote-123",
       };
 
       const result = await service.execute(
         mockTenantId,
-        'automation-id',
+        "automation-id",
         payload,
       );
 
@@ -874,14 +874,14 @@ describe('AutomationsService', () => {
       expect(mockJobsService.create).toHaveBeenCalled();
     });
 
-    it('deve executar ação UPDATE_STATUS', async () => {
+    it("deve executar ação UPDATE_STATUS", async () => {
       const automation = {
         ...mockAutomation,
         action: AutomationAction.UPDATE_STATUS,
         actionConfig: {
-          entity: 'quote',
-          entityId: 'quote-123',
-          status: 'approved',
+          entity: "quote",
+          entityId: "quote-123",
+          status: "approved",
         },
       };
 
@@ -889,24 +889,24 @@ describe('AutomationsService', () => {
 
       const payload = {
         tenantId: mockTenantId,
-        quoteId: 'quote-123',
+        quoteId: "quote-123",
       };
 
       const result = await service.execute(
         mockTenantId,
-        'automation-id',
+        "automation-id",
         payload,
       );
 
       expect(result.success).toBe(true);
     });
 
-    it('deve executar ação CUSTOM', async () => {
+    it("deve executar ação CUSTOM", async () => {
       const automation = {
         ...mockAutomation,
         action: AutomationAction.CUSTOM,
         actionConfig: {
-          handler: 'custom-handler',
+          handler: "custom-handler",
         },
       };
 
@@ -914,19 +914,19 @@ describe('AutomationsService', () => {
 
       const payload = {
         tenantId: mockTenantId,
-        quoteId: 'quote-123',
+        quoteId: "quote-123",
       };
 
       const result = await service.execute(
         mockTenantId,
-        'automation-id',
+        "automation-id",
         payload,
       );
 
       expect(result.success).toBe(true);
     });
 
-    it('deve retornar erro se automação não estiver ativa', async () => {
+    it("deve retornar erro se automação não estiver ativa", async () => {
       const automation = {
         ...mockAutomation,
         isActive: false,
@@ -934,10 +934,10 @@ describe('AutomationsService', () => {
 
       mockPrismaService.automation.findFirst.mockResolvedValue(automation);
 
-      const result = await service.execute(mockTenantId, 'automation-id', {});
+      const result = await service.execute(mockTenantId, "automation-id", {});
 
       expect(result.success).toBe(false);
-      expect(result.message).toContain('não está ativa');
+      expect(result.message).toContain("não está ativa");
     });
   });
 });

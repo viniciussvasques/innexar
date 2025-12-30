@@ -3,14 +3,14 @@ import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
-} from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
+} from "@nestjs/common";
+import { Reflector } from "@nestjs/core";
 import {
   FeatureFlagsService,
   type FeatureName,
-} from '../feature-flags.service';
-import { REQUIRE_FEATURE_KEY } from '../decorators/require-feature.decorator';
-import { RequestWithTenant } from '@common/interfaces/request-with-tenant.interface';
+} from "../feature-flags.service";
+import { REQUIRE_FEATURE_KEY } from "../decorators/require-feature.decorator";
+import { RequestWithTenant } from "@common/interfaces/request-with-tenant.interface";
 
 @Injectable()
 export class FeatureGuard implements CanActivate {
@@ -34,7 +34,7 @@ export class FeatureGuard implements CanActivate {
     const tenantId = request.tenantId;
 
     if (!tenantId) {
-      throw new ForbiddenException('Tenant não identificado');
+      throw new ForbiddenException("Tenant não identificado");
     }
 
     const isEnabled = await this.featureFlagsService.isFeatureEnabled(

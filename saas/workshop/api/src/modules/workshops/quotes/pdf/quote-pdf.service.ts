@@ -1,10 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
-import PDFDocument from 'pdfkit';
-import { QuoteResponseDto } from '../dto';
-import { WorkshopSettings } from '@prisma/client';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
-import { getErrorMessage } from '@common/utils/error.utils';
+import { Injectable, Logger } from "@nestjs/common";
+import PDFDocument from "pdfkit";
+import { QuoteResponseDto } from "../dto";
+import { WorkshopSettings } from "@prisma/client";
+import * as fs from "node:fs";
+import * as path from "node:path";
+import { getErrorMessage } from "@common/utils/error.utils";
 
 @Injectable()
 export class QuotePdfService {
@@ -20,25 +20,25 @@ export class QuotePdfService {
     return new Promise((resolve, reject) => {
       try {
         const doc = new PDFDocument({
-          size: 'A4',
+          size: "A4",
           margins: { top: 50, bottom: 50, left: 50, right: 50 },
         });
 
         const chunks: Buffer[] = [];
 
-        doc.on('data', (chunk: unknown) => {
+        doc.on("data", (chunk: unknown) => {
           const bufferChunk = Buffer.isBuffer(chunk)
             ? chunk
             : Buffer.from(chunk as ArrayLike<number>);
           chunks.push(bufferChunk);
         });
-        doc.on('end', () => resolve(Buffer.concat(chunks)));
-        doc.on('error', (error) =>
+        doc.on("end", () => resolve(Buffer.concat(chunks)));
+        doc.on("error", (error) =>
           reject(error instanceof Error ? error : new Error(String(error))),
         );
 
         // Cores personalizadas da oficina ou padrão
-        const primaryColor = workshopSettings?.primaryColor || '#00E0B8';
+        const primaryColor = workshopSettings?.primaryColor || "#00E0B8";
 
         // Cabeçalho com logo e informações da oficina
         this.addHeader(doc, quote, workshopSettings, primaryColor);
@@ -135,54 +135,54 @@ export class QuotePdfService {
     }
 
     // Nome da oficina
-    const workshopName = workshopSettings?.displayName || 'Oficina Mecânica';
+    const workshopName = workshopSettings?.displayName || "Oficina Mecânica";
     doc
       .fontSize(16)
-      .font('Helvetica-Bold')
+      .font("Helvetica-Bold")
       .fillColor(primaryColor)
-      .text(workshopName, 50, headerY, { align: 'center', width: 500 });
+      .text(workshopName, 50, headerY, { align: "center", width: 500 });
 
     // Título ORÇAMENTO
     doc
       .fontSize(24)
-      .font('Helvetica-Bold')
-      .fillColor('#000000')
-      .text('ORÇAMENTO', 50, headerY + 25, { align: 'center', width: 500 });
+      .font("Helvetica-Bold")
+      .fillColor("#000000")
+      .text("ORÇAMENTO", 50, headerY + 25, { align: "center", width: 500 });
 
     // Número do orçamento com destaque
     doc
       .fontSize(18)
-      .font('Helvetica-Bold')
+      .font("Helvetica-Bold")
       .fillColor(primaryColor)
       .text(`Nº ${quote.number}`, 50, headerY + 55, {
-        align: 'center',
+        align: "center",
         width: 500,
       });
 
     // Data
     doc
       .fontSize(10)
-      .font('Helvetica')
-      .fillColor('#666666')
+      .font("Helvetica")
+      .fillColor("#666666")
       .text(
-        `Data: ${new Date(quote.createdAt).toLocaleDateString('pt-BR', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
+        `Data: ${new Date(quote.createdAt).toLocaleDateString("pt-BR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
         })}`,
         50,
         headerY + 80,
-        { align: 'center', width: 500 },
+        { align: "center", width: 500 },
       );
 
     // Status do orçamento
     const statusText = this.getStatusText(quote.status);
     doc
       .fontSize(9)
-      .font('Helvetica-Bold')
+      .font("Helvetica-Bold")
       .fillColor(this.getStatusColor(quote.status))
       .text(`Status: ${statusText}`, 50, headerY + 95, {
-        align: 'center',
+        align: "center",
         width: 500,
       });
 
@@ -206,14 +206,14 @@ export class QuotePdfService {
     // DADOS DO CLIENTE
     doc
       .fontSize(12)
-      .font('Helvetica-Bold')
-      .fillColor('#000000')
-      .text('DADOS DO CLIENTE', 50, sectionY);
+      .font("Helvetica-Bold")
+      .fillColor("#000000")
+      .text("DADOS DO CLIENTE", 50, sectionY);
 
     doc.moveDown(0.5);
 
     if (quote.customer) {
-      doc.fontSize(10).font('Helvetica');
+      doc.fontSize(10).font("Helvetica");
       doc.text(`Nome: ${quote.customer.name}`);
       if (quote.customer.phone) {
         doc.text(`Telefone: ${quote.customer.phone}`);
@@ -222,17 +222,17 @@ export class QuotePdfService {
         doc.text(`Email: ${quote.customer.email}`);
       }
     } else {
-      doc.fontSize(10).font('Helvetica').text('Cliente não informado');
+      doc.fontSize(10).font("Helvetica").text("Cliente não informado");
     }
 
     doc.moveDown(1);
 
     // DADOS DO VEÍCULO
     if (quote.vehicle) {
-      doc.fontSize(12).font('Helvetica-Bold').text('DADOS DO VEÍCULO');
+      doc.fontSize(12).font("Helvetica-Bold").text("DADOS DO VEÍCULO");
       doc.moveDown(0.5);
 
-      doc.fontSize(10).font('Helvetica');
+      doc.fontSize(10).font("Helvetica");
       if (quote.vehicle.placa) {
         doc.text(`Placa: ${quote.vehicle.placa}`);
       }
@@ -243,7 +243,7 @@ export class QuotePdfService {
           quote.vehicle.year?.toString(),
         ]
           .filter(Boolean)
-          .join(' ');
+          .join(" ");
         doc.text(`Veículo: ${makeModel}`);
       }
     }
@@ -251,7 +251,7 @@ export class QuotePdfService {
     // Elevador (se houver)
     if (quote.elevator) {
       doc.moveDown(0.5);
-      doc.fontSize(10).font('Helvetica');
+      doc.fontSize(10).font("Helvetica");
       doc.text(`Elevador: ${quote.elevator.name} (${quote.elevator.number})`);
     }
 
@@ -266,18 +266,18 @@ export class QuotePdfService {
   ): void {
     doc
       .fontSize(12)
-      .font('Helvetica-Bold')
-      .text('PROBLEMA RELATADO PELO CLIENTE');
+      .font("Helvetica-Bold")
+      .text("PROBLEMA RELATADO PELO CLIENTE");
     doc.moveDown(0.5);
 
-    doc.fontSize(10).font('Helvetica');
+    doc.fontSize(10).font("Helvetica");
 
     if (quote.reportedProblemCategory) {
       doc.text(`Categoria: ${quote.reportedProblemCategory}`);
     }
 
     if (quote.reportedProblemDescription) {
-      doc.text('Descrição:', { continued: false });
+      doc.text("Descrição:", { continued: false });
       doc.text(quote.reportedProblemDescription, { indent: 20 });
       doc.moveDown(0.3);
     }
@@ -286,7 +286,7 @@ export class QuotePdfService {
       quote.reportedProblemSymptoms &&
       quote.reportedProblemSymptoms.length > 0
     ) {
-      doc.text('Sintomas:', { continued: false });
+      doc.text("Sintomas:", { continued: false });
       for (const symptom of quote.reportedProblemSymptoms) {
         doc.text(`• ${symptom}`, { indent: 20 });
       }
@@ -301,17 +301,17 @@ export class QuotePdfService {
     doc: InstanceType<typeof PDFDocument>,
     quote: QuoteResponseDto,
   ): void {
-    doc.fontSize(12).font('Helvetica-Bold').text('PROBLEMA IDENTIFICADO');
+    doc.fontSize(12).font("Helvetica-Bold").text("PROBLEMA IDENTIFICADO");
     doc.moveDown(0.5);
 
-    doc.fontSize(10).font('Helvetica');
+    doc.fontSize(10).font("Helvetica");
 
     if (quote.identifiedProblemCategory) {
       doc.text(`Categoria: ${quote.identifiedProblemCategory}`);
     }
 
     if (quote.identifiedProblemDescription) {
-      doc.text('Descrição:', { continued: false });
+      doc.text("Descrição:", { continued: false });
       doc.text(quote.identifiedProblemDescription, { indent: 20 });
     }
 
@@ -324,16 +324,16 @@ export class QuotePdfService {
     doc: InstanceType<typeof PDFDocument>,
     quote: QuoteResponseDto,
   ): void {
-    doc.fontSize(12).font('Helvetica-Bold').text('ITENS DO ORÇAMENTO');
+    doc.fontSize(12).font("Helvetica-Bold").text("ITENS DO ORÇAMENTO");
     doc.moveDown(0.5);
 
     // Cabeçalho da tabela
     const startY = doc.y;
-    doc.fontSize(9).font('Helvetica-Bold');
-    doc.text('Descrição', 50, startY);
-    doc.text('Qtd', 350, startY);
-    doc.text('Unit.', 400, startY);
-    doc.text('Total', 480, startY, { align: 'right' });
+    doc.fontSize(9).font("Helvetica-Bold");
+    doc.text("Descrição", 50, startY);
+    doc.text("Qtd", 350, startY);
+    doc.text("Unit.", 400, startY);
+    doc.text("Total", 480, startY, { align: "right" });
 
     doc.moveDown(0.5);
     doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke();
@@ -349,7 +349,7 @@ export class QuotePdfService {
         doc.y = 50;
       }
 
-      doc.fontSize(9).font('Helvetica');
+      doc.fontSize(9).font("Helvetica");
       doc.text(item.name, 50, itemY, { width: 280 });
       if (item.description) {
         doc.fontSize(8).text(item.description, 55, doc.y, { width: 275 });
@@ -358,7 +358,7 @@ export class QuotePdfService {
       doc.fontSize(9).text(item.quantity.toString(), 350, itemY);
       doc.text(`R$ ${item.unitCost.toFixed(2)}`, 400, itemY);
       doc.text(`R$ ${item.totalCost.toFixed(2)}`, 480, itemY, {
-        align: 'right',
+        align: "right",
       });
 
       if (item.hours) {
@@ -381,20 +381,20 @@ export class QuotePdfService {
     const totalsY = doc.y;
     const rightAlign = 480;
 
-    doc.fontSize(10).font('Helvetica');
+    doc.fontSize(10).font("Helvetica");
 
     if (quote.laborCost && quote.laborCost > 0) {
-      doc.text('Mão de Obra:', 350, totalsY);
+      doc.text("Mão de Obra:", 350, totalsY);
       doc.text(`R$ ${quote.laborCost.toFixed(2)}`, rightAlign, totalsY, {
-        align: 'right',
+        align: "right",
       });
       doc.moveDown(0.3);
     }
 
     if (quote.partsCost && quote.partsCost > 0) {
-      doc.text('Peças:', 350, doc.y);
+      doc.text("Peças:", 350, doc.y);
       doc.text(`R$ ${quote.partsCost.toFixed(2)}`, rightAlign, doc.y, {
-        align: 'right',
+        align: "right",
       });
       doc.moveDown(0.3);
     }
@@ -404,24 +404,24 @@ export class QuotePdfService {
       (quote.laborCost || 0) +
       (quote.partsCost || 0);
 
-    doc.text('Subtotal:', 350, doc.y);
+    doc.text("Subtotal:", 350, doc.y);
     doc.text(`R$ ${subtotal.toFixed(2)}`, rightAlign, doc.y, {
-      align: 'right',
+      align: "right",
     });
     doc.moveDown(0.3);
 
     if (quote.discount && quote.discount > 0) {
-      doc.text('Desconto:', 350, doc.y);
+      doc.text("Desconto:", 350, doc.y);
       doc.text(`- R$ ${quote.discount.toFixed(2)}`, rightAlign, doc.y, {
-        align: 'right',
+        align: "right",
       });
       doc.moveDown(0.3);
     }
 
     if (quote.taxAmount && quote.taxAmount > 0) {
-      doc.text('Impostos:', 350, doc.y);
+      doc.text("Impostos:", 350, doc.y);
       doc.text(`R$ ${quote.taxAmount.toFixed(2)}`, rightAlign, doc.y, {
-        align: 'right',
+        align: "right",
       });
       doc.moveDown(0.3);
     }
@@ -431,12 +431,12 @@ export class QuotePdfService {
     doc.moveDown(0.3);
 
     // TOTAL em destaque
-    doc.fontSize(16).font('Helvetica-Bold').fillColor(primaryColor);
-    doc.text('TOTAL:', 350, doc.y);
+    doc.fontSize(16).font("Helvetica-Bold").fillColor(primaryColor);
+    doc.text("TOTAL:", 350, doc.y);
     doc.text(`R$ ${quote.totalCost.toFixed(2)}`, rightAlign, doc.y, {
-      align: 'right',
+      align: "right",
     });
-    doc.fillColor('#000000'); // Resetar cor
+    doc.fillColor("#000000"); // Resetar cor
 
     doc.moveDown(1);
   }
@@ -445,10 +445,10 @@ export class QuotePdfService {
     doc: InstanceType<typeof PDFDocument>,
     quote: QuoteResponseDto,
   ): void {
-    doc.fontSize(12).font('Helvetica-Bold').text('RECOMENDAÇÕES');
+    doc.fontSize(12).font("Helvetica-Bold").text("RECOMENDAÇÕES");
     doc.moveDown(0.5);
 
-    doc.fontSize(10).font('Helvetica');
+    doc.fontSize(10).font("Helvetica");
     if (quote.recommendations) {
       doc.text(quote.recommendations, { indent: 20 });
     }
@@ -462,19 +462,19 @@ export class QuotePdfService {
     doc: InstanceType<typeof PDFDocument>,
     quote: QuoteResponseDto,
   ): void {
-    doc.fontSize(12).font('Helvetica-Bold').text('OBSERVAÇÕES E DIAGNÓSTICO');
+    doc.fontSize(12).font("Helvetica-Bold").text("OBSERVAÇÕES E DIAGNÓSTICO");
     doc.moveDown(0.5);
 
-    doc.fontSize(10).font('Helvetica');
+    doc.fontSize(10).font("Helvetica");
 
     if (quote.diagnosticNotes) {
-      doc.text('Diagnóstico:', { continued: false });
+      doc.text("Diagnóstico:", { continued: false });
       doc.text(quote.diagnosticNotes, { indent: 20 });
       doc.moveDown(0.5);
     }
 
     if (quote.inspectionNotes) {
-      doc.text('Inspeção:', { continued: false });
+      doc.text("Inspeção:", { continued: false });
       doc.text(quote.inspectionNotes, { indent: 20 });
       doc.moveDown(0.5);
     }
@@ -488,15 +488,15 @@ export class QuotePdfService {
   ): void {
     if (!quote.assignedMechanic) return;
 
-    doc.fontSize(10).font('Helvetica');
+    doc.fontSize(10).font("Helvetica");
     doc.text(`Mecânico Responsável: ${quote.assignedMechanic.name}`, {
-      align: 'right',
+      align: "right",
     });
 
     if (quote.assignedAt) {
       doc.text(
-        `Atribuído em: ${new Date(quote.assignedAt).toLocaleDateString('pt-BR')}`,
-        { align: 'right' },
+        `Atribuído em: ${new Date(quote.assignedAt).toLocaleDateString("pt-BR")}`,
+        { align: "right" },
       );
     }
 
@@ -509,10 +509,10 @@ export class QuotePdfService {
   ): void {
     if (!quote.validUntil) return;
 
-    doc.fontSize(10).font('Helvetica-Bold');
+    doc.fontSize(10).font("Helvetica-Bold");
     doc.text(
-      `Validade: ${new Date(quote.validUntil).toLocaleDateString('pt-BR')}`,
-      { align: 'center', width: 500 },
+      `Validade: ${new Date(quote.validUntil).toLocaleDateString("pt-BR")}`,
+      { align: "center", width: 500 },
     );
     doc.moveDown(1);
   }
@@ -529,7 +529,7 @@ export class QuotePdfService {
     doc.moveTo(50, doc.y).lineTo(300, doc.y).stroke();
     doc.moveDown(0.3);
 
-    doc.fontSize(9).font('Helvetica').text('Assinatura do Cliente', 50, doc.y);
+    doc.fontSize(9).font("Helvetica").text("Assinatura do Cliente", 50, doc.y);
 
     // Se houver imagem de assinatura, adicionar aqui
     // Por enquanto, apenas a linha
@@ -573,8 +573,8 @@ export class QuotePdfService {
   ): void {
     const footerText = this.buildContactText(workshopSettings);
     if (footerText) {
-      doc.fontSize(8).font('Helvetica');
-      doc.text(footerText, 50, footerY - 10, { align: 'center' });
+      doc.fontSize(8).font("Helvetica");
+      doc.text(footerText, 50, footerY - 10, { align: "center" });
     }
   }
 
@@ -593,7 +593,7 @@ export class QuotePdfService {
       parts.push(`WhatsApp: ${workshopSettings.whatsapp}`);
     }
 
-    return parts.join(' | ');
+    return parts.join(" | ");
   }
 
   private addAddressInfo(
@@ -615,9 +615,9 @@ export class QuotePdfService {
       workshopSettings.zipCode,
     ]
       .filter(Boolean)
-      .join(' - ');
+      .join(" - ");
 
-    doc.text(addressParts, 50, footerY, { align: 'center' });
+    doc.text(addressParts, 50, footerY, { align: "center" });
   }
 
   private addCustomFooterText(
@@ -627,7 +627,7 @@ export class QuotePdfService {
   ): void {
     if (workshopSettings?.quoteFooterText) {
       doc.text(workshopSettings.quoteFooterText, 50, footerY + 10, {
-        align: 'center',
+        align: "center",
       });
     }
   }
@@ -637,12 +637,12 @@ export class QuotePdfService {
     footerY: number,
     quote: QuoteResponseDto,
   ): void {
-    doc.fontSize(7).font('Helvetica').fillColor('#999999');
+    doc.fontSize(7).font("Helvetica").fillColor("#999999");
     doc.text(
-      `Orçamento ${quote.number} - Gerado em ${new Date().toLocaleString('pt-BR')}`,
+      `Orçamento ${quote.number} - Gerado em ${new Date().toLocaleString("pt-BR")}`,
       50,
       footerY + 20,
-      { align: 'center' },
+      { align: "center" },
     );
   }
 
@@ -650,7 +650,7 @@ export class QuotePdfService {
     if (!logoUrl) return null;
 
     // Se for URL relativa (uploads)
-    if (logoUrl.startsWith('/uploads/')) {
+    if (logoUrl.startsWith("/uploads/")) {
       const logoPath = path.join(process.cwd(), logoUrl);
       return logoPath;
     }
@@ -662,31 +662,31 @@ export class QuotePdfService {
 
   private getStatusText(status: string): string {
     const statusMap: Record<string, string> = {
-      draft: 'Rascunho',
-      awaiting_diagnosis: 'Aguardando Diagnóstico',
-      diagnosed: 'Diagnosticado',
-      sent: 'Enviado',
-      viewed: 'Visualizado',
-      accepted: 'Aprovado',
-      rejected: 'Rejeitado',
-      expired: 'Expirado',
-      converted: 'Convertido',
+      draft: "Rascunho",
+      awaiting_diagnosis: "Aguardando Diagnóstico",
+      diagnosed: "Diagnosticado",
+      sent: "Enviado",
+      viewed: "Visualizado",
+      accepted: "Aprovado",
+      rejected: "Rejeitado",
+      expired: "Expirado",
+      converted: "Convertido",
     };
     return statusMap[status] || status;
   }
 
   private getStatusColor(status: string): string {
     const colorMap: Record<string, string> = {
-      draft: '#999999',
-      awaiting_diagnosis: '#FFA500',
-      diagnosed: '#3ABFF8',
-      sent: '#3ABFF8',
-      viewed: '#3ABFF8',
-      accepted: '#00E0B8',
-      rejected: '#FF4E3D',
-      expired: '#999999',
-      converted: '#00E0B8',
+      draft: "#999999",
+      awaiting_diagnosis: "#FFA500",
+      diagnosed: "#3ABFF8",
+      sent: "#3ABFF8",
+      viewed: "#3ABFF8",
+      accepted: "#00E0B8",
+      rejected: "#FF4E3D",
+      expired: "#999999",
+      converted: "#00E0B8",
     };
-    return colorMap[status] || '#000000';
+    return colorMap[status] || "#000000";
   }
 }

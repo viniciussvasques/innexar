@@ -4,17 +4,17 @@ import {
   ConflictException,
   BadRequestException,
   Logger,
-} from '@nestjs/common';
-import { PrismaService } from '@database/prisma.service';
+} from "@nestjs/common";
+import { PrismaService } from "@database/prisma.service";
 import {
   CreateCustomerDto,
   UpdateCustomerDto,
   CustomerResponseDto,
   CustomerFiltersDto,
   DocumentType,
-} from './dto';
-import { Prisma } from '@prisma/client';
-import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
+} from "./dto";
+import { Prisma } from "@prisma/client";
+import { getErrorMessage, getErrorStack } from "@common/utils/error.utils";
 
 // Tipo para Customer do Prisma
 type PrismaCustomer = Prisma.CustomerGetPayload<Record<string, never>>;
@@ -64,7 +64,7 @@ export class CustomersService {
         `Erro ao criar cliente: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new BadRequestException('Erro ao criar cliente');
+      throw new BadRequestException("Erro ao criar cliente");
     }
   }
 
@@ -94,21 +94,21 @@ export class CustomersService {
       if (filters.name) {
         where.name = {
           contains: filters.name.trim(),
-          mode: 'insensitive',
+          mode: "insensitive",
         };
       }
 
       if (filters.phone) {
         where.phone = {
           contains: filters.phone.trim(),
-          mode: 'insensitive',
+          mode: "insensitive",
         };
       }
 
       if (filters.email) {
         where.email = {
           contains: filters.email.trim(),
-          mode: 'insensitive',
+          mode: "insensitive",
         };
       }
 
@@ -120,14 +120,14 @@ export class CustomersService {
       if (filters.cpf) {
         where.cpf = {
           contains: filters.cpf.trim(),
-          mode: 'insensitive',
+          mode: "insensitive",
         };
       }
 
       if (filters.cnpj) {
-        (where as { cnpj?: { contains: string; mode: 'insensitive' } }).cnpj = {
+        (where as { cnpj?: { contains: string; mode: "insensitive" } }).cnpj = {
           contains: filters.cnpj.trim(),
-          mode: 'insensitive',
+          mode: "insensitive",
         };
       }
 
@@ -138,7 +138,7 @@ export class CustomersService {
           skip,
           take: limit,
           orderBy: {
-            createdAt: 'desc',
+            createdAt: "desc",
           },
         }),
         this.prisma.customer.count({ where }),
@@ -156,7 +156,7 @@ export class CustomersService {
         `Erro ao listar clientes: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new BadRequestException('Erro ao listar clientes');
+      throw new BadRequestException("Erro ao listar clientes");
     }
   }
 
@@ -173,7 +173,7 @@ export class CustomersService {
       });
 
       if (!customer) {
-        throw new NotFoundException('Cliente não encontrado');
+        throw new NotFoundException("Cliente não encontrado");
       }
 
       return this.toResponseDto(customer);
@@ -186,7 +186,7 @@ export class CustomersService {
         `Erro ao buscar cliente: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new BadRequestException('Erro ao buscar cliente');
+      throw new BadRequestException("Erro ao buscar cliente");
     }
   }
 
@@ -239,7 +239,7 @@ export class CustomersService {
         `Erro ao atualizar cliente: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new BadRequestException('Erro ao atualizar cliente');
+      throw new BadRequestException("Erro ao atualizar cliente");
     }
   }
 
@@ -268,25 +268,25 @@ export class CustomersService {
       });
 
       if (!customer) {
-        throw new NotFoundException('Cliente não encontrado');
+        throw new NotFoundException("Cliente não encontrado");
       }
 
       // Verificar se cliente tem relacionamentos
       if (customer.serviceOrders.length > 0) {
         throw new BadRequestException(
-          'Não é possível excluir cliente com ordens de serviço vinculadas',
+          "Não é possível excluir cliente com ordens de serviço vinculadas",
         );
       }
 
       if (customer.invoices.length > 0) {
         throw new BadRequestException(
-          'Não é possível excluir cliente com faturas vinculadas',
+          "Não é possível excluir cliente com faturas vinculadas",
         );
       }
 
       if (customer.appointments.length > 0) {
         throw new BadRequestException(
-          'Não é possível excluir cliente com agendamentos vinculados',
+          "Não é possível excluir cliente com agendamentos vinculados",
         );
       }
 
@@ -308,7 +308,7 @@ export class CustomersService {
         `Erro ao remover cliente: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new BadRequestException('Erro ao remover cliente');
+      throw new BadRequestException("Erro ao remover cliente");
     }
   }
 
@@ -318,19 +318,19 @@ export class CustomersService {
   ): void {
     if (documentType === DocumentType.CPF) {
       if (!createCustomerDto.cpf) {
-        throw new BadRequestException('CPF é obrigatório para pessoa física');
+        throw new BadRequestException("CPF é obrigatório para pessoa física");
       }
       if (!this.isValidCPF(createCustomerDto.cpf)) {
-        throw new BadRequestException('CPF inválido');
+        throw new BadRequestException("CPF inválido");
       }
     } else if (documentType === DocumentType.CNPJ) {
       if (!createCustomerDto.cnpj) {
         throw new BadRequestException(
-          'CNPJ é obrigatório para pessoa jurídica',
+          "CNPJ é obrigatório para pessoa jurídica",
         );
       }
       if (!this.isValidCNPJ(createCustomerDto.cnpj)) {
-        throw new BadRequestException('CNPJ inválido');
+        throw new BadRequestException("CNPJ inválido");
       }
     }
   }
@@ -348,7 +348,7 @@ export class CustomersService {
 
     if (existingCustomer) {
       throw new ConflictException(
-        'Já existe um cliente cadastrado com este telefone',
+        "Já existe um cliente cadastrado com este telefone",
       );
     }
   }
@@ -379,7 +379,7 @@ export class CustomersService {
 
     if (existingByCpf) {
       throw new ConflictException(
-        'Já existe um cliente cadastrado com este CPF',
+        "Já existe um cliente cadastrado com este CPF",
       );
     }
   }
@@ -397,7 +397,7 @@ export class CustomersService {
 
     if (existingByCnpj) {
       throw new ConflictException(
-        'Já existe um cliente cadastrado com este CNPJ',
+        "Já existe um cliente cadastrado com este CNPJ",
       );
     }
   }
@@ -440,7 +440,7 @@ export class CustomersService {
     });
 
     if (!existingCustomer) {
-      throw new NotFoundException('Cliente não encontrado');
+      throw new NotFoundException("Cliente não encontrado");
     }
 
     return existingCustomer;
@@ -450,10 +450,10 @@ export class CustomersService {
     updateCustomerDto: UpdateCustomerDto,
   ): void {
     if (updateCustomerDto.cpf && !this.isValidCPF(updateCustomerDto.cpf)) {
-      throw new BadRequestException('CPF inválido');
+      throw new BadRequestException("CPF inválido");
     }
     if (updateCustomerDto.cnpj && !this.isValidCNPJ(updateCustomerDto.cnpj)) {
-      throw new BadRequestException('CNPJ inválido');
+      throw new BadRequestException("CNPJ inválido");
     }
   }
 
@@ -477,7 +477,7 @@ export class CustomersService {
 
     if (customerWithPhone) {
       throw new ConflictException(
-        'Já existe um cliente cadastrado com este telefone',
+        "Já existe um cliente cadastrado com este telefone",
       );
     }
   }
@@ -530,7 +530,7 @@ export class CustomersService {
 
     if (customerWithCpf) {
       throw new ConflictException(
-        'Já existe um cliente cadastrado com este CPF',
+        "Já existe um cliente cadastrado com este CPF",
       );
     }
   }
@@ -550,7 +550,7 @@ export class CustomersService {
 
     if (customerWithCnpj) {
       throw new ConflictException(
-        'Já existe um cliente cadastrado com este CNPJ',
+        "Já existe um cliente cadastrado com este CNPJ",
       );
     }
   }
@@ -618,7 +618,7 @@ export class CustomersService {
       name: customer.name,
       email: customer.email,
       phone: customer.phone,
-      documentType: customerWithDoc.documentType || 'cpf',
+      documentType: customerWithDoc.documentType || "cpf",
       cpf: customer.cpf,
       cnpj: customerWithDoc.cnpj || null,
       address: customer.address,
@@ -633,7 +633,7 @@ export class CustomersService {
    */
   private isValidCPF(cpf: string): boolean {
     // Remove caracteres não numéricos
-    const cleanCpf = cpf.replaceAll(/\D/g, '');
+    const cleanCpf = cpf.replaceAll(/\D/g, "");
 
     // Verifica se tem 11 dígitos
     if (cleanCpf.length !== 11) {
@@ -686,7 +686,7 @@ export class CustomersService {
    */
   private isValidCNPJ(cnpj: string): boolean {
     // Remove caracteres não numéricos
-    const cleanCnpj = cnpj.replaceAll(/\D/g, '');
+    const cleanCnpj = cnpj.replaceAll(/\D/g, "");
 
     // Verifica se tem 14 dígitos
     if (cleanCnpj.length !== 14) {

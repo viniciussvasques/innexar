@@ -2,16 +2,16 @@
 const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
-  
+
   // Otimizações de performance
   swcMinify: true,
   compress: true,
-  
+
   // Configurações de build
-  experimental: {
-    optimizeCss: true,
-  },
-  
+  // experimental: {
+  //   optimizeCss: true,
+  // },
+
   // Otimizações de bundle
   webpack: (config, { isServer }) => {
     if (!isServer) {
@@ -51,14 +51,14 @@ const nextConfig = {
     }
     return config
   },
-  
+
   // Otimizações de imagens
   images: {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
   },
-  
+
   // Headers para cache
   async headers() {
     return [

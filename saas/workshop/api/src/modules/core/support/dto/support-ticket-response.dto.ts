@@ -1,12 +1,12 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { SupportPriority, SupportCategory } from './create-support-ticket.dto';
+import { ApiProperty } from "@nestjs/swagger";
+import { SupportPriority, SupportCategory } from "./create-support-ticket.dto";
 
 export enum SupportStatus {
-  OPEN = 'open',
-  IN_PROGRESS = 'in_progress',
-  WAITING_FOR_USER = 'waiting_for_user',
-  RESOLVED = 'resolved',
-  CLOSED = 'closed',
+  OPEN = "open",
+  IN_PROGRESS = "in_progress",
+  WAITING_FOR_USER = "waiting_for_user",
+  RESOLVED = "resolved",
+  CLOSED = "closed",
 }
 
 export class SupportTicketResponseDto {

@@ -1,7 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { EmailService } from './email.service';
-import { getErrorMessage } from '../../../common/utils/error.utils';
-import { BulkEmailData } from './interfaces/email-data.interfaces';
+import { Injectable, Logger } from "@nestjs/common";
+import { EmailService } from "./email.service";
+import { getErrorMessage } from "../../../common/utils/error.utils";
+import { BulkEmailData } from "./interfaces/email-data.interfaces";
 
 interface BulkEmailResult {
   total: number;
@@ -51,24 +51,24 @@ export class BulkEmailService {
         try {
           // Substituir variáveis personalizadas no conteúdo
           let htmlContent = data.htmlContent;
-          let textContent = data.textContent || '';
+          let textContent = data.textContent || "";
           const subject = this.replaceVariables(data.subject, recipient);
 
           // Substituir variáveis no HTML
           if (
             recipient.customData &&
-            typeof recipient.customData === 'object'
+            typeof recipient.customData === "object"
           ) {
             const customData = recipient.customData;
             for (const key of Object.keys(customData)) {
-              const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
+              const regex = new RegExp(`\\{\\{${key}\\}\\}`, "g");
               const rawValue = customData[key];
-              let value = '';
+              let value = "";
               if (rawValue != null) {
                 if (
-                  typeof rawValue === 'string' ||
-                  typeof rawValue === 'number' ||
-                  typeof rawValue === 'boolean'
+                  typeof rawValue === "string" ||
+                  typeof rawValue === "number" ||
+                  typeof rawValue === "boolean"
                 ) {
                   value = String(rawValue);
                 } else {
@@ -138,21 +138,21 @@ export class BulkEmailService {
     let result = template;
 
     // Variáveis padrão
-    result = result.replaceAll('{{email}}', recipient.email);
-    result = result.replaceAll('{{name}}', recipient.name || 'Cliente');
+    result = result.replaceAll("{{email}}", recipient.email);
+    result = result.replaceAll("{{name}}", recipient.name || "Cliente");
 
     // Variáveis customizadas
-    if (recipient.customData && typeof recipient.customData === 'object') {
+    if (recipient.customData && typeof recipient.customData === "object") {
       const customData = recipient.customData;
       for (const key of Object.keys(customData)) {
-        const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
+        const regex = new RegExp(`\\{\\{${key}\\}\\}`, "g");
         const rawValue = customData[key];
-        let value = '';
+        let value = "";
         if (rawValue != null) {
           if (
-            typeof rawValue === 'string' ||
-            typeof rawValue === 'number' ||
-            typeof rawValue === 'boolean'
+            typeof rawValue === "string" ||
+            typeof rawValue === "number" ||
+            typeof rawValue === "boolean"
           ) {
             value = String(rawValue);
           } else {

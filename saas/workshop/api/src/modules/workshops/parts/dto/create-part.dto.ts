@@ -6,15 +6,15 @@ import {
   IsBoolean,
   Min,
   MaxLength,
-} from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+} from "class-validator";
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { Type } from "class-transformer";
 
 export class CreatePartDto {
   @ApiPropertyOptional({
-    description: 'Número da peça (código interno)',
+    description: "Número da peça (código interno)",
     maxLength: 100,
-    example: 'PEC-001',
+    example: "PEC-001",
   })
   @IsOptional()
   @IsString()
@@ -22,25 +22,25 @@ export class CreatePartDto {
   partNumber?: string;
 
   @ApiProperty({
-    description: 'Nome da peça',
-    example: 'Pastilha de Freio Dianteira',
+    description: "Nome da peça",
+    example: "Pastilha de Freio Dianteira",
   })
   @IsString()
   @MaxLength(255)
   name: string;
 
   @ApiPropertyOptional({
-    description: 'Descrição detalhada da peça',
-    example: 'Pastilha de freio para eixo dianteiro',
+    description: "Descrição detalhada da peça",
+    example: "Pastilha de freio para eixo dianteiro",
   })
   @IsOptional()
   @IsString()
   description?: string;
 
   @ApiPropertyOptional({
-    description: 'Categoria da peça',
+    description: "Categoria da peça",
     maxLength: 100,
-    example: 'Freios',
+    example: "Freios",
   })
   @IsOptional()
   @IsString()
@@ -48,9 +48,9 @@ export class CreatePartDto {
   category?: string;
 
   @ApiPropertyOptional({
-    description: 'Marca da peça',
+    description: "Marca da peça",
     maxLength: 100,
-    example: 'Bosch',
+    example: "Bosch",
   })
   @IsOptional()
   @IsString()
@@ -58,15 +58,15 @@ export class CreatePartDto {
   brand?: string;
 
   @ApiPropertyOptional({
-    description: 'ID do fornecedor',
-    example: 'uuid-do-fornecedor',
+    description: "ID do fornecedor",
+    example: "uuid-do-fornecedor",
   })
   @IsOptional()
   @IsString()
   supplierId?: string;
 
   @ApiProperty({
-    description: 'Quantidade em estoque',
+    description: "Quantidade em estoque",
     example: 10,
     default: 0,
   })
@@ -76,7 +76,7 @@ export class CreatePartDto {
   quantity: number;
 
   @ApiProperty({
-    description: 'Quantidade mínima em estoque (alerta)',
+    description: "Quantidade mínima em estoque (alerta)",
     example: 5,
     default: 0,
   })
@@ -86,7 +86,7 @@ export class CreatePartDto {
   minQuantity: number;
 
   @ApiProperty({
-    description: 'Preço de custo',
+    description: "Preço de custo",
     example: 50,
   })
   @IsNumber({ maxDecimalPlaces: 2 })
@@ -95,7 +95,7 @@ export class CreatePartDto {
   costPrice: number;
 
   @ApiProperty({
-    description: 'Preço de venda',
+    description: "Preço de venda",
     example: 80,
   })
   @IsNumber({ maxDecimalPlaces: 2 })
@@ -104,9 +104,9 @@ export class CreatePartDto {
   sellPrice: number;
 
   @ApiPropertyOptional({
-    description: 'Localização física na oficina',
+    description: "Localização física na oficina",
     maxLength: 100,
-    example: 'Estoque A - Prateleira 3',
+    example: "Estoque A - Prateleira 3",
   })
   @IsOptional()
   @IsString()
@@ -114,7 +114,7 @@ export class CreatePartDto {
   location?: string;
 
   @ApiPropertyOptional({
-    description: 'Se a peça está ativa',
+    description: "Se a peça está ativa",
     default: true,
   })
   @IsOptional()

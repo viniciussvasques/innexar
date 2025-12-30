@@ -3,17 +3,17 @@ import {
   NotFoundException,
   BadRequestException,
   Logger,
-} from '@nestjs/common';
-import { PrismaService } from '@database/prisma.service';
+} from "@nestjs/common";
+import { PrismaService } from "@database/prisma.service";
 import {
   CreateSupplierDto,
   UpdateSupplierDto,
   SupplierResponseDto,
   SupplierFiltersDto,
   DocumentType,
-} from './dto';
-import { Prisma } from '@prisma/client';
-import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
+} from "./dto";
+import { Prisma } from "@prisma/client";
+import { getErrorMessage, getErrorStack } from "@common/utils/error.utils";
 
 @Injectable()
 export class SuppliersService {
@@ -41,7 +41,7 @@ export class SuppliersService {
         data: {
           tenantId,
           name: createSupplierDto.name,
-          documentType: createSupplierDto.documentType || 'cnpj',
+          documentType: createSupplierDto.documentType || "cnpj",
           document: createSupplierDto.document,
           phone: createSupplierDto.phone,
           email: createSupplierDto.email,
@@ -87,14 +87,14 @@ export class SuppliersService {
         tenantId,
         ...(filters.search && {
           OR: [
-            { name: { contains: filters.search, mode: 'insensitive' } },
-            { document: { contains: filters.search, mode: 'insensitive' } },
-            { email: { contains: filters.search, mode: 'insensitive' } },
+            { name: { contains: filters.search, mode: "insensitive" } },
+            { document: { contains: filters.search, mode: "insensitive" } },
+            { email: { contains: filters.search, mode: "insensitive" } },
           ],
         }),
         ...(filters.isActive !== undefined && { isActive: filters.isActive }),
         ...(filters.city && {
-          city: { contains: filters.city, mode: 'insensitive' },
+          city: { contains: filters.city, mode: "insensitive" },
         }),
         ...(filters.state && { state: filters.state }),
         ...(filters.startDate &&
@@ -111,7 +111,7 @@ export class SuppliersService {
           where,
           skip,
           take: limit,
-          orderBy: { createdAt: 'desc' },
+          orderBy: { createdAt: "desc" },
         }),
         this.prisma.supplier.count({ where }),
       ]);
@@ -145,7 +145,7 @@ export class SuppliersService {
       });
 
       if (!supplier) {
-        throw new NotFoundException('Fornecedor não encontrado');
+        throw new NotFoundException("Fornecedor não encontrado");
       }
 
       return this.toResponseDto(supplier);
@@ -264,7 +264,7 @@ export class SuppliersService {
     });
 
     if (!supplier) {
-      throw new NotFoundException('Fornecedor não encontrado');
+      throw new NotFoundException("Fornecedor não encontrado");
     }
 
     return supplier;
@@ -287,7 +287,7 @@ export class SuppliersService {
     });
 
     if (existingSupplier) {
-      throw new BadRequestException('Documento já cadastrado');
+      throw new BadRequestException("Documento já cadastrado");
     }
   }
 

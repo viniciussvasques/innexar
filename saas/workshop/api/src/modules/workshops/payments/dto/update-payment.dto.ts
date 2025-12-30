@@ -1,4 +1,4 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from "@nestjs/swagger";
 import {
   IsString,
   IsOptional,
@@ -6,13 +6,13 @@ import {
   IsNumber,
   Min,
   IsInt,
-} from 'class-validator';
-import { Type } from 'class-transformer';
-import { PaymentStatus, PaymentMethod } from './payment-status.enum';
+} from "class-validator";
+import { Type } from "class-transformer";
+import { PaymentStatus, PaymentMethod } from "./payment-status.enum";
 
 export class UpdatePaymentDto {
   @ApiPropertyOptional({
-    description: 'Valor do pagamento',
+    description: "Valor do pagamento",
     minimum: 0.01,
   })
   @IsOptional()
@@ -22,7 +22,7 @@ export class UpdatePaymentDto {
   amount?: number;
 
   @ApiPropertyOptional({
-    description: 'Método de pagamento',
+    description: "Método de pagamento",
     enum: PaymentMethod,
   })
   @IsOptional()
@@ -30,7 +30,7 @@ export class UpdatePaymentDto {
   method?: PaymentMethod;
 
   @ApiPropertyOptional({
-    description: 'Status do pagamento',
+    description: "Status do pagamento",
     enum: PaymentStatus,
   })
   @IsOptional()
@@ -38,14 +38,14 @@ export class UpdatePaymentDto {
   status?: PaymentStatus;
 
   @ApiPropertyOptional({
-    description: 'ID da transação no gateway de pagamento',
+    description: "ID da transação no gateway de pagamento",
   })
   @IsOptional()
   @IsString()
   transactionId?: string;
 
   @ApiPropertyOptional({
-    description: 'Número de parcelas',
+    description: "Número de parcelas",
     minimum: 1,
   })
   @IsOptional()
@@ -55,7 +55,7 @@ export class UpdatePaymentDto {
   installments?: number;
 
   @ApiPropertyOptional({
-    description: 'Observações sobre o pagamento',
+    description: "Observações sobre o pagamento",
   })
   @IsOptional()
   @IsString()

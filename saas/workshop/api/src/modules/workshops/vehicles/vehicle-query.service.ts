@@ -1,6 +1,6 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
-import axios, { AxiosInstance } from 'axios';
-import { getErrorMessage } from '@common/utils/error.utils';
+import { Injectable, Logger, BadRequestException } from "@nestjs/common";
+import axios, { AxiosInstance } from "axios";
+import { getErrorMessage } from "@common/utils/error.utils";
 
 export interface VehicleQueryResult {
   make?: string;
@@ -61,7 +61,7 @@ export class VehicleQueryService {
     this.httpClient = axios.create({
       timeout: 10000,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
   }
@@ -73,10 +73,10 @@ export class VehicleQueryService {
   async queryByPlaca(placa: string): Promise<VehicleQueryResult> {
     try {
       // Remover formatação da placa
-      const cleanPlaca = placa.replaceAll(/[^A-Z0-9]/g, '').toUpperCase();
+      const cleanPlaca = placa.replaceAll(/[^A-Z0-9]/g, "").toUpperCase();
 
       if (cleanPlaca.length < 7) {
-        throw new BadRequestException('Placa inválida');
+        throw new BadRequestException("Placa inválida");
       }
 
       // API key deve ser configurada em variável de ambiente
@@ -96,17 +96,17 @@ export class VehicleQueryService {
       this.logger.log(`Consultando dados do veículo pela placa: ${cleanPlaca}`);
 
       const apiKey = process.env.VEHICLE_API_KEY;
-      const apiProvider = process.env.VEHICLE_API_PROVIDER || 'placa-fipe'; // 'placa-fipe' | 'placaapi' | 'custom'
+      const apiProvider = process.env.VEHICLE_API_PROVIDER || "placa-fipe"; // 'placa-fipe' | 'placaapi' | 'custom'
       const apiUrl = process.env.VEHICLE_API_URL;
 
       // APIs gratuitas não precisam de API key
-      const freeProviders = new Set(['placa-fipe', 'api-brasil']);
+      const freeProviders = new Set(["placa-fipe", "api-brasil"]);
       const needsApiKey = !freeProviders.has(apiProvider);
 
       // Se precisar de API key mas não tiver, retorna objeto vazio
       if (needsApiKey && !apiKey) {
         this.logger.warn(
-          'VEHICLE_API_KEY não configurada. Sistema funcionará sem preenchimento automático.',
+          "VEHICLE_API_KEY não configurada. Sistema funcionará sem preenchimento automático.",
         );
         return {};
       }
@@ -115,31 +115,31 @@ export class VehicleQueryService {
       try {
         let response;
 
-        if (apiProvider === 'api-brasil') {
+        if (apiProvider === "api-brasil") {
           // API Brasil - 7 consultas/dia grátis
-          const baseUrl = apiUrl || 'https://apibrasil.com.br/api/v1';
+          const baseUrl = apiUrl || "https://apibrasil.com.br/api/v1";
           response = await this.httpClient.get(
             `${baseUrl}/veiculo/placa/${cleanPlaca}`,
             {
               headers: {
-                Accept: 'application/json',
+                Accept: "application/json",
               },
             },
           );
-        } else if (apiProvider === 'placa-fipe') {
+        } else if (apiProvider === "placa-fipe") {
           // API Gratuita do GitHub (50 consultas/mês)
           // Não requer API key
           response = await this.httpClient.get(
             `https://placa-fipe-api.vercel.app/api/${cleanPlaca}`,
             {
               headers: {
-                Accept: 'application/json',
+                Accept: "application/json",
               },
             },
           );
-        } else if (apiProvider === 'placaapi') {
+        } else if (apiProvider === "placaapi") {
           // PlacaAPI.com (paga, mas tem 10 consultas grátis)
-          const baseUrl = apiUrl || 'https://api.placaapi.com/v1';
+          const baseUrl = apiUrl || "https://api.placaapi.com/v1";
           response = await this.httpClient.get(
             `${baseUrl}/placa/${cleanPlaca}`,
             {
@@ -148,19 +148,19 @@ export class VehicleQueryService {
               },
             },
           );
-        } else if (apiProvider === 'custom' && apiUrl) {
+        } else if (apiProvider === "custom" && apiUrl) {
           // API customizada configurada pelo usuário
           response = await this.httpClient.get(
             `${apiUrl}/placa/${cleanPlaca}`,
             {
               headers: {
                 Authorization: apiKey ? `Bearer ${apiKey}` : undefined,
-                'X-API-Key': apiKey || undefined,
+                "X-API-Key": apiKey || undefined,
               },
             },
           );
         } else {
-          this.logger.warn('Provedor de API não configurado corretamente.');
+          this.logger.warn("Provedor de API não configurado corretamente.");
           return {};
         }
 
@@ -182,7 +182,7 @@ export class VehicleQueryService {
         throw error;
       }
 
-      throw new BadRequestException('Erro ao consultar dados do veículo');
+      throw new BadRequestException("Erro ao consultar dados do veículo");
     }
   }
 
@@ -192,10 +192,10 @@ export class VehicleQueryService {
   async queryByRenavan(renavan: string): Promise<VehicleQueryResult> {
     try {
       // Remover formatação do RENAVAN
-      const cleanRenavan = renavan.replaceAll(/\D/g, '');
+      const cleanRenavan = renavan.replaceAll(/\D/g, "");
 
       if (cleanRenavan.length !== 11) {
-        throw new BadRequestException('RENAVAN deve ter 11 dígitos');
+        throw new BadRequestException("RENAVAN deve ter 11 dígitos");
       }
 
       this.logger.log(
@@ -203,17 +203,17 @@ export class VehicleQueryService {
       );
 
       const apiKey = process.env.VEHICLE_API_KEY;
-      const apiProvider = process.env.VEHICLE_API_PROVIDER || 'placa-fipe';
+      const apiProvider = process.env.VEHICLE_API_PROVIDER || "placa-fipe";
       const apiUrl = process.env.VEHICLE_API_URL;
 
       // APIs gratuitas não suportam RENAVAN, apenas placa
-      const freeProviders = new Set(['placa-fipe', 'api-brasil']);
+      const freeProviders = new Set(["placa-fipe", "api-brasil"]);
       const needsApiKey = !freeProviders.has(apiProvider);
 
       // Se precisar de API key mas não tiver, retorna objeto vazio
       if (needsApiKey && !apiKey) {
         this.logger.warn(
-          'VEHICLE_API_KEY não configurada. Sistema funcionará sem preenchimento automático.',
+          "VEHICLE_API_KEY não configurada. Sistema funcionará sem preenchimento automático.",
         );
         return {};
       }
@@ -221,7 +221,7 @@ export class VehicleQueryService {
       // APIs gratuitas não suportam RENAVAN
       if (freeProviders.has(apiProvider)) {
         this.logger.warn(
-          'Consulta por RENAVAN não suportada pela API gratuita. Use uma API paga.',
+          "Consulta por RENAVAN não suportada pela API gratuita. Use uma API paga.",
         );
         return {};
       }
@@ -230,9 +230,9 @@ export class VehicleQueryService {
       try {
         let response;
 
-        if (apiProvider === 'placaapi') {
+        if (apiProvider === "placaapi") {
           // PlacaAPI.com suporta RENAVAN
-          const baseUrl = apiUrl || 'https://api.placaapi.com/v1';
+          const baseUrl = apiUrl || "https://api.placaapi.com/v1";
           response = await this.httpClient.get(
             `${baseUrl}/renavan/${cleanRenavan}`,
             {
@@ -241,20 +241,20 @@ export class VehicleQueryService {
               },
             },
           );
-        } else if (apiProvider === 'custom' && apiUrl) {
+        } else if (apiProvider === "custom" && apiUrl) {
           // API customizada
           response = await this.httpClient.get(
             `${apiUrl}/renavan/${cleanRenavan}`,
             {
               headers: {
                 Authorization: apiKey ? `Bearer ${apiKey}` : undefined,
-                'X-API-Key': apiKey || undefined,
+                "X-API-Key": apiKey || undefined,
               },
             },
           );
         } else {
           this.logger.warn(
-            'Provedor de API não configurado corretamente para RENAVAN.',
+            "Provedor de API não configurado corretamente para RENAVAN.",
           );
           return {};
         }
@@ -277,7 +277,7 @@ export class VehicleQueryService {
         throw error;
       }
 
-      throw new BadRequestException('Erro ao consultar dados do veículo');
+      throw new BadRequestException("Erro ao consultar dados do veículo");
     }
   }
 
@@ -287,7 +287,7 @@ export class VehicleQueryService {
    */
   private normalizeResponse(data: unknown): VehicleQueryResult {
     // Se data já estiver no formato correto ou for um objeto vazio
-    if (!data || typeof data !== 'object') {
+    if (!data || typeof data !== "object") {
       return {};
     }
 
@@ -321,7 +321,7 @@ export class VehicleQueryService {
         apiData.anoFabricacao ||
         apiData.manufactureYear;
       result.year =
-        typeof yearValue === 'number'
+        typeof yearValue === "number"
           ? yearValue
           : Number.parseInt(String(yearValue), 10);
       if (Number.isNaN(result.year ?? 0)) {

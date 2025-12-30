@@ -1,27 +1,27 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { VehiclesController } from './vehicles.controller';
-import { VehiclesService } from './vehicles.service';
-import { VehicleQueryService } from './vehicle-query.service';
-import { CreateVehicleDto, UpdateVehicleDto } from './dto';
+import { Test, TestingModule } from "@nestjs/testing";
+import { VehiclesController } from "./vehicles.controller";
+import { VehiclesService } from "./vehicles.service";
+import { VehicleQueryService } from "./vehicle-query.service";
+import { CreateVehicleDto, UpdateVehicleDto } from "./dto";
 
-describe('VehiclesController', () => {
+describe("VehiclesController", () => {
   let controller: VehiclesController;
   let vehiclesService: VehiclesService;
   let vehicleQueryService: VehicleQueryService;
 
-  const mockTenantId = 'tenant-123';
+  const mockTenantId = "tenant-123";
   const mockVehicle = {
-    id: 'vehicle-123',
+    id: "vehicle-123",
     tenantId: mockTenantId,
-    customerId: 'customer-123',
-    make: 'Fiat',
-    model: 'Uno',
+    customerId: "customer-123",
+    make: "Fiat",
+    model: "Uno",
     year: 2020,
-    color: 'Branco',
-    vin: '1HGBH41JXMN109186',
-    renavan: '12345678901',
-    placa: 'ABC1234',
-    fuelType: 'FLEX',
+    color: "Branco",
+    vin: "1HGBH41JXMN109186",
+    renavan: "12345678901",
+    placa: "ABC1234",
+    fuelType: "FLEX",
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -64,12 +64,12 @@ describe('VehiclesController', () => {
     jest.clearAllMocks();
   });
 
-  describe('create', () => {
-    it('deve criar um veículo', async () => {
+  describe("create", () => {
+    it("deve criar um veículo", async () => {
       const createDto: CreateVehicleDto = {
-        customerId: 'customer-123',
-        make: 'Fiat',
-        model: 'Uno',
+        customerId: "customer-123",
+        make: "Fiat",
+        model: "Uno",
         year: 2020,
       };
       mockVehiclesService.create.mockResolvedValue(mockVehicle);
@@ -85,8 +85,8 @@ describe('VehiclesController', () => {
     });
   });
 
-  describe('findAll', () => {
-    it('deve retornar lista de veículos', async () => {
+  describe("findAll", () => {
+    it("deve retornar lista de veículos", async () => {
       mockVehiclesService.findAll.mockResolvedValue({
         data: [mockVehicle],
         total: 1,
@@ -103,26 +103,26 @@ describe('VehiclesController', () => {
     });
   });
 
-  describe('findOne', () => {
-    it('deve retornar um veículo', async () => {
+  describe("findOne", () => {
+    it("deve retornar um veículo", async () => {
       mockVehiclesService.findOne.mockResolvedValue(mockVehicle);
 
-      const result = await controller.findOne(mockTenantId, 'vehicle-123');
+      const result = await controller.findOne(mockTenantId, "vehicle-123");
 
       expect(result).toEqual(mockVehicle);
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(vehiclesService.findOne).toHaveBeenCalledWith(
         mockTenantId,
-        'vehicle-123',
+        "vehicle-123",
       );
     });
   });
 
-  describe('update', () => {
-    it('deve atualizar um veículo', async () => {
+  describe("update", () => {
+    it("deve atualizar um veículo", async () => {
       const updateDto: UpdateVehicleDto = {
-        make: 'Volkswagen',
-        model: 'Gol',
+        make: "Volkswagen",
+        model: "Gol",
       };
       mockVehiclesService.update.mockResolvedValue({
         ...mockVehicle,
@@ -131,48 +131,48 @@ describe('VehiclesController', () => {
 
       const result = await controller.update(
         mockTenantId,
-        'vehicle-123',
+        "vehicle-123",
         updateDto,
       );
 
-      expect(result.make).toBe('Volkswagen');
+      expect(result.make).toBe("Volkswagen");
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(vehiclesService.update).toHaveBeenCalledWith(
         mockTenantId,
-        'vehicle-123',
+        "vehicle-123",
         updateDto,
       );
     });
   });
 
-  describe('remove', () => {
-    it('deve remover um veículo', async () => {
+  describe("remove", () => {
+    it("deve remover um veículo", async () => {
       mockVehiclesService.remove.mockResolvedValue(undefined);
 
-      await controller.remove(mockTenantId, 'vehicle-123');
+      await controller.remove(mockTenantId, "vehicle-123");
 
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(vehiclesService.remove).toHaveBeenCalledWith(
         mockTenantId,
-        'vehicle-123',
+        "vehicle-123",
       );
     });
   });
 
-  describe('queryByPlaca', () => {
-    it('deve consultar dados por placa', async () => {
+  describe("queryByPlaca", () => {
+    it("deve consultar dados por placa", async () => {
       const mockQueryResult = {
-        make: 'Fiat',
-        model: 'Uno',
+        make: "Fiat",
+        model: "Uno",
         year: 2020,
       };
       mockVehicleQueryService.queryByPlaca.mockResolvedValue(mockQueryResult);
 
-      const result = await controller.queryByPlaca('ABC1234');
+      const result = await controller.queryByPlaca("ABC1234");
 
       expect(result).toEqual(mockQueryResult);
       // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(vehicleQueryService.queryByPlaca).toHaveBeenCalledWith('ABC1234');
+      expect(vehicleQueryService.queryByPlaca).toHaveBeenCalledWith("ABC1234");
     });
   });
 });

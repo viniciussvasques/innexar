@@ -1,5 +1,11 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { Avatar, AvatarImage, AvatarFallback } from '../avatar'
+
+jest.mock('@radix-ui/react-avatar', () => ({
+  Root: ({ children, className, ...props }: any) => <div className={className} {...props}>{children}</div>,
+  Image: ({ className, ...props }: any) => <img className={className} {...props} />,
+  Fallback: ({ children, className, ...props }: any) => <div className={className} {...props}>{children}</div>,
+}))
 
 describe('Avatar Component', () => {
   it('renders avatar with image', () => {

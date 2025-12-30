@@ -4,25 +4,27 @@ import {
   ConflictException,
   BadRequestException,
   Logger,
-} from '@nestjs/common';
-import { PrismaService } from '@database/prisma.service';
+} from "@nestjs/common";
+import { PrismaService } from "@database/prisma.service";
 import {
   CreateVehicleDto,
   UpdateVehicleDto,
   VehicleResponseDto,
   VehicleFiltersDto,
-} from './dto';
-import { Prisma } from '@prisma/client';
-import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
+} from "./dto";
+import { Prisma } from "@prisma/client";
+import { getErrorMessage, getErrorStack } from "@common/utils/error.utils";
 
 // Tipo para CustomerVehicle do Prisma
-export type PrismaVehicle = Prisma.CustomerVehicleGetPayload<Record<string, never>>;
+export type PrismaVehicle = Prisma.CustomerVehicleGetPayload<
+  Record<string, never>
+>;
 
 @Injectable()
 export class VehiclesService {
   private readonly logger = new Logger(VehiclesService.name);
 
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   /**
    * Cria um novo veículo
@@ -64,7 +66,7 @@ export class VehiclesService {
         `Erro ao criar veículo: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new BadRequestException('Erro ao criar veículo');
+      throw new BadRequestException("Erro ao criar veículo");
     }
   }
 
@@ -100,14 +102,14 @@ export class VehiclesService {
       if (filters.placa) {
         where.placa = {
           contains: filters.placa.toUpperCase(),
-          mode: 'insensitive',
+          mode: "insensitive",
         };
       }
 
       if (filters.vin) {
         where.vin = {
           contains: filters.vin.toUpperCase(),
-          mode: 'insensitive',
+          mode: "insensitive",
         };
       }
 
@@ -120,14 +122,14 @@ export class VehiclesService {
       if (filters.make) {
         where.make = {
           contains: filters.make,
-          mode: 'insensitive',
+          mode: "insensitive",
         };
       }
 
       if (filters.model) {
         where.model = {
           contains: filters.model,
-          mode: 'insensitive',
+          mode: "insensitive",
         };
       }
 
@@ -138,7 +140,7 @@ export class VehiclesService {
           skip,
           take: limit,
           orderBy: {
-            createdAt: 'desc',
+            createdAt: "desc",
           },
           include: {
             customer: {
@@ -165,7 +167,7 @@ export class VehiclesService {
         `Erro ao listar veículos: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new BadRequestException('Erro ao listar veículos');
+      throw new BadRequestException("Erro ao listar veículos");
     }
   }
 
@@ -194,7 +196,7 @@ export class VehiclesService {
       });
 
       if (!vehicle) {
-        throw new NotFoundException('Veículo não encontrado');
+        throw new NotFoundException("Veículo não encontrado");
       }
 
       return this.toResponseDto(vehicle);
@@ -207,7 +209,7 @@ export class VehiclesService {
         `Erro ao buscar veículo: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new BadRequestException('Erro ao buscar veículo');
+      throw new BadRequestException("Erro ao buscar veículo");
     }
   }
 
@@ -272,7 +274,7 @@ export class VehiclesService {
         `Erro ao atualizar veículo: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new BadRequestException('Erro ao atualizar veículo');
+      throw new BadRequestException("Erro ao atualizar veículo");
     }
   }
 
@@ -307,13 +309,13 @@ export class VehiclesService {
       });
 
       if (!vehicle) {
-        throw new NotFoundException('Veículo não encontrado');
+        throw new NotFoundException("Veículo não encontrado");
       }
 
       // Verificar se há ordens de serviço associadas
       if (vehicle.customer.serviceOrders.length > 0) {
         throw new BadRequestException(
-          'Não é possível excluir veículo com ordens de serviço associadas',
+          "Não é possível excluir veículo com ordens de serviço associadas",
         );
       }
 
@@ -335,7 +337,7 @@ export class VehiclesService {
         `Erro ao remover veículo: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new BadRequestException('Erro ao remover veículo');
+      throw new BadRequestException("Erro ao remover veículo");
     }
   }
 
@@ -351,7 +353,7 @@ export class VehiclesService {
     });
 
     if (!customer) {
-      throw new NotFoundException('Cliente não encontrado');
+      throw new NotFoundException("Cliente não encontrado");
     }
   }
 
@@ -364,7 +366,7 @@ export class VehiclesService {
       !createVehicleDto.placa
     ) {
       throw new BadRequestException(
-        'É necessário informar pelo menos um identificador: VIN, RENAVAN ou Placa',
+        "É necessário informar pelo menos um identificador: VIN, RENAVAN ou Placa",
       );
     }
   }
@@ -410,7 +412,7 @@ export class VehiclesService {
 
     if (existingByRenavan) {
       throw new ConflictException(
-        'Já existe um veículo cadastrado com este RENAVAN',
+        "Já existe um veículo cadastrado com este RENAVAN",
       );
     }
   }
@@ -430,7 +432,7 @@ export class VehiclesService {
 
     if (existingByVin) {
       throw new ConflictException(
-        'Já existe um veículo cadastrado com este VIN',
+        "Já existe um veículo cadastrado com este VIN",
       );
     }
   }
@@ -450,7 +452,7 @@ export class VehiclesService {
 
     if (existingByPlaca) {
       throw new ConflictException(
-        'Já existe um veículo cadastrado com esta placa',
+        "Já existe um veículo cadastrado com esta placa",
       );
     }
   }
@@ -531,7 +533,7 @@ export class VehiclesService {
     });
 
     if (!existingVehicle) {
-      throw new NotFoundException('Veículo não encontrado');
+      throw new NotFoundException("Veículo não encontrado");
     }
 
     return existingVehicle;
@@ -554,7 +556,7 @@ export class VehiclesService {
     });
 
     if (!newCustomer) {
-      throw new NotFoundException('Cliente não encontrado para transferência');
+      throw new NotFoundException("Cliente não encontrado para transferência");
     }
   }
 
@@ -617,7 +619,7 @@ export class VehiclesService {
 
     if (existingByVin) {
       throw new ConflictException(
-        'Já existe um veículo cadastrado com este VIN',
+        "Já existe um veículo cadastrado com este VIN",
       );
     }
   }
@@ -639,7 +641,7 @@ export class VehiclesService {
 
     if (existingByRenavan) {
       throw new ConflictException(
-        'Já existe um veículo cadastrado com este RENAVAN',
+        "Já existe um veículo cadastrado com este RENAVAN",
       );
     }
   }
@@ -661,7 +663,7 @@ export class VehiclesService {
 
     if (existingByPlaca) {
       throw new ConflictException(
-        'Já existe um veículo cadastrado com esta placa',
+        "Já existe um veículo cadastrado com esta placa",
       );
     }
   }
@@ -698,7 +700,7 @@ export class VehiclesService {
   }): void {
     if (!identifiers.vin && !identifiers.renavan && !identifiers.placa) {
       throw new BadRequestException(
-        'É necessário manter pelo menos um identificador: VIN, RENAVAN ou Placa',
+        "É necessário manter pelo menos um identificador: VIN, RENAVAN ou Placa",
       );
     }
   }
@@ -831,12 +833,10 @@ export class VehiclesService {
     vehicle:
       | PrismaVehicle
       | Prisma.CustomerVehicleGetPayload<{
-        include: { customer: true };
-      }>,
+          include: { customer: true };
+        }>,
   ): VehicleResponseDto {
-    const vehicleWithRenavan = vehicle as typeof vehicle & {
-      renavan?: string | null;
-    };
+    const vehicleWithRenavan = vehicle;
     return {
       id: vehicle.id,
       customerId: vehicle.customerId,

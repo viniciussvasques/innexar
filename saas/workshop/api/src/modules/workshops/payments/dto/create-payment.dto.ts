@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import {
   IsString,
   IsOptional,
@@ -6,20 +6,20 @@ import {
   IsNumber,
   Min,
   IsInt,
-} from 'class-validator';
-import { Type } from 'class-transformer';
-import { PaymentStatus, PaymentMethod } from './payment-status.enum';
+} from "class-validator";
+import { Type } from "class-transformer";
+import { PaymentStatus, PaymentMethod } from "./payment-status.enum";
 
 export class CreatePaymentDto {
   @ApiPropertyOptional({
-    description: 'ID da fatura vinculada',
+    description: "ID da fatura vinculada",
   })
   @IsOptional()
   @IsString()
   invoiceId?: string;
 
   @ApiProperty({
-    description: 'Valor do pagamento',
+    description: "Valor do pagamento",
     minimum: 0.01,
   })
   @IsNumber()
@@ -28,14 +28,14 @@ export class CreatePaymentDto {
   amount: number;
 
   @ApiProperty({
-    description: 'Método de pagamento',
+    description: "Método de pagamento",
     enum: PaymentMethod,
   })
   @IsEnum(PaymentMethod)
   method: PaymentMethod;
 
   @ApiPropertyOptional({
-    description: 'Status do pagamento',
+    description: "Status do pagamento",
     enum: PaymentStatus,
     default: PaymentStatus.PENDING,
   })
@@ -44,14 +44,14 @@ export class CreatePaymentDto {
   status?: PaymentStatus;
 
   @ApiPropertyOptional({
-    description: 'ID da transação no gateway de pagamento',
+    description: "ID da transação no gateway de pagamento",
   })
   @IsOptional()
   @IsString()
   transactionId?: string;
 
   @ApiPropertyOptional({
-    description: 'Número de parcelas (apenas para cartão de crédito)',
+    description: "Número de parcelas (apenas para cartão de crédito)",
     minimum: 1,
     default: 1,
   })
@@ -62,7 +62,7 @@ export class CreatePaymentDto {
   installments?: number;
 
   @ApiPropertyOptional({
-    description: 'Observações sobre o pagamento',
+    description: "Observações sobre o pagamento",
   })
   @IsOptional()
   @IsString()

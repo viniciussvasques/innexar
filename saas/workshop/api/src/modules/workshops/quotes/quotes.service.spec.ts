@@ -1,34 +1,34 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { QuotesService } from './quotes.service';
-import { PrismaService } from '@database/prisma.service';
-import { ElevatorsService } from '../elevators/elevators.service';
-import { ServiceOrdersService } from '../service-orders/service-orders.service';
-import { AppointmentsService } from '../appointments/appointments.service';
-import { ChecklistsService } from '../checklists/checklists.service';
-import { AttachmentsService } from '../attachments/attachments.service';
-import { NotificationsService } from '@core/notifications/notifications.service';
-import { QuotePdfService } from './pdf/quote-pdf.service';
-import { CreateQuoteDto, QuoteStatus, QuoteItemType } from './dto';
-import { ProblemCategory } from '@modules/workshops/shared/enums/problem-category.enum';
+import { Test, TestingModule } from "@nestjs/testing";
+import { NotFoundException, BadRequestException } from "@nestjs/common";
+import { QuotesService } from "./quotes.service";
+import { PrismaService } from "@database/prisma.service";
+import { ElevatorsService } from "../elevators/elevators.service";
+import { ServiceOrdersService } from "../service-orders/service-orders.service";
+import { AppointmentsService } from "../appointments/appointments.service";
+import { ChecklistsService } from "../checklists/checklists.service";
+import { AttachmentsService } from "../attachments/attachments.service";
+import { NotificationsService } from "@core/notifications/notifications.service";
+import { QuotePdfService } from "./pdf/quote-pdf.service";
+import { CreateQuoteDto, QuoteStatus, QuoteItemType } from "./dto";
+import { ProblemCategory } from "@modules/workshops/shared/enums/problem-category.enum";
 
-describe('QuotesService', () => {
+describe("QuotesService", () => {
   let service: QuotesService;
 
-  const mockTenantId = 'tenant-id';
+  const mockTenantId = "tenant-id";
 
   const createMockQuote = (overrides = {}) => ({
-    id: 'quote-id',
+    id: "quote-id",
     tenantId: mockTenantId,
-    number: 'ORC-001',
-    customerId: 'customer-id',
-    vehicleId: 'vehicle-id',
+    number: "ORC-001",
+    customerId: "customer-id",
+    vehicleId: "vehicle-id",
     elevatorId: null,
     serviceOrderId: null,
-    status: 'draft',
+    status: "draft",
     version: 1,
     parentQuoteId: null,
     laborCost: { toNumber: () => 200 } as unknown,
@@ -63,28 +63,28 @@ describe('QuotesService', () => {
     createdAt: new Date(),
     updatedAt: new Date(),
     customer: {
-      id: 'customer-id',
-      name: 'João Silva',
-      phone: '(11) 98765-4321',
-      email: 'joao@email.com',
+      id: "customer-id",
+      name: "João Silva",
+      phone: "(11) 98765-4321",
+      email: "joao@email.com",
     },
     vehicle: {
-      id: 'vehicle-id',
-      placa: 'ABC1234',
-      make: 'Honda',
-      model: 'Civic',
+      id: "vehicle-id",
+      placa: "ABC1234",
+      make: "Honda",
+      model: "Civic",
       year: 2020,
     },
     elevator: null,
     items: [
       {
-        id: 'item-1',
-        quoteId: 'quote-id',
-        type: 'service',
+        id: "item-1",
+        quoteId: "quote-id",
+        type: "service",
         serviceId: null,
         partId: null,
-        name: 'Troca de óleo',
-        description: 'Troca de óleo do motor',
+        name: "Troca de óleo",
+        description: "Troca de óleo do motor",
         quantity: 1,
         unitCost: { toNumber: () => 150 } as unknown,
         totalCost: { toNumber: () => 150 } as unknown,
@@ -215,15 +215,15 @@ describe('QuotesService', () => {
     jest.resetAllMocks();
   });
 
-  describe('create', () => {
+  describe("create", () => {
     const createQuoteDto: CreateQuoteDto = {
-      customerId: 'customer-id',
-      vehicleId: 'vehicle-id',
+      customerId: "customer-id",
+      vehicleId: "vehicle-id",
       items: [
         {
           type: QuoteItemType.SERVICE,
-          name: 'Troca de óleo',
-          description: 'Troca de óleo do motor',
+          name: "Troca de óleo",
+          description: "Troca de óleo do motor",
           quantity: 1,
           unitCost: 150,
           hours: 1.5,
@@ -235,13 +235,13 @@ describe('QuotesService', () => {
       taxAmount: 0,
     };
 
-    it('deve criar um orçamento com sucesso', async () => {
+    it("deve criar um orçamento com sucesso", async () => {
       const mockCustomer = {
-        id: 'customer-id',
+        id: "customer-id",
         tenantId: mockTenantId,
       };
       const mockVehicle = {
-        id: 'vehicle-id',
+        id: "vehicle-id",
         customer: { tenantId: mockTenantId },
       };
       const mockQuote = createMockQuote();
@@ -259,12 +259,12 @@ describe('QuotesService', () => {
 
       const result = await service.create(mockTenantId, createQuoteDto);
 
-      expect(result).toHaveProperty('id', 'quote-id');
-      expect(result).toHaveProperty('number', 'ORC-001');
+      expect(result).toHaveProperty("id", "quote-id");
+      expect(result).toHaveProperty("number", "ORC-001");
       expect(mockPrismaService.quote.create as jest.Mock).toHaveBeenCalled();
     });
 
-    it('deve lançar NotFoundException se cliente não existir', async () => {
+    it("deve lançar NotFoundException se cliente não existir", async () => {
       (mockPrismaService.customer.findFirst as jest.Mock).mockResolvedValue(
         null,
       );
@@ -274,9 +274,9 @@ describe('QuotesService', () => {
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('deve lançar NotFoundException se veículo não existir', async () => {
+    it("deve lançar NotFoundException se veículo não existir", async () => {
       const mockCustomer = {
-        id: 'customer-id',
+        id: "customer-id",
         tenantId: mockTenantId,
       };
       (mockPrismaService.customer.findFirst as jest.Mock).mockResolvedValue(
@@ -291,21 +291,21 @@ describe('QuotesService', () => {
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('deve lançar BadRequestException se não houver itens', async () => {
+    it("deve lançar BadRequestException se não houver itens", async () => {
       const dtoWithoutItems: CreateQuoteDto = {
-        customerId: 'customer-id',
-        vehicleId: 'vehicle-id',
+        customerId: "customer-id",
+        vehicleId: "vehicle-id",
         items: [],
         status: QuoteStatus.SENT, // Status diferente de DRAFT para validar itens
       };
 
       // Mockar validações anteriores para que o erro de itens seja o primeiro
       const mockCustomer = {
-        id: 'customer-id',
+        id: "customer-id",
         tenantId: mockTenantId,
       };
       const mockVehicle = {
-        id: 'vehicle-id',
+        id: "vehicle-id",
         customer: { tenantId: mockTenantId },
       };
       (mockPrismaService.customer.findFirst as jest.Mock).mockResolvedValue(
@@ -320,14 +320,14 @@ describe('QuotesService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve gerar número ORC-002 quando há orçamento anterior', async () => {
-      const lastQuote = createMockQuote({ number: 'ORC-001' });
+    it("deve gerar número ORC-002 quando há orçamento anterior", async () => {
+      const lastQuote = createMockQuote({ number: "ORC-001" });
       const mockCustomer = {
-        id: 'customer-id',
+        id: "customer-id",
         tenantId: mockTenantId,
       };
       const mockVehicle = {
-        id: 'vehicle-id',
+        id: "vehicle-id",
         customer: { tenantId: mockTenantId },
       };
       (mockPrismaService.customer.findFirst as jest.Mock).mockResolvedValue(
@@ -340,21 +340,21 @@ describe('QuotesService', () => {
         .mockResolvedValueOnce(lastQuote) // Para buscar último número
         .mockResolvedValueOnce(null); // Para verificar se número existe
       (mockPrismaService.quote.create as jest.Mock).mockResolvedValue(
-        createMockQuote({ number: 'ORC-002' }),
+        createMockQuote({ number: "ORC-002" }),
       );
 
       const result = await service.create(mockTenantId, createQuoteDto);
 
-      expect(result.number).toBe('ORC-002');
+      expect(result.number).toBe("ORC-002");
     });
 
-    it('deve continuar mesmo se falhar ao criar checklist pré-diagnóstico', async () => {
+    it("deve continuar mesmo se falhar ao criar checklist pré-diagnóstico", async () => {
       const mockCustomer = {
-        id: 'customer-id',
+        id: "customer-id",
         tenantId: mockTenantId,
       };
       const mockVehicle = {
-        id: 'vehicle-id',
+        id: "vehicle-id",
         customer: { tenantId: mockTenantId },
       };
       const mockQuote = createMockQuote();
@@ -370,22 +370,22 @@ describe('QuotesService', () => {
         mockQuote,
       );
       mockChecklistsService.create.mockRejectedValue(
-        new Error('Erro ao criar checklist'),
+        new Error("Erro ao criar checklist"),
       );
 
       const result = await service.create(mockTenantId, createQuoteDto);
 
-      expect(result).toHaveProperty('id', 'quote-id');
+      expect(result).toHaveProperty("id", "quote-id");
       expect(mockChecklistsService.create).toHaveBeenCalled();
     });
 
-    it('deve lançar BadRequestException em caso de erro genérico', async () => {
+    it("deve lançar BadRequestException em caso de erro genérico", async () => {
       const mockCustomer = {
-        id: 'customer-id',
+        id: "customer-id",
         tenantId: mockTenantId,
       };
       const mockVehicle = {
-        id: 'vehicle-id',
+        id: "vehicle-id",
         customer: { tenantId: mockTenantId },
       };
       (mockPrismaService.customer.findFirst as jest.Mock).mockResolvedValue(
@@ -396,7 +396,7 @@ describe('QuotesService', () => {
       ).mockResolvedValue(mockVehicle);
       (mockPrismaService.quote.findFirst as jest.Mock).mockResolvedValue(null);
       (mockPrismaService.quote.create as jest.Mock).mockRejectedValue(
-        new Error('Erro genérico'),
+        new Error("Erro genérico"),
       );
 
       await expect(
@@ -405,8 +405,8 @@ describe('QuotesService', () => {
     });
   });
 
-  describe('findAll', () => {
-    it('deve retornar lista de orçamentos', async () => {
+  describe("findAll", () => {
+    it("deve retornar lista de orçamentos", async () => {
       (mockPrismaService.$transaction as jest.Mock).mockResolvedValue([
         [createMockQuote()],
         1,
@@ -417,15 +417,15 @@ describe('QuotesService', () => {
         limit: 20,
       });
 
-      expect(result).toHaveProperty('data');
-      expect(result).toHaveProperty('total', 1);
-      expect(result).toHaveProperty('page', 1);
-      expect(result).toHaveProperty('limit', 20);
+      expect(result).toHaveProperty("data");
+      expect(result).toHaveProperty("total", 1);
+      expect(result).toHaveProperty("page", 1);
+      expect(result).toHaveProperty("limit", 20);
     });
 
-    it('deve lançar BadRequestException se houver erro ao processar orçamentos', async () => {
+    it("deve lançar BadRequestException se houver erro ao processar orçamentos", async () => {
       (mockPrismaService.$transaction as jest.Mock).mockRejectedValue(
-        new Error('Erro ao processar'),
+        new Error("Erro ao processar"),
       );
 
       await expect(
@@ -433,12 +433,12 @@ describe('QuotesService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve lançar erro se houver erro ao converter orçamento para DTO', async () => {
+    it("deve lançar erro se houver erro ao converter orçamento para DTO", async () => {
       const mockQuoteWithError = {
         ...createMockQuote(),
         totalCost: {
           toNumber: () => {
-            throw new Error('Erro ao converter totalCost');
+            throw new Error("Erro ao converter totalCost");
           },
         },
       };
@@ -454,56 +454,56 @@ describe('QuotesService', () => {
     });
   });
 
-  describe('findOne', () => {
-    it('deve retornar orçamento encontrado', async () => {
+  describe("findOne", () => {
+    it("deve retornar orçamento encontrado", async () => {
       const mockQuote = createMockQuote();
       (mockPrismaService.quote.findFirst as jest.Mock).mockResolvedValue(
         mockQuote,
       );
 
-      const result = await service.findOne(mockTenantId, 'quote-id');
+      const result = await service.findOne(mockTenantId, "quote-id");
 
-      expect(result).toHaveProperty('id', 'quote-id');
+      expect(result).toHaveProperty("id", "quote-id");
       expect(
         mockPrismaService.quote.findFirst as jest.Mock,
       ).toHaveBeenCalledWith({
         where: {
-          id: 'quote-id',
+          id: "quote-id",
           tenantId: mockTenantId,
         },
         include: expect.any(Object),
       });
     });
 
-    it('deve retornar orçamento com estimatedHours como string', async () => {
+    it("deve retornar orçamento com estimatedHours como string", async () => {
       const mockQuoteWithStringHours = createMockQuote({
-        estimatedHours: '2.5' as unknown,
+        estimatedHours: "2.5" as unknown,
       });
       (mockPrismaService.quote.findFirst as jest.Mock).mockResolvedValue(
         mockQuoteWithStringHours,
       );
 
-      const result = await service.findOne(mockTenantId, 'quote-id');
+      const result = await service.findOne(mockTenantId, "quote-id");
 
       expect(result).toBeDefined();
-      expect(result.id).toBe('quote-id');
+      expect(result.id).toBe("quote-id");
     });
 
-    it('deve lançar NotFoundException se orçamento não existir', async () => {
+    it("deve lançar NotFoundException se orçamento não existir", async () => {
       (mockPrismaService.quote.findFirst as jest.Mock).mockResolvedValue(null);
 
-      await expect(service.findOne(mockTenantId, 'quote-id')).rejects.toThrow(
+      await expect(service.findOne(mockTenantId, "quote-id")).rejects.toThrow(
         NotFoundException,
       );
     });
   });
 
-  describe('update', () => {
+  describe("update", () => {
     const updateQuoteDto = {
       status: QuoteStatus.SENT,
     };
 
-    it('deve atualizar orçamento com sucesso', async () => {
+    it("deve atualizar orçamento com sucesso", async () => {
       const mockQuote = createMockQuote({ items: [] });
       const updatedQuote = createMockQuote({ status: QuoteStatus.SENT });
       (mockPrismaService.quote.findFirst as jest.Mock).mockResolvedValue(
@@ -515,23 +515,23 @@ describe('QuotesService', () => {
 
       const result = await service.update(
         mockTenantId,
-        'quote-id',
+        "quote-id",
         updateQuoteDto,
       );
 
-      expect(result).toHaveProperty('status', QuoteStatus.SENT);
+      expect(result).toHaveProperty("status", QuoteStatus.SENT);
       expect(mockPrismaService.quote.update as jest.Mock).toHaveBeenCalled();
     });
 
-    it('deve lançar NotFoundException se orçamento não existir', async () => {
+    it("deve lançar NotFoundException se orçamento não existir", async () => {
       (mockPrismaService.quote.findFirst as jest.Mock).mockResolvedValue(null);
 
       await expect(
-        service.update(mockTenantId, 'quote-id', updateQuoteDto),
+        service.update(mockTenantId, "quote-id", updateQuoteDto),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('deve lançar BadRequestException se orçamento já foi convertido', async () => {
+    it("deve lançar BadRequestException se orçamento já foi convertido", async () => {
       const convertedQuote = createMockQuote({
         status: QuoteStatus.CONVERTED,
         items: [],
@@ -541,28 +541,28 @@ describe('QuotesService', () => {
       );
 
       await expect(
-        service.update(mockTenantId, 'quote-id', updateQuoteDto),
+        service.update(mockTenantId, "quote-id", updateQuoteDto),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve lançar BadRequestException em caso de erro genérico', async () => {
+    it("deve lançar BadRequestException em caso de erro genérico", async () => {
       const mockQuote = createMockQuote({ items: [] });
       (mockPrismaService.quote.findFirst as jest.Mock).mockResolvedValue(
         mockQuote,
       );
       (mockPrismaService.quote.update as jest.Mock).mockRejectedValue(
-        new Error('Erro genérico'),
+        new Error("Erro genérico"),
       );
 
       await expect(
-        service.update(mockTenantId, 'quote-id', updateQuoteDto),
+        service.update(mockTenantId, "quote-id", updateQuoteDto),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve atualizar itens do orçamento', async () => {
+    it("deve atualizar itens do orçamento", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.DIAGNOSED,
-        items: [{ id: 'item-1' }],
+        items: [{ id: "item-1" }],
       });
       (mockPrismaService.quote.findFirst as jest.Mock).mockResolvedValue(
         mockQuote,
@@ -575,11 +575,11 @@ describe('QuotesService', () => {
         items: [],
       });
 
-      const result = await service.update(mockTenantId, 'quote-id', {
+      const result = await service.update(mockTenantId, "quote-id", {
         items: [
           {
             type: QuoteItemType.SERVICE,
-            name: 'Novo serviço',
+            name: "Novo serviço",
             quantity: 1,
             unitCost: 100,
           },
@@ -589,7 +589,7 @@ describe('QuotesService', () => {
       expect(result).toBeDefined();
     });
 
-    it('deve atualizar customerId', async () => {
+    it("deve atualizar customerId", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.DIAGNOSED,
       });
@@ -598,17 +598,17 @@ describe('QuotesService', () => {
       );
       (mockPrismaService.quote.update as jest.Mock).mockResolvedValue({
         ...mockQuote,
-        customerId: 'new-customer-id',
+        customerId: "new-customer-id",
       });
 
-      const result = await service.update(mockTenantId, 'quote-id', {
-        customerId: 'new-customer-id',
+      const result = await service.update(mockTenantId, "quote-id", {
+        customerId: "new-customer-id",
       });
 
       expect(result).toBeDefined();
     });
 
-    it('deve atualizar vehicleId', async () => {
+    it("deve atualizar vehicleId", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.DIAGNOSED,
       });
@@ -617,17 +617,17 @@ describe('QuotesService', () => {
       );
       (mockPrismaService.quote.update as jest.Mock).mockResolvedValue({
         ...mockQuote,
-        vehicleId: 'new-vehicle-id',
+        vehicleId: "new-vehicle-id",
       });
 
-      const result = await service.update(mockTenantId, 'quote-id', {
-        vehicleId: 'new-vehicle-id',
+      const result = await service.update(mockTenantId, "quote-id", {
+        vehicleId: "new-vehicle-id",
       });
 
       expect(result).toBeDefined();
     });
 
-    it('deve atualizar elevatorId', async () => {
+    it("deve atualizar elevatorId", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.DIAGNOSED,
       });
@@ -636,17 +636,17 @@ describe('QuotesService', () => {
       );
       (mockPrismaService.quote.update as jest.Mock).mockResolvedValue({
         ...mockQuote,
-        elevatorId: 'new-elevator-id',
+        elevatorId: "new-elevator-id",
       });
 
-      const result = await service.update(mockTenantId, 'quote-id', {
-        elevatorId: 'new-elevator-id',
+      const result = await service.update(mockTenantId, "quote-id", {
+        elevatorId: "new-elevator-id",
       });
 
       expect(result).toBeDefined();
     });
 
-    it('deve atualizar laborCost e partsCost', async () => {
+    it("deve atualizar laborCost e partsCost", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.DIAGNOSED,
       });
@@ -659,7 +659,7 @@ describe('QuotesService', () => {
         partsCost: { toNumber: () => 400 } as unknown,
       });
 
-      const result = await service.update(mockTenantId, 'quote-id', {
+      const result = await service.update(mockTenantId, "quote-id", {
         laborCost: 300,
         partsCost: 400,
       });
@@ -667,7 +667,7 @@ describe('QuotesService', () => {
       expect(result).toBeDefined();
     });
 
-    it('deve atualizar discount e taxAmount', async () => {
+    it("deve atualizar discount e taxAmount", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.DIAGNOSED,
       });
@@ -680,7 +680,7 @@ describe('QuotesService', () => {
         taxAmount: { toNumber: () => 100 } as unknown,
       });
 
-      const result = await service.update(mockTenantId, 'quote-id', {
+      const result = await service.update(mockTenantId, "quote-id", {
         discount: 50,
         taxAmount: 100,
       });
@@ -688,7 +688,7 @@ describe('QuotesService', () => {
       expect(result).toBeDefined();
     });
 
-    it('deve atualizar validUntil', async () => {
+    it("deve atualizar validUntil", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.DIAGNOSED,
       });
@@ -702,14 +702,14 @@ describe('QuotesService', () => {
         validUntil: futureDate,
       });
 
-      const result = await service.update(mockTenantId, 'quote-id', {
+      const result = await service.update(mockTenantId, "quote-id", {
         validUntil: futureDate.toISOString(),
       });
 
       expect(result).toBeDefined();
     });
 
-    it('deve atualizar reportedProblemCategory e reportedProblemDescription', async () => {
+    it("deve atualizar reportedProblemCategory e reportedProblemDescription", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.DIAGNOSED,
       });
@@ -719,18 +719,18 @@ describe('QuotesService', () => {
       (mockPrismaService.quote.update as jest.Mock).mockResolvedValue({
         ...mockQuote,
         reportedProblemCategory: ProblemCategory.MOTOR,
-        reportedProblemDescription: 'Nova descrição',
+        reportedProblemDescription: "Nova descrição",
       });
 
-      const result = await service.update(mockTenantId, 'quote-id', {
+      const result = await service.update(mockTenantId, "quote-id", {
         reportedProblemCategory: ProblemCategory.MOTOR,
-        reportedProblemDescription: 'Nova descrição',
+        reportedProblemDescription: "Nova descrição",
       });
 
       expect(result).toBeDefined();
     });
 
-    it('deve atualizar reportedProblemSymptoms', async () => {
+    it("deve atualizar reportedProblemSymptoms", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.DIAGNOSED,
       });
@@ -739,17 +739,17 @@ describe('QuotesService', () => {
       );
       (mockPrismaService.quote.update as jest.Mock).mockResolvedValue({
         ...mockQuote,
-        reportedProblemSymptoms: ['sintoma1', 'sintoma2'],
+        reportedProblemSymptoms: ["sintoma1", "sintoma2"],
       });
 
-      const result = await service.update(mockTenantId, 'quote-id', {
-        reportedProblemSymptoms: ['sintoma1', 'sintoma2'],
+      const result = await service.update(mockTenantId, "quote-id", {
+        reportedProblemSymptoms: ["sintoma1", "sintoma2"],
       });
 
       expect(result).toBeDefined();
     });
 
-    it('deve atualizar identifiedProblemCategory e identifiedProblemDescription', async () => {
+    it("deve atualizar identifiedProblemCategory e identifiedProblemDescription", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.DIAGNOSED,
       });
@@ -759,18 +759,18 @@ describe('QuotesService', () => {
       (mockPrismaService.quote.update as jest.Mock).mockResolvedValue({
         ...mockQuote,
         identifiedProblemCategory: ProblemCategory.MOTOR,
-        identifiedProblemDescription: 'Descrição identificada',
+        identifiedProblemDescription: "Descrição identificada",
       });
 
-      const result = await service.update(mockTenantId, 'quote-id', {
+      const result = await service.update(mockTenantId, "quote-id", {
         identifiedProblemCategory: ProblemCategory.MOTOR,
-        identifiedProblemDescription: 'Descrição identificada',
+        identifiedProblemDescription: "Descrição identificada",
       });
 
       expect(result).toBeDefined();
     });
 
-    it('deve atualizar identifiedProblemId', async () => {
+    it("deve atualizar identifiedProblemId", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.DIAGNOSED,
       });
@@ -779,17 +779,17 @@ describe('QuotesService', () => {
       );
       (mockPrismaService.quote.update as jest.Mock).mockResolvedValue({
         ...mockQuote,
-        identifiedProblemId: 'problem-id',
+        identifiedProblemId: "problem-id",
       });
 
-      const result = await service.update(mockTenantId, 'quote-id', {
-        identifiedProblemId: 'problem-id',
+      const result = await service.update(mockTenantId, "quote-id", {
+        identifiedProblemId: "problem-id",
       });
 
       expect(result).toBeDefined();
     });
 
-    it('deve atualizar diagnosticNotes e inspectionNotes', async () => {
+    it("deve atualizar diagnosticNotes e inspectionNotes", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.DIAGNOSED,
       });
@@ -798,19 +798,19 @@ describe('QuotesService', () => {
       );
       (mockPrismaService.quote.update as jest.Mock).mockResolvedValue({
         ...mockQuote,
-        diagnosticNotes: 'Notas do diagnóstico',
-        inspectionNotes: 'Notas de inspeção',
+        diagnosticNotes: "Notas do diagnóstico",
+        inspectionNotes: "Notas de inspeção",
       });
 
-      const result = await service.update(mockTenantId, 'quote-id', {
-        diagnosticNotes: 'Notas do diagnóstico',
-        inspectionNotes: 'Notas de inspeção',
+      const result = await service.update(mockTenantId, "quote-id", {
+        diagnosticNotes: "Notas do diagnóstico",
+        inspectionNotes: "Notas de inspeção",
       });
 
       expect(result).toBeDefined();
     });
 
-    it('deve atualizar inspectionPhotos e recommendations', async () => {
+    it("deve atualizar inspectionPhotos e recommendations", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.DIAGNOSED,
       });
@@ -819,36 +819,36 @@ describe('QuotesService', () => {
       );
       (mockPrismaService.quote.update as jest.Mock).mockResolvedValue({
         ...mockQuote,
-        inspectionPhotos: ['photo1.jpg', 'photo2.jpg'],
-        recommendations: 'Recomendações',
+        inspectionPhotos: ["photo1.jpg", "photo2.jpg"],
+        recommendations: "Recomendações",
       });
 
-      const result = await service.update(mockTenantId, 'quote-id', {
-        inspectionPhotos: ['photo1.jpg', 'photo2.jpg'],
-        recommendations: 'Recomendações',
+      const result = await service.update(mockTenantId, "quote-id", {
+        inspectionPhotos: ["photo1.jpg", "photo2.jpg"],
+        recommendations: "Recomendações",
       });
 
       expect(result).toBeDefined();
     });
   });
 
-  describe('approve', () => {
+  describe("approve", () => {
     const approveQuoteDto = {
-      customerSignature: 'data:image/png;base64,...',
+      customerSignature: "data:image/png;base64,...",
     };
 
-    it('deve aprovar orçamento e criar Service Order', async () => {
+    it("deve aprovar orçamento e criar Service Order", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.SENT,
       });
       const acceptedQuote = createMockQuote({
         status: QuoteStatus.ACCEPTED,
         acceptedAt: new Date(),
-        serviceOrderId: 'service-order-id',
+        serviceOrderId: "service-order-id",
       });
       const mockServiceOrder = {
-        id: 'service-order-id',
-        number: 'OS-001',
+        id: "service-order-id",
+        number: "OS-001",
       };
       (mockPrismaService.quote.findFirst as jest.Mock)
         .mockResolvedValueOnce(mockQuote) // findQuoteForApproval
@@ -863,27 +863,27 @@ describe('QuotesService', () => {
 
       const result = await service.approve(
         mockTenantId,
-        'quote-id',
+        "quote-id",
         approveQuoteDto,
       );
 
-      expect(result).toHaveProperty('quote');
-      expect(result).toHaveProperty('serviceOrder');
+      expect(result).toHaveProperty("quote");
+      expect(result).toHaveProperty("serviceOrder");
       expect(result.quote.status).toBe(QuoteStatus.ACCEPTED);
       expect(mockServiceOrdersService.create).toHaveBeenCalled();
     });
 
-    it('deve lançar NotFoundException se orçamento não existir', async () => {
+    it("deve lançar NotFoundException se orçamento não existir", async () => {
       (mockPrismaService.quote.findFirst as jest.Mock)
         .mockResolvedValueOnce(null) // findQuoteForApproval
         .mockResolvedValueOnce(null); // findQuoteByIdAndTenant (não será chamado)
 
       await expect(
-        service.approve(mockTenantId, 'quote-id', approveQuoteDto),
+        service.approve(mockTenantId, "quote-id", approveQuoteDto),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('deve lançar BadRequestException se orçamento já foi convertido', async () => {
+    it("deve lançar BadRequestException se orçamento já foi convertido", async () => {
       const convertedQuote = createMockQuote({
         status: QuoteStatus.CONVERTED,
         assignedMechanic: null,
@@ -893,24 +893,24 @@ describe('QuotesService', () => {
       );
 
       await expect(
-        service.approve(mockTenantId, 'quote-id', approveQuoteDto),
+        service.approve(mockTenantId, "quote-id", approveQuoteDto),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve aprovar orçamento com elevatorId e inspectionNotes', async () => {
+    it("deve aprovar orçamento com elevatorId e inspectionNotes", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.SENT,
-        inspectionNotes: 'Notas de inspeção',
+        inspectionNotes: "Notas de inspeção",
         assignedMechanic: null,
       });
       const acceptedQuote = createMockQuote({
         status: QuoteStatus.ACCEPTED,
         acceptedAt: new Date(),
-        serviceOrderId: 'service-order-id',
+        serviceOrderId: "service-order-id",
       });
       const mockServiceOrder = {
-        id: 'service-order-id',
-        number: 'OS-001',
+        id: "service-order-id",
+        number: "OS-001",
       };
       (mockPrismaService.quote.findFirst as jest.Mock)
         .mockResolvedValueOnce(mockQuote) // findQuoteForApproval
@@ -920,29 +920,29 @@ describe('QuotesService', () => {
         acceptedQuote,
       );
       mockPrismaService.elevator.findFirst.mockResolvedValue({
-        id: 'elevator-id',
-        name: 'Elevador 1',
+        id: "elevator-id",
+        name: "Elevador 1",
       });
       mockAppointmentsService.create.mockResolvedValue({});
       mockPrismaService.user.findMany.mockResolvedValue([]);
 
-      const result = await service.approve(mockTenantId, 'quote-id', {
+      const result = await service.approve(mockTenantId, "quote-id", {
         ...approveQuoteDto,
-        elevatorId: 'elevator-id',
+        elevatorId: "elevator-id",
       });
 
-      expect(result).toHaveProperty('quote');
-      expect(result).toHaveProperty('serviceOrder');
+      expect(result).toHaveProperty("quote");
+      expect(result).toHaveProperty("serviceOrder");
     });
 
-    it('deve aprovar orçamento com dados completos do veículo', async () => {
+    it("deve aprovar orçamento com dados completos do veículo", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.SENT,
         vehicle: {
-          id: 'vehicle-id',
-          placa: 'ABC1234',
-          make: 'Honda',
-          model: 'Civic',
+          id: "vehicle-id",
+          placa: "ABC1234",
+          make: "Honda",
+          model: "Civic",
           year: 2020,
           mileage: 50000,
         },
@@ -951,11 +951,11 @@ describe('QuotesService', () => {
       const acceptedQuote = createMockQuote({
         status: QuoteStatus.ACCEPTED,
         acceptedAt: new Date(),
-        serviceOrderId: 'service-order-id',
+        serviceOrderId: "service-order-id",
       });
       const mockServiceOrder = {
-        id: 'service-order-id',
-        number: 'OS-001',
+        id: "service-order-id",
+        number: "OS-001",
       };
       (mockPrismaService.quote.findFirst as jest.Mock).mockResolvedValueOnce(
         mockQuote,
@@ -970,15 +970,15 @@ describe('QuotesService', () => {
 
       const result = await service.approve(
         mockTenantId,
-        'quote-id',
+        "quote-id",
         approveQuoteDto,
       );
 
-      expect(result).toHaveProperty('quote');
-      expect(result).toHaveProperty('serviceOrder');
+      expect(result).toHaveProperty("quote");
+      expect(result).toHaveProperty("serviceOrder");
     });
 
-    it('deve aprovar orçamento sem veículo', async () => {
+    it("deve aprovar orçamento sem veículo", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.SENT,
         vehicle: null,
@@ -987,11 +987,11 @@ describe('QuotesService', () => {
       const acceptedQuote = createMockQuote({
         status: QuoteStatus.ACCEPTED,
         acceptedAt: new Date(),
-        serviceOrderId: 'service-order-id',
+        serviceOrderId: "service-order-id",
       });
       const mockServiceOrder = {
-        id: 'service-order-id',
-        number: 'OS-001',
+        id: "service-order-id",
+        number: "OS-001",
       };
       (mockPrismaService.quote.findFirst as jest.Mock).mockResolvedValueOnce(
         mockQuote,
@@ -1006,41 +1006,41 @@ describe('QuotesService', () => {
 
       const result = await service.approve(
         mockTenantId,
-        'quote-id',
+        "quote-id",
         approveQuoteDto,
       );
 
-      expect(result).toHaveProperty('quote');
-      expect(result).toHaveProperty('serviceOrder');
+      expect(result).toHaveProperty("quote");
+      expect(result).toHaveProperty("serviceOrder");
     });
 
-    it('deve aprovar orçamento sem estimatedHours, calculando dos itens', async () => {
+    it("deve aprovar orçamento sem estimatedHours, calculando dos itens", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.SENT,
         estimatedHours: null,
         assignedMechanic: null,
         items: [
           {
-            id: 'item-1',
-            quoteId: 'quote-id',
-            type: 'service',
+            id: "item-1",
+            quoteId: "quote-id",
+            type: "service",
             serviceId: null,
             partId: null,
-            name: 'Troca de óleo',
-            description: 'Troca de óleo do motor',
+            name: "Troca de óleo",
+            description: "Troca de óleo do motor",
             quantity: 1,
             unitCost: { toNumber: () => 150 } as unknown,
             totalCost: { toNumber: () => 150 } as unknown,
             hours: { toNumber: () => 1.5 } as unknown,
           },
           {
-            id: 'item-2',
-            quoteId: 'quote-id',
-            type: 'service',
+            id: "item-2",
+            quoteId: "quote-id",
+            type: "service",
             serviceId: null,
             partId: null,
-            name: 'Troca de filtro',
-            description: 'Troca de filtro de ar',
+            name: "Troca de filtro",
+            description: "Troca de filtro de ar",
             quantity: 1,
             unitCost: { toNumber: () => 50 } as unknown,
             totalCost: { toNumber: () => 50 } as unknown,
@@ -1051,11 +1051,11 @@ describe('QuotesService', () => {
       const acceptedQuote = createMockQuote({
         status: QuoteStatus.ACCEPTED,
         acceptedAt: new Date(),
-        serviceOrderId: 'service-order-id',
+        serviceOrderId: "service-order-id",
       });
       const mockServiceOrder = {
-        id: 'service-order-id',
-        number: 'OS-001',
+        id: "service-order-id",
+        number: "OS-001",
       };
       (mockPrismaService.quote.findFirst as jest.Mock).mockResolvedValueOnce(
         mockQuote,
@@ -1073,28 +1073,28 @@ describe('QuotesService', () => {
 
       const result = await service.approve(
         mockTenantId,
-        'quote-id',
+        "quote-id",
         approveQuoteDto,
       );
 
-      expect(result).toHaveProperty('quote');
-      expect(result).toHaveProperty('serviceOrder');
+      expect(result).toHaveProperty("quote");
+      expect(result).toHaveProperty("serviceOrder");
     });
 
-    it('deve aprovar orçamento com estimatedHours como string (não objeto)', async () => {
+    it("deve aprovar orçamento com estimatedHours como string (não objeto)", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.SENT,
-        estimatedHours: '2.5' as unknown,
+        estimatedHours: "2.5" as unknown,
         assignedMechanic: null,
       });
       const acceptedQuote = createMockQuote({
         status: QuoteStatus.ACCEPTED,
         acceptedAt: new Date(),
-        serviceOrderId: 'service-order-id',
+        serviceOrderId: "service-order-id",
       });
       const mockServiceOrder = {
-        id: 'service-order-id',
-        number: 'OS-001',
+        id: "service-order-id",
+        number: "OS-001",
       };
       (mockPrismaService.quote.findFirst as jest.Mock).mockResolvedValueOnce(
         mockQuote,
@@ -1109,17 +1109,17 @@ describe('QuotesService', () => {
 
       const result = await service.approve(
         mockTenantId,
-        'quote-id',
+        "quote-id",
         approveQuoteDto,
       );
 
-      expect(result).toHaveProperty('quote');
-      expect(result).toHaveProperty('serviceOrder');
+      expect(result).toHaveProperty("quote");
+      expect(result).toHaveProperty("serviceOrder");
     });
   });
 
-  describe('remove', () => {
-    it('deve remover orçamento com sucesso', async () => {
+  describe("remove", () => {
+    it("deve remover orçamento com sucesso", async () => {
       const mockQuote = createMockQuote();
       (mockPrismaService.quote.findFirst as jest.Mock).mockResolvedValue(
         mockQuote,
@@ -1128,46 +1128,46 @@ describe('QuotesService', () => {
         mockQuote,
       );
 
-      await service.remove(mockTenantId, 'quote-id');
+      await service.remove(mockTenantId, "quote-id");
 
       expect(mockPrismaService.quote.delete as jest.Mock).toHaveBeenCalledWith({
-        where: { id: 'quote-id' },
+        where: { id: "quote-id" },
       });
     });
 
-    it('deve lançar NotFoundException se orçamento não existir', async () => {
+    it("deve lançar NotFoundException se orçamento não existir", async () => {
       (mockPrismaService.quote.findFirst as jest.Mock).mockResolvedValueOnce(
         null,
       );
 
-      await expect(service.remove(mockTenantId, 'quote-id')).rejects.toThrow(
+      await expect(service.remove(mockTenantId, "quote-id")).rejects.toThrow(
         NotFoundException,
       );
     });
 
-    it('deve lançar BadRequestException se orçamento foi convertido', async () => {
+    it("deve lançar BadRequestException se orçamento foi convertido", async () => {
       mockPrismaService.quote.findFirst.mockResolvedValueOnce(
         createMockQuote({ status: QuoteStatus.CONVERTED }),
       );
 
-      await expect(service.remove(mockTenantId, 'quote-id')).rejects.toThrow(
+      await expect(service.remove(mockTenantId, "quote-id")).rejects.toThrow(
         BadRequestException,
       );
     });
   });
 
-  describe('update - casos adicionais', () => {
-    it('deve atualizar itens do orçamento', async () => {
+  describe("update - casos adicionais", () => {
+    it("deve atualizar itens do orçamento", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.DIAGNOSED,
       });
       mockPrismaService.quote.findFirst.mockResolvedValueOnce(mockQuote);
       mockPrismaService.quoteItem.deleteMany.mockResolvedValue({ count: 1 });
       mockPrismaService.quoteItem.create.mockResolvedValue({
-        id: 'new-item-id',
-        quoteId: 'quote-id',
-        type: 'service',
-        name: 'Novo serviço',
+        id: "new-item-id",
+        quoteId: "quote-id",
+        type: "service",
+        name: "Novo serviço",
         quantity: 2,
         unitCost: { toNumber: () => 100 } as unknown,
         totalCost: { toNumber: () => 200 } as unknown,
@@ -1178,11 +1178,11 @@ describe('QuotesService', () => {
         totalCost: { toNumber: () => 200 } as unknown,
       });
 
-      const result = await service.update(mockTenantId, 'quote-id', {
+      const result = await service.update(mockTenantId, "quote-id", {
         items: [
           {
             type: QuoteItemType.SERVICE,
-            name: 'Novo serviço',
+            name: "Novo serviço",
             quantity: 2,
             unitCost: 100,
             hours: 1,
@@ -1194,7 +1194,7 @@ describe('QuotesService', () => {
       expect(mockPrismaService.quoteItem.deleteMany).toHaveBeenCalled();
     });
 
-    it('deve recalcular total ao atualizar', async () => {
+    it("deve recalcular total ao atualizar", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.DIAGNOSED,
       });
@@ -1205,7 +1205,7 @@ describe('QuotesService', () => {
         totalCost: { toNumber: () => 600 } as unknown,
       });
 
-      const result = await service.update(mockTenantId, 'quote-id', {
+      const result = await service.update(mockTenantId, "quote-id", {
         laborCost: 300,
         partsCost: 300,
       });
@@ -1213,18 +1213,18 @@ describe('QuotesService', () => {
       expect(result).toBeDefined();
     });
 
-    it('deve lançar BadRequestException ao tentar adicionar itens antes do diagnóstico', async () => {
+    it("deve lançar BadRequestException ao tentar adicionar itens antes do diagnóstico", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.DRAFT,
       });
       mockPrismaService.quote.findFirst.mockResolvedValueOnce(mockQuote);
 
       await expect(
-        service.update(mockTenantId, 'quote-id', {
+        service.update(mockTenantId, "quote-id", {
           items: [
             {
               type: QuoteItemType.SERVICE,
-              name: 'Novo serviço',
+              name: "Novo serviço",
               quantity: 1,
               unitCost: 100,
             },
@@ -1233,28 +1233,28 @@ describe('QuotesService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve lançar BadRequestException ao tentar editar custos antes do diagnóstico', async () => {
+    it("deve lançar BadRequestException ao tentar editar custos antes do diagnóstico", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.DRAFT,
       });
       mockPrismaService.quote.findFirst.mockResolvedValueOnce(mockQuote);
 
       await expect(
-        service.update(mockTenantId, 'quote-id', {
+        service.update(mockTenantId, "quote-id", {
           laborCost: 300,
         }),
       ).rejects.toThrow(BadRequestException);
     });
   });
 
-  describe('sendForDiagnosis', () => {
-    it('deve enviar orçamento para diagnóstico', async () => {
+  describe("sendForDiagnosis", () => {
+    it("deve enviar orçamento para diagnóstico", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.DRAFT,
-        customerId: 'customer-id',
-        vehicleId: 'vehicle-id',
+        customerId: "customer-id",
+        vehicleId: "vehicle-id",
         reportedProblemCategory: ProblemCategory.MOTOR,
-        reportedProblemSymptoms: ['sintoma1'],
+        reportedProblemSymptoms: ["sintoma1"],
       });
       mockPrismaService.quote.findFirst.mockResolvedValueOnce(mockQuote);
       mockNotificationsService.notifyAllMechanics.mockResolvedValue(undefined);
@@ -1263,32 +1263,32 @@ describe('QuotesService', () => {
         status: QuoteStatus.AWAITING_DIAGNOSIS,
       });
 
-      const result = await service.sendForDiagnosis(mockTenantId, 'quote-id');
+      const result = await service.sendForDiagnosis(mockTenantId, "quote-id");
 
       expect(result.status).toBe(QuoteStatus.AWAITING_DIAGNOSIS);
       expect(mockNotificationsService.notifyAllMechanics).toHaveBeenCalled();
     });
 
-    it('deve lançar NotFoundException se orçamento não existe', async () => {
+    it("deve lançar NotFoundException se orçamento não existe", async () => {
       mockPrismaService.quote.findFirst.mockResolvedValueOnce(null);
 
       await expect(
-        service.sendForDiagnosis(mockTenantId, 'non-existent'),
+        service.sendForDiagnosis(mockTenantId, "non-existent"),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('deve lançar BadRequestException se orçamento não está em rascunho', async () => {
+    it("deve lançar BadRequestException se orçamento não está em rascunho", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.SENT,
       });
       mockPrismaService.quote.findFirst.mockResolvedValueOnce(mockQuote);
 
       await expect(
-        service.sendForDiagnosis(mockTenantId, 'quote-id'),
+        service.sendForDiagnosis(mockTenantId, "quote-id"),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve lançar BadRequestException se não houver cliente', async () => {
+    it("deve lançar BadRequestException se não houver cliente", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.DRAFT,
         customerId: null,
@@ -1296,41 +1296,41 @@ describe('QuotesService', () => {
       mockPrismaService.quote.findFirst.mockResolvedValueOnce(mockQuote);
 
       await expect(
-        service.sendForDiagnosis(mockTenantId, 'quote-id'),
+        service.sendForDiagnosis(mockTenantId, "quote-id"),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve lançar BadRequestException se não houver veículo', async () => {
+    it("deve lançar BadRequestException se não houver veículo", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.DRAFT,
-        customerId: 'customer-id',
+        customerId: "customer-id",
         vehicleId: null,
       });
       mockPrismaService.quote.findFirst.mockResolvedValueOnce(mockQuote);
 
       await expect(
-        service.sendForDiagnosis(mockTenantId, 'quote-id'),
+        service.sendForDiagnosis(mockTenantId, "quote-id"),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve lançar BadRequestException se não houver categoria ou sintomas', async () => {
+    it("deve lançar BadRequestException se não houver categoria ou sintomas", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.DRAFT,
-        customerId: 'customer-id',
-        vehicleId: 'vehicle-id',
+        customerId: "customer-id",
+        vehicleId: "vehicle-id",
         reportedProblemCategory: null,
         reportedProblemSymptoms: [],
       });
       mockPrismaService.quote.findFirst.mockResolvedValueOnce(mockQuote);
 
       await expect(
-        service.sendForDiagnosis(mockTenantId, 'quote-id'),
+        service.sendForDiagnosis(mockTenantId, "quote-id"),
       ).rejects.toThrow(BadRequestException);
     });
   });
 
-  describe('completeDiagnosis', () => {
-    it('deve completar diagnóstico', async () => {
+  describe("completeDiagnosis", () => {
+    it("deve completar diagnóstico", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.AWAITING_DIAGNOSIS,
       });
@@ -1340,34 +1340,34 @@ describe('QuotesService', () => {
         status: QuoteStatus.SENT,
       });
 
-      const result = await service.completeDiagnosis(mockTenantId, 'quote-id', {
+      const result = await service.completeDiagnosis(mockTenantId, "quote-id", {
         identifiedProblemCategory: ProblemCategory.MOTOR,
-        identifiedProblemDescription: 'Problema identificado',
+        identifiedProblemDescription: "Problema identificado",
       });
 
       expect(result.status).toBe(QuoteStatus.SENT);
     });
 
-    it('deve lançar NotFoundException se orçamento não existe', async () => {
+    it("deve lançar NotFoundException se orçamento não existe", async () => {
       mockPrismaService.quote.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.completeDiagnosis(mockTenantId, 'non-existent', {}),
+        service.completeDiagnosis(mockTenantId, "non-existent", {}),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('deve lançar BadRequestException se status não permitir conclusão', async () => {
+    it("deve lançar BadRequestException se status não permitir conclusão", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.DRAFT,
       });
       mockPrismaService.quote.findFirst.mockResolvedValueOnce(mockQuote);
 
       await expect(
-        service.completeDiagnosis(mockTenantId, 'quote-id', {}),
+        service.completeDiagnosis(mockTenantId, "quote-id", {}),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve completar diagnóstico com identifiedProblemId', async () => {
+    it("deve completar diagnóstico com identifiedProblemId", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.AWAITING_DIAGNOSIS,
       });
@@ -1375,17 +1375,17 @@ describe('QuotesService', () => {
       mockPrismaService.quote.update.mockResolvedValue({
         ...mockQuote,
         status: QuoteStatus.DIAGNOSED,
-        identifiedProblemId: 'problem-id',
+        identifiedProblemId: "problem-id",
       });
 
-      const result = await service.completeDiagnosis(mockTenantId, 'quote-id', {
-        identifiedProblemId: 'problem-id',
+      const result = await service.completeDiagnosis(mockTenantId, "quote-id", {
+        identifiedProblemId: "problem-id",
       });
 
       expect(result).toBeDefined();
     });
 
-    it('deve completar diagnóstico com recommendations', async () => {
+    it("deve completar diagnóstico com recommendations", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.AWAITING_DIAGNOSIS,
       });
@@ -1393,17 +1393,17 @@ describe('QuotesService', () => {
       mockPrismaService.quote.update.mockResolvedValue({
         ...mockQuote,
         status: QuoteStatus.DIAGNOSED,
-        recommendations: 'Recomendações',
+        recommendations: "Recomendações",
       });
 
-      const result = await service.completeDiagnosis(mockTenantId, 'quote-id', {
-        recommendations: 'Recomendações',
+      const result = await service.completeDiagnosis(mockTenantId, "quote-id", {
+        recommendations: "Recomendações",
       });
 
       expect(result).toBeDefined();
     });
 
-    it('deve completar diagnóstico com diagnosticNotes', async () => {
+    it("deve completar diagnóstico com diagnosticNotes", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.AWAITING_DIAGNOSIS,
       });
@@ -1411,17 +1411,17 @@ describe('QuotesService', () => {
       mockPrismaService.quote.update.mockResolvedValue({
         ...mockQuote,
         status: QuoteStatus.DIAGNOSED,
-        diagnosticNotes: 'Notas do diagnóstico',
+        diagnosticNotes: "Notas do diagnóstico",
       });
 
-      const result = await service.completeDiagnosis(mockTenantId, 'quote-id', {
-        diagnosticNotes: 'Notas do diagnóstico',
+      const result = await service.completeDiagnosis(mockTenantId, "quote-id", {
+        diagnosticNotes: "Notas do diagnóstico",
       });
 
       expect(result).toBeDefined();
     });
 
-    it('deve completar diagnóstico com estimatedHours', async () => {
+    it("deve completar diagnóstico com estimatedHours", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.AWAITING_DIAGNOSIS,
       });
@@ -1432,7 +1432,7 @@ describe('QuotesService', () => {
         estimatedHours: { toNumber: () => 5 } as unknown,
       });
 
-      const result = await service.completeDiagnosis(mockTenantId, 'quote-id', {
+      const result = await service.completeDiagnosis(mockTenantId, "quote-id", {
         estimatedHours: 5,
       });
 
@@ -1440,11 +1440,11 @@ describe('QuotesService', () => {
     });
   });
 
-  describe('sendToCustomer', () => {
-    it('deve enviar orçamento para cliente', async () => {
+  describe("sendToCustomer", () => {
+    it("deve enviar orçamento para cliente", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.DIAGNOSED,
-        items: [{ id: 'item-1' }],
+        items: [{ id: "item-1" }],
       });
       mockPrismaService.quote.findFirst.mockResolvedValueOnce(mockQuote);
       mockPrismaService.quote.update.mockResolvedValue({
@@ -1453,20 +1453,20 @@ describe('QuotesService', () => {
         sentAt: new Date(),
       });
 
-      const result = await service.sendToCustomer(mockTenantId, 'quote-id');
+      const result = await service.sendToCustomer(mockTenantId, "quote-id");
 
       expect(result.status).toBe(QuoteStatus.SENT);
     });
 
-    it('deve lançar NotFoundException se orçamento não existe', async () => {
+    it("deve lançar NotFoundException se orçamento não existe", async () => {
       mockPrismaService.quote.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.sendToCustomer(mockTenantId, 'non-existent'),
+        service.sendToCustomer(mockTenantId, "non-existent"),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('deve lançar BadRequestException se não houver itens', async () => {
+    it("deve lançar BadRequestException se não houver itens", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.DIAGNOSED,
         items: [],
@@ -1474,27 +1474,27 @@ describe('QuotesService', () => {
       mockPrismaService.quote.findFirst.mockResolvedValueOnce(mockQuote);
 
       await expect(
-        service.sendToCustomer(mockTenantId, 'quote-id'),
+        service.sendToCustomer(mockTenantId, "quote-id"),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve lançar BadRequestException se status não permitir envio', async () => {
+    it("deve lançar BadRequestException se status não permitir envio", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.DRAFT,
-        items: [{ id: 'item-1' }],
+        items: [{ id: "item-1" }],
       });
       mockPrismaService.quote.findFirst.mockResolvedValueOnce(mockQuote);
 
       await expect(
-        service.sendToCustomer(mockTenantId, 'quote-id'),
+        service.sendToCustomer(mockTenantId, "quote-id"),
       ).rejects.toThrow(BadRequestException);
     });
   });
 
-  describe('rejectByPublicToken', () => {
-    it('deve rejeitar orçamento por token público', async () => {
+  describe("rejectByPublicToken", () => {
+    it("deve rejeitar orçamento por token público", async () => {
       const mockQuote = createMockQuote({
-        publicToken: 'token-123',
+        publicToken: "token-123",
         publicTokenExpiresAt: new Date(Date.now() + 86400000), // 1 dia no futuro
         status: QuoteStatus.SENT,
       });
@@ -1508,25 +1508,25 @@ describe('QuotesService', () => {
       mockNotificationsService.create.mockResolvedValue({});
 
       const result = await service.rejectByPublicToken(
-        'token-123',
-        'Preço muito alto',
+        "token-123",
+        "Preço muito alto",
       );
 
       expect(result.status).toBe(QuoteStatus.REJECTED);
     });
 
-    it('deve rejeitar orçamento por token público sem reason', async () => {
+    it("deve rejeitar orçamento por token público sem reason", async () => {
       const mockQuote = createMockQuote({
-        publicToken: 'token-123',
+        publicToken: "token-123",
         publicTokenExpiresAt: new Date(Date.now() + 86400000),
         status: QuoteStatus.SENT,
       });
       mockPrismaService.quote.findFirst.mockResolvedValueOnce(mockQuote);
       mockPrismaService.user.findMany.mockResolvedValue([
         {
-          id: 'receptionist-id',
-          role: 'receptionist',
-          email: 'receptionist@email.com',
+          id: "receptionist-id",
+          role: "receptionist",
+          email: "receptionist@email.com",
         },
       ]);
       mockPrismaService.quote.update.mockResolvedValue({
@@ -1537,24 +1537,24 @@ describe('QuotesService', () => {
       });
       mockNotificationsService.create.mockResolvedValue({});
 
-      const result = await service.rejectByPublicToken('token-123');
+      const result = await service.rejectByPublicToken("token-123");
 
       expect(result.status).toBe(QuoteStatus.REJECTED);
       expect(mockNotificationsService.create).toHaveBeenCalled();
     });
 
-    it('deve tratar erro ao criar notificação de rejeição', async () => {
+    it("deve tratar erro ao criar notificação de rejeição", async () => {
       const mockQuote = createMockQuote({
-        publicToken: 'token-123',
+        publicToken: "token-123",
         publicTokenExpiresAt: new Date(Date.now() + 86400000),
         status: QuoteStatus.SENT,
       });
       mockPrismaService.quote.findFirst.mockResolvedValueOnce(mockQuote);
       mockPrismaService.user.findMany.mockResolvedValue([
         {
-          id: 'receptionist-id',
-          role: 'receptionist',
-          email: 'receptionist@email.com',
+          id: "receptionist-id",
+          role: "receptionist",
+          email: "receptionist@email.com",
         },
       ]);
       mockPrismaService.quote.update.mockResolvedValue({
@@ -1564,32 +1564,32 @@ describe('QuotesService', () => {
         rejectedReason: null,
       });
       mockNotificationsService.create.mockRejectedValue(
-        new Error('Erro ao criar notificação'),
+        new Error("Erro ao criar notificação"),
       );
 
-      const result = await service.rejectByPublicToken('token-123');
+      const result = await service.rejectByPublicToken("token-123");
 
       expect(result.status).toBe(QuoteStatus.REJECTED);
     });
 
-    it('deve lançar NotFoundException se token inválido', async () => {
+    it("deve lançar NotFoundException se token inválido", async () => {
       mockPrismaService.quote.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.rejectByPublicToken('invalid-token', ''),
+        service.rejectByPublicToken("invalid-token", ""),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('approveManually', () => {
-    it('deve aprovar orçamento manualmente', async () => {
+  describe("approveManually", () => {
+    it("deve aprovar orçamento manualmente", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.SENT,
       });
       mockPrismaService.quote.findFirst.mockResolvedValueOnce(mockQuote);
       mockServiceOrdersService.create.mockResolvedValue({
-        id: 'service-order-id',
-        number: 'OS-001',
+        id: "service-order-id",
+        number: "OS-001",
       });
       mockPrismaService.quote.update.mockResolvedValue({
         ...mockQuote,
@@ -1600,80 +1600,80 @@ describe('QuotesService', () => {
       mockAppointmentsService.create.mockResolvedValue({});
       mockPrismaService.user.findMany.mockResolvedValue([]);
 
-      const result = await service.approveManually(mockTenantId, 'quote-id');
+      const result = await service.approveManually(mockTenantId, "quote-id");
 
       expect(result.quote.status).toBe(QuoteStatus.ACCEPTED);
     });
 
-    it('deve lançar NotFoundException se orçamento não existe', async () => {
+    it("deve lançar NotFoundException se orçamento não existe", async () => {
       mockPrismaService.quote.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.approveManually(mockTenantId, 'non-existent'),
+        service.approveManually(mockTenantId, "non-existent"),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('assignMechanic', () => {
-    it('deve atribuir mecânico ao orçamento', async () => {
+  describe("assignMechanic", () => {
+    it("deve atribuir mecânico ao orçamento", async () => {
       const mockQuote = createMockQuote({
         assignedMechanic: {
-          id: 'old-mechanic-id',
-          name: 'Mecânico Antigo',
-          email: 'old@email.com',
+          id: "old-mechanic-id",
+          name: "Mecânico Antigo",
+          email: "old@email.com",
         },
       });
       mockPrismaService.quote.findFirst.mockResolvedValueOnce(mockQuote);
       mockPrismaService.user.findFirst.mockResolvedValue({
-        id: 'mechanic-id',
-        role: 'mechanic',
-        name: 'Novo Mecânico',
-        email: 'new@email.com',
+        id: "mechanic-id",
+        role: "mechanic",
+        name: "Novo Mecânico",
+        email: "new@email.com",
       });
       mockPrismaService.quote.update.mockResolvedValue({
         ...mockQuote,
-        assignedMechanicId: 'mechanic-id',
+        assignedMechanicId: "mechanic-id",
         assignedMechanic: {
-          id: 'mechanic-id',
-          name: 'Novo Mecânico',
-          email: 'new@email.com',
+          id: "mechanic-id",
+          name: "Novo Mecânico",
+          email: "new@email.com",
         },
       });
 
       const result = await service.assignMechanic(
         mockTenantId,
-        'quote-id',
+        "quote-id",
         {
-          mechanicId: 'mechanic-id',
+          mechanicId: "mechanic-id",
         },
-        'admin-id',
-        'admin',
+        "admin-id",
+        "admin",
       );
 
       expect(result).toBeDefined();
       expect(result.assignedMechanic).toBeDefined();
-      expect(result.assignedMechanic?.id).toBe('mechanic-id');
-      expect(result.assignedMechanic?.name).toBe('Novo Mecânico');
-      expect(result.assignedMechanic?.email).toBe('new@email.com');
+      expect(result.assignedMechanic?.id).toBe("mechanic-id");
+      expect(result.assignedMechanic?.name).toBe("Novo Mecânico");
+      expect(result.assignedMechanic?.email).toBe("new@email.com");
     });
 
-    it('deve lançar NotFoundException se orçamento não existe', async () => {
+    it("deve lançar NotFoundException se orçamento não existe", async () => {
       mockPrismaService.quote.findFirst.mockResolvedValue(null);
 
       await expect(
         service.assignMechanic(
           mockTenantId,
-          'non-existent',
+          "non-existent",
           {
-            mechanicId: 'mechanic-id',
+            mechanicId: "mechanic-id",
           },
-          'admin-id',
-          'admin',
+          "admin-id",
+          "admin",
         ),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('deve lançar NotFoundException se mecânico não existe', async () => {
+    it("deve lançar NotFoundException se mecânico não existe", async () => {
       const mockQuote = createMockQuote();
       mockPrismaService.quote.findFirst.mockResolvedValueOnce(mockQuote);
       mockPrismaService.user.findFirst.mockResolvedValue(null);
@@ -1681,31 +1681,31 @@ describe('QuotesService', () => {
       await expect(
         service.assignMechanic(
           mockTenantId,
-          'quote-id',
+          "quote-id",
           {
-            mechanicId: 'non-existent',
+            mechanicId: "non-existent",
           },
-          'admin-id',
-          'admin',
+          "admin-id",
+          "admin",
         ),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('claimQuote', () => {
-    it('deve reivindicar orçamento', async () => {
+  describe("claimQuote", () => {
+    it("deve reivindicar orçamento", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.AWAITING_DIAGNOSIS,
         assignedMechanicId: null,
       });
       mockPrismaService.quote.findFirst.mockResolvedValueOnce(mockQuote);
       mockPrismaService.user.findFirst.mockResolvedValue({
-        id: 'mechanic-id',
-        role: 'mechanic',
+        id: "mechanic-id",
+        role: "mechanic",
       });
       mockPrismaService.quote.update.mockResolvedValue({
         ...mockQuote,
-        assignedMechanicId: 'mechanic-id',
+        assignedMechanicId: "mechanic-id",
       });
       mockPrismaService.quoteAssignmentHistory.create.mockResolvedValue({});
       mockPrismaService.quoteAssignmentHistory.updateMany.mockResolvedValue({
@@ -1714,34 +1714,34 @@ describe('QuotesService', () => {
 
       const result = await service.claimQuote(
         mockTenantId,
-        'quote-id',
-        'mechanic-id',
+        "quote-id",
+        "mechanic-id",
       );
 
       expect(result).toBeDefined();
     });
 
-    it('deve lançar NotFoundException se orçamento não existe', async () => {
+    it("deve lançar NotFoundException se orçamento não existe", async () => {
       mockPrismaService.quote.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.claimQuote(mockTenantId, 'non-existent', 'mechanic-id'),
+        service.claimQuote(mockTenantId, "non-existent", "mechanic-id"),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('deve lançar BadRequestException se já está atribuído', async () => {
+    it("deve lançar BadRequestException se já está atribuído", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.AWAITING_DIAGNOSIS,
-        assignedMechanicId: 'other-mechanic-id',
+        assignedMechanicId: "other-mechanic-id",
       });
       mockPrismaService.quote.findFirst.mockResolvedValueOnce(mockQuote);
 
       await expect(
-        service.claimQuote(mockTenantId, 'quote-id', 'mechanic-id'),
+        service.claimQuote(mockTenantId, "quote-id", "mechanic-id"),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve lançar BadRequestException se status não permitir claim', async () => {
+    it("deve lançar BadRequestException se status não permitir claim", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.SENT,
         assignedMechanicId: null,
@@ -1749,11 +1749,11 @@ describe('QuotesService', () => {
       mockPrismaService.quote.findFirst.mockResolvedValueOnce(mockQuote);
 
       await expect(
-        service.claimQuote(mockTenantId, 'quote-id', 'mechanic-id'),
+        service.claimQuote(mockTenantId, "quote-id", "mechanic-id"),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve lançar NotFoundException se mecânico não existe', async () => {
+    it("deve lançar NotFoundException se mecânico não existe", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.AWAITING_DIAGNOSIS,
         assignedMechanicId: null,
@@ -1762,70 +1762,70 @@ describe('QuotesService', () => {
       mockPrismaService.user.findFirst.mockResolvedValueOnce(null);
 
       await expect(
-        service.claimQuote(mockTenantId, 'quote-id', 'non-existent-mechanic'),
+        service.claimQuote(mockTenantId, "quote-id", "non-existent-mechanic"),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('deve continuar mesmo se notificação falhar', async () => {
+    it("deve continuar mesmo se notificação falhar", async () => {
       const mockQuote = createMockQuote({
         status: QuoteStatus.AWAITING_DIAGNOSIS,
         assignedMechanicId: null,
       });
       mockPrismaService.quote.findFirst.mockResolvedValueOnce(mockQuote);
       mockPrismaService.user.findFirst.mockResolvedValueOnce({
-        id: 'mechanic-id',
-        role: 'mechanic',
+        id: "mechanic-id",
+        role: "mechanic",
       });
       mockPrismaService.quote.update.mockResolvedValue({
         ...mockQuote,
-        assignedMechanicId: 'mechanic-id',
+        assignedMechanicId: "mechanic-id",
       });
       mockPrismaService.quoteAssignmentHistory.create.mockResolvedValue({});
       mockPrismaService.quoteAssignmentHistory.updateMany.mockResolvedValue({
         count: 0,
       });
       mockNotificationsService.create.mockRejectedValue(
-        new Error('Erro ao criar notificação'),
+        new Error("Erro ao criar notificação"),
       );
 
       const result = await service.claimQuote(
         mockTenantId,
-        'quote-id',
-        'mechanic-id',
+        "quote-id",
+        "mechanic-id",
       );
 
       expect(result).toBeDefined();
     });
   });
 
-  describe('regeneratePublicToken', () => {
-    it('deve regenerar token público', async () => {
+  describe("regeneratePublicToken", () => {
+    it("deve regenerar token público", async () => {
       const mockQuote = createMockQuote();
       mockPrismaService.quote.findFirst.mockResolvedValueOnce(mockQuote);
       mockPrismaService.quote.update.mockResolvedValue({
         ...mockQuote,
-        publicToken: 'new-token',
+        publicToken: "new-token",
       });
 
       const result = await service.regeneratePublicToken(
         mockTenantId,
-        'quote-id',
+        "quote-id",
       );
 
-      expect(result).toHaveProperty('publicToken');
+      expect(result).toHaveProperty("publicToken");
     });
 
-    it('deve lançar NotFoundException se orçamento não existe', async () => {
+    it("deve lançar NotFoundException se orçamento não existe", async () => {
       mockPrismaService.quote.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.regeneratePublicToken(mockTenantId, 'non-existent'),
+        service.regeneratePublicToken(mockTenantId, "non-existent"),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('findAll - filtros adicionais', () => {
-    it('deve filtrar por status', async () => {
+  describe("findAll - filtros adicionais", () => {
+    it("deve filtrar por status", async () => {
       const mockQuote = createMockQuote();
       mockPrismaService.$transaction.mockResolvedValue([[mockQuote], 1]);
 
@@ -1836,40 +1836,40 @@ describe('QuotesService', () => {
       expect(result.data).toHaveLength(1);
     });
 
-    it('deve filtrar por cliente', async () => {
+    it("deve filtrar por cliente", async () => {
       const mockQuote = createMockQuote();
       mockPrismaService.$transaction.mockResolvedValue([[mockQuote], 1]);
 
       const result = await service.findAll(mockTenantId, {
-        customerId: 'customer-id',
+        customerId: "customer-id",
       });
 
       expect(result.data).toHaveLength(1);
     });
 
-    it('deve filtrar por período', async () => {
+    it("deve filtrar por período", async () => {
       const mockQuote = createMockQuote();
       mockPrismaService.$transaction.mockResolvedValue([[mockQuote], 1]);
 
       const result = await service.findAll(mockTenantId, {
-        startDate: '2024-01-01',
-        endDate: '2024-12-31',
+        startDate: "2024-01-01",
+        endDate: "2024-12-31",
       });
 
       expect(result.data).toHaveLength(1);
     });
   });
 
-  describe('generatePdf', () => {
-    it('deve gerar PDF do orçamento', async () => {
+  describe("generatePdf", () => {
+    it("deve gerar PDF do orçamento", async () => {
       const mockQuote = createMockQuote();
-      const pdfBuffer = Buffer.from('pdf');
+      const pdfBuffer = Buffer.from("pdf");
       (mockPrismaService.quote.findFirst as jest.Mock).mockResolvedValue(
         mockQuote,
       );
       mockQuotePdfService.generatePdf.mockResolvedValue(pdfBuffer);
 
-      const result = await service.generatePdf(mockTenantId, 'quote-id');
+      const result = await service.generatePdf(mockTenantId, "quote-id");
 
       expect(result).toBeInstanceOf(Buffer);
       expect(mockQuotePdfService.generatePdf).toHaveBeenCalled();

@@ -10,15 +10,15 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
-} from '@nestjs/common';
+} from "@nestjs/common";
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
   ApiParam,
-} from '@nestjs/swagger';
-import { PartsService } from './parts.service';
+} from "@nestjs/swagger";
+import { PartsService } from "./parts.service";
 import {
   CreatePartDto,
   UpdatePartDto,
@@ -26,14 +26,14 @@ import {
   PartFiltersDto,
   ImportPartsDto,
   ImportPartsResponseDto,
-} from './dto';
-import { JwtAuthGuard } from '@core/auth/guards/jwt-auth.guard';
-import { RolesGuard } from '@core/auth/guards/roles.guard';
-import { Roles } from '@core/auth/decorators/roles.decorator';
-import { TenantId } from '@common/decorators/tenant.decorator';
+} from "./dto";
+import { JwtAuthGuard } from "@core/auth/guards/jwt-auth.guard";
+import { RolesGuard } from "@core/auth/guards/roles.guard";
+import { Roles } from "@core/auth/decorators/roles.decorator";
+import { TenantId } from "@common/decorators/tenant.decorator";
 
-@ApiTags('Parts')
-@Controller('parts')
+@ApiTags("Parts")
+@Controller("parts")
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 export class PartsController {
@@ -41,16 +41,16 @@ export class PartsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @Roles('admin', 'manager', 'receptionist')
-  @ApiOperation({ summary: 'Criar uma nova peça' })
+  @Roles("admin", "manager", "receptionist")
+  @ApiOperation({ summary: "Criar uma nova peça" })
   @ApiResponse({
     status: 201,
-    description: 'Peça criada com sucesso',
+    description: "Peça criada com sucesso",
     type: PartResponseDto,
   })
   @ApiResponse({
     status: 400,
-    description: 'Dados inválidos ou número de peça já existe',
+    description: "Dados inválidos ou número de peça já existe",
   })
   async create(
     @TenantId() tenantId: string,
@@ -61,22 +61,22 @@ export class PartsController {
 
   @Get()
   @HttpCode(HttpStatus.OK)
-  @Roles('admin', 'manager', 'mechanic', 'receptionist')
-  @ApiOperation({ summary: 'Listar peças com filtros e paginação' })
+  @Roles("admin", "manager", "mechanic", "receptionist")
+  @ApiOperation({ summary: "Listar peças com filtros e paginação" })
   @ApiResponse({
     status: 200,
-    description: 'Lista de peças',
+    description: "Lista de peças",
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
         data: {
-          type: 'array',
-          items: { $ref: '#/components/schemas/PartResponseDto' },
+          type: "array",
+          items: { $ref: "#/components/schemas/PartResponseDto" },
         },
-        total: { type: 'number', example: 100 },
-        page: { type: 'number', example: 1 },
-        limit: { type: 'number', example: 10 },
-        totalPages: { type: 'number', example: 10 },
+        total: { type: "number", example: 100 },
+        page: { type: "number", example: 1 },
+        limit: { type: "number", example: 10 },
+        totalPages: { type: "number", example: 10 },
       },
     },
   })
@@ -93,76 +93,76 @@ export class PartsController {
     return this.partsService.findAll(tenantId, filters);
   }
 
-  @Get(':id')
+  @Get(":id")
   @HttpCode(HttpStatus.OK)
-  @Roles('admin', 'manager', 'mechanic', 'receptionist')
-  @ApiOperation({ summary: 'Buscar peça por ID' })
-  @ApiParam({ name: 'id', description: 'ID da peça', type: String })
+  @Roles("admin", "manager", "mechanic", "receptionist")
+  @ApiOperation({ summary: "Buscar peça por ID" })
+  @ApiParam({ name: "id", description: "ID da peça", type: String })
   @ApiResponse({
     status: 200,
-    description: 'Peça encontrada',
+    description: "Peça encontrada",
     type: PartResponseDto,
   })
-  @ApiResponse({ status: 404, description: 'Peça não encontrada' })
+  @ApiResponse({ status: 404, description: "Peça não encontrada" })
   async findOne(
     @TenantId() tenantId: string,
-    @Param('id') id: string,
+    @Param("id") id: string,
   ): Promise<PartResponseDto> {
     return this.partsService.findOne(tenantId, id);
   }
 
-  @Patch(':id')
+  @Patch(":id")
   @HttpCode(HttpStatus.OK)
-  @Roles('admin', 'manager', 'receptionist')
-  @ApiOperation({ summary: 'Atualizar peça' })
-  @ApiParam({ name: 'id', description: 'ID da peça', type: String })
+  @Roles("admin", "manager", "receptionist")
+  @ApiOperation({ summary: "Atualizar peça" })
+  @ApiParam({ name: "id", description: "ID da peça", type: String })
   @ApiResponse({
     status: 200,
-    description: 'Peça atualizada com sucesso',
+    description: "Peça atualizada com sucesso",
     type: PartResponseDto,
   })
-  @ApiResponse({ status: 404, description: 'Peça não encontrada' })
+  @ApiResponse({ status: 404, description: "Peça não encontrada" })
   @ApiResponse({
     status: 400,
-    description: 'Número de peça já existe',
+    description: "Número de peça já existe",
   })
   async update(
     @TenantId() tenantId: string,
-    @Param('id') id: string,
+    @Param("id") id: string,
     @Body() updatePartDto: UpdatePartDto,
   ): Promise<PartResponseDto> {
     return this.partsService.update(tenantId, id, updatePartDto);
   }
 
-  @Delete(':id')
+  @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
-  @Roles('admin', 'manager')
-  @ApiOperation({ summary: 'Remover peça' })
-  @ApiParam({ name: 'id', description: 'ID da peça', type: String })
+  @Roles("admin", "manager")
+  @ApiOperation({ summary: "Remover peça" })
+  @ApiParam({ name: "id", description: "ID da peça", type: String })
   @ApiResponse({
     status: 204,
-    description: 'Peça removida com sucesso',
+    description: "Peça removida com sucesso",
   })
-  @ApiResponse({ status: 404, description: 'Peça não encontrada' })
+  @ApiResponse({ status: 404, description: "Peça não encontrada" })
   async remove(
     @TenantId() tenantId: string,
-    @Param('id') id: string,
+    @Param("id") id: string,
   ): Promise<void> {
     return this.partsService.remove(tenantId, id);
   }
 
-  @Post('import')
+  @Post("import")
   @HttpCode(HttpStatus.OK)
-  @Roles('admin', 'manager', 'receptionist')
-  @ApiOperation({ summary: 'Importar múltiplas peças via planilha' })
+  @Roles("admin", "manager", "receptionist")
+  @ApiOperation({ summary: "Importar múltiplas peças via planilha" })
   @ApiResponse({
     status: 200,
-    description: 'Importação concluída',
+    description: "Importação concluída",
     type: ImportPartsResponseDto,
   })
   @ApiResponse({
     status: 400,
-    description: 'Dados inválidos',
+    description: "Dados inválidos",
   })
   async import(
     @TenantId() tenantId: string,

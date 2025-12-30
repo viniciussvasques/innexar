@@ -1,9 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
-import axios, { AxiosInstance } from 'axios';
+import { Injectable, Logger } from "@nestjs/common";
+import axios, { AxiosInstance } from "axios";
 
 export interface CloudflareDNSRecord {
   id?: string;
-  type: 'A' | 'AAAA' | 'CNAME' | 'MX' | 'TXT' | 'SRV';
+  type: "A" | "AAAA" | "CNAME" | "MX" | "TXT" | "SRV";
   name: string;
   content: string;
   ttl?: number;
@@ -34,30 +34,35 @@ export class CloudflareService {
     const apiKey = process.env.CLOUDFLARE_API_KEY;
 
     if (!email || !apiKey) {
-      this.logger.error('Cloudflare credentials not configured');
-      throw new Error('Cloudflare credentials not configured');
+      this.logger.error("Cloudflare credentials not configured");
+      throw new Error("Cloudflare credentials not configured");
     }
 
     this.httpClient = axios.create({
-      baseURL: 'https://api.cloudflare.com/client/v4',
+      baseURL: "https://api.cloudflare.com/client/v4",
       headers: {
-        'X-Auth-Email': email,
-        'X-Auth-Key': apiKey,
-        'Content-Type': 'application/json',
+        "X-Auth-Email": email,
+        "X-Auth-Key": apiKey,
+        "Content-Type": "application/json",
       },
     });
 
     // Configurado via env ou hardcoded por enquanto
-    this.zoneId = process.env.CLOUDFLARE_ZONE_ID || '7ddb2a90032bfd195d470e2a2335e256';
-    this.baseDomain = process.env.CLOUDFLARE_BASE_DOMAIN || 'mecanica365.com';
+    this.zoneId =
+      process.env.CLOUDFLARE_ZONE_ID || "7ddb2a90032bfd195d470e2a2335e256";
+    this.baseDomain = process.env.CLOUDFLARE_BASE_DOMAIN || "mecanica365.com";
   }
 
   /**
    * Cria um registro DNS para um subdomain
    */
-  async createDNSRecord(subdomain: string, record: Omit<CloudflareDNSRecord, 'name'>): Promise<boolean> {
+  async createDNSRecord(
+    subdomain: string,
+    record: Omit<CloudflareDNSRecord, "name">,
+  ): Promise<boolean> {
     try {
-      const fullDomain = subdomain === '@' ? this.baseDomain : `${subdomain}.${this.baseDomain}`;
+      const fullDomain =
+        subdomain === "@" ? this.baseDomain : `${subdomain}.${this.baseDomain}`;
 
       // Verifica se o registro já existe
       const existingRecord = await this.getDNSRecord(fullDomain);
@@ -73,14 +78,16 @@ export class CloudflareService {
         proxied: record.proxied ?? true, // Proxied por padrão
       };
 
-      const response = (await this.httpClient.post(
+      const response = await this.httpClient.post(
         `/zones/${this.zoneId}/dns_records`,
         dnsRecord,
-      )) as { data: CloudflareApiResponse<CloudflareDNSRecord> };
-      const data = response.data;
+      );
+      const data = (response as any).data as CloudflareApiResponse<any>;
 
       if (data.success) {
-        this.logger.log(`✅ DNS record created: ${fullDomain} → ${record.content}`);
+        this.logger.log(
+          `✅ DNS record created: ${fullDomain} → ${record.content}`,
+        );
         return true;
       }
 
@@ -89,8 +96,12 @@ export class CloudflareService {
         data.errors ?? [],
       );
       return false;
-    } catch (error) {
-      this.logger.error(`❌ Error creating DNS record for ${subdomain}:`, error.message);
+    } catch (error: unknown) {
+      const err = error as Error;
+      this.logger.error(
+        `❌ Error creating DNS record for ${subdomain}:`,
+        err.message,
+      );
       return false;
     }
   }
@@ -100,7 +111,8 @@ export class CloudflareService {
    */
   async deleteDNSRecord(subdomain: string): Promise<boolean> {
     try {
-      const fullDomain = subdomain === '@' ? this.baseDomain : `${subdomain}.${this.baseDomain}`;
+      const fullDomain =
+        subdomain === "@" ? this.baseDomain : `${subdomain}.${this.baseDomain}`;
       const record = await this.getDNSRecord(fullDomain);
 
       if (!record) {
@@ -108,10 +120,10 @@ export class CloudflareService {
         return true;
       }
 
-      const response = (await this.httpClient.delete(
+      const response = await this.httpClient.delete(
         `/zones/${this.zoneId}/dns_records/${record.id}`,
-      )) as { data: CloudflareApiResponse<CloudflareDNSRecord> };
-      const data = response.data;
+      );
+      const data = (response as any).data as CloudflareApiResponse<any>;
 
       if (data.success) {
         this.logger.log(`✅ DNS record deleted: ${fullDomain}`);
@@ -123,8 +135,12 @@ export class CloudflareService {
         data.errors ?? [],
       );
       return false;
-    } catch (error) {
-      this.logger.error(`❌ Error deleting DNS record for ${subdomain}:`, error.message);
+    } catch (error: unknown) {
+      const err = error as Error;
+      this.logger.error(
+        `❌ Error deleting DNS record for ${subdomain}:`,
+        err.message,
+      );
       return false;
     }
   }
@@ -132,20 +148,32 @@ export class CloudflareService {
   /**
    * Busca um registro DNS por nome
    */
-  private async getDNSRecord(name: string): Promise<CloudflareDNSRecord | null> {
+  private async getDNSRecord(
+    name: string,
+  ): Promise<CloudflareDNSRecord | null> {
     try {
-      const response = (await this.httpClient.get(
+      const response = await this.httpClient.get(
         `/zones/${this.zoneId}/dns_records?name=${encodeURIComponent(name)}`,
-      )) as { data: CloudflareApiResponse<CloudflareDNSRecord[]> };
-      const data = response.data;
+      );
+      const data = (response as any).data as CloudflareApiResponse<
+        CloudflareDNSRecord[]
+      >;
 
-      if (data?.success && Array.isArray(data?.result) && data.result.length > 0) {
-        return data.result[0] as CloudflareDNSRecord;
+      if (
+        data?.success &&
+        Array.isArray(data?.result) &&
+        data.result.length > 0
+      ) {
+        return data.result[0];
       }
 
       return null;
-    } catch (error: any) {
-      this.logger.error(`Error fetching DNS record for ${name}:`, error?.message || String(error));
+    } catch (error: unknown) {
+      const err = error as Error;
+      this.logger.error(
+        `Error fetching DNS record for ${name}:`,
+        err?.message || String(error),
+      );
       return null;
     }
   }
@@ -155,18 +183,24 @@ export class CloudflareService {
    */
   async listDNSRecords(): Promise<CloudflareDNSRecord[]> {
     try {
-      const response = (await this.httpClient.get(
+      const response = await this.httpClient.get(
         `/zones/${this.zoneId}/dns_records`,
-      )) as { data: CloudflareApiResponse<CloudflareDNSRecord[]> };
-      const data = response.data;
+      );
+      const data = (response as any).data as CloudflareApiResponse<
+        CloudflareDNSRecord[]
+      >;
 
       if (data?.success && Array.isArray(data?.result)) {
-        return data.result as CloudflareDNSRecord[];
+        return data.result;
       }
 
       return [];
-    } catch (error: any) {
-      this.logger.error('Error listing DNS records:', error?.message || String(error));
+    } catch (error: unknown) {
+      const err = error as Error;
+      this.logger.error(
+        "Error listing DNS records:",
+        err?.message || String(error),
+      );
       return [];
     }
   }
@@ -175,10 +209,10 @@ export class CloudflareService {
    * Cria subdomínio para um tenant
    */
   async createTenantSubdomain(subdomain: string): Promise<boolean> {
-    const ip = process.env.CLOUDFLARE_SERVER_IP || '66.93.25.251';
+    const ip = process.env.CLOUDFLARE_SERVER_IP || "66.93.25.251";
 
     return this.createDNSRecord(subdomain, {
-      type: 'A',
+      type: "A",
       content: ip,
       proxied: true,
     });
@@ -205,18 +239,20 @@ export class CloudflareService {
    */
   async getZoneStatus(): Promise<CloudflareZone | null> {
     try {
-      const response = (await this.httpClient.get(
-        `/zones/${this.zoneId}`,
-      )) as { data: CloudflareApiResponse<CloudflareZone> };
-      const data = response.data;
+      const response = await this.httpClient.get(`/zones/${this.zoneId}`);
+      const data = (response as any).data as CloudflareApiResponse<CloudflareZone>;
 
       if (data?.success && data?.result) {
-        return data.result as CloudflareZone;
+        return data.result;
       }
 
       return null;
-    } catch (error: any) {
-      this.logger.error('Error fetching zone status:', error?.message || String(error));
+    } catch (error: unknown) {
+      const err = error as Error;
+      this.logger.error(
+        "Error fetching zone status:",
+        err?.message || String(error),
+      );
       return null;
     }
   }

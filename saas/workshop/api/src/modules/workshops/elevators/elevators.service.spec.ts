@@ -1,32 +1,32 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test, TestingModule } from "@nestjs/testing";
 import {
   NotFoundException,
   ConflictException,
   BadRequestException,
-} from '@nestjs/common';
-import { ElevatorsService } from './elevators.service';
-import { PrismaService } from '@database/prisma.service';
+} from "@nestjs/common";
+import { ElevatorsService } from "./elevators.service";
+import { PrismaService } from "@database/prisma.service";
 import {
   CreateElevatorDto,
   UpdateElevatorDto,
   ElevatorType,
   ElevatorStatus,
-} from './dto';
+} from "./dto";
 
-describe('ElevatorsService', () => {
+describe("ElevatorsService", () => {
   let service: ElevatorsService;
 
-  const mockTenantId = 'tenant-id';
+  const mockTenantId = "tenant-id";
   const mockElevator = {
-    id: 'elevator-id',
+    id: "elevator-id",
     tenantId: mockTenantId,
-    name: 'Elevador 1',
-    number: 'ELEV-001',
-    type: 'hydraulic',
+    name: "Elevador 1",
+    number: "ELEV-001",
+    type: "hydraulic",
     capacity: 3.5,
-    status: 'free',
-    location: 'Setor A - Box 1',
-    notes: 'Revisão anual em dezembro',
+    status: "free",
+    location: "Setor A - Box 1",
+    notes: "Revisão anual em dezembro",
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -74,26 +74,26 @@ describe('ElevatorsService', () => {
     jest.clearAllMocks();
   });
 
-  describe('create', () => {
+  describe("create", () => {
     const createElevatorDto: CreateElevatorDto = {
-      name: 'Elevador 1',
-      number: 'ELEV-001',
+      name: "Elevador 1",
+      number: "ELEV-001",
       type: ElevatorType.HYDRAULIC,
       capacity: 3.5,
       status: ElevatorStatus.FREE,
-      location: 'Setor A - Box 1',
-      notes: 'Revisão anual em dezembro',
+      location: "Setor A - Box 1",
+      notes: "Revisão anual em dezembro",
     };
 
-    it('deve criar um elevador com sucesso', async () => {
+    it("deve criar um elevador com sucesso", async () => {
       mockPrismaService.elevator.findFirst.mockResolvedValue(null);
       mockPrismaService.elevator.create.mockResolvedValue(mockElevator);
 
       const result = await service.create(mockTenantId, createElevatorDto);
 
-      expect(result).toHaveProperty('id', 'elevator-id');
-      expect(result).toHaveProperty('name', 'Elevador 1');
-      expect(result).toHaveProperty('number', 'ELEV-001');
+      expect(result).toHaveProperty("id", "elevator-id");
+      expect(result).toHaveProperty("name", "Elevador 1");
+      expect(result).toHaveProperty("number", "ELEV-001");
       expect(mockPrismaService.elevator.findFirst).toHaveBeenCalledWith({
         where: {
           tenantId: mockTenantId,
@@ -114,7 +114,7 @@ describe('ElevatorsService', () => {
       });
     });
 
-    it('deve lançar ConflictException quando número já existe', async () => {
+    it("deve lançar ConflictException quando número já existe", async () => {
       mockPrismaService.elevator.findFirst.mockResolvedValue(mockElevator);
 
       await expect(
@@ -123,20 +123,20 @@ describe('ElevatorsService', () => {
       expect(mockPrismaService.elevator.create).not.toHaveBeenCalled();
     });
 
-    it('deve criar elevador com valores padrão quando não fornecidos', async () => {
+    it("deve criar elevador com valores padrão quando não fornecidos", async () => {
       const dtoWithoutDefaults: CreateElevatorDto = {
-        name: 'Elevador 2',
-        number: 'ELEV-002',
+        name: "Elevador 2",
+        number: "ELEV-002",
         capacity: 4.0,
       };
 
       mockPrismaService.elevator.findFirst.mockResolvedValue(null);
       mockPrismaService.elevator.create.mockResolvedValue({
         ...mockElevator,
-        id: 'elevator-2',
-        number: 'ELEV-002',
-        type: 'hydraulic',
-        status: 'free',
+        id: "elevator-2",
+        number: "ELEV-002",
+        type: "hydraulic",
+        status: "free",
       });
 
       await service.create(mockTenantId, dtoWithoutDefaults);
@@ -146,9 +146,9 @@ describe('ElevatorsService', () => {
           tenantId: mockTenantId,
           name: dtoWithoutDefaults.name.trim(),
           number: dtoWithoutDefaults.number.trim(),
-          type: 'hydraulic',
+          type: "hydraulic",
           capacity: dtoWithoutDefaults.capacity,
-          status: 'free',
+          status: "free",
           location: null,
           notes: null,
         },
@@ -156,8 +156,8 @@ describe('ElevatorsService', () => {
     });
   });
 
-  describe('findAll', () => {
-    it('deve listar elevadores com sucesso', async () => {
+  describe("findAll", () => {
+    it("deve listar elevadores com sucesso", async () => {
       const mockElevators = [mockElevator];
       mockPrismaService.elevator.findMany.mockResolvedValue(mockElevators);
       mockPrismaService.elevator.count.mockResolvedValue(1);
@@ -165,21 +165,21 @@ describe('ElevatorsService', () => {
       const filters = { page: 1, limit: 10 };
       const result = await service.findAll(mockTenantId, filters);
 
-      expect(result).toHaveProperty('data');
-      expect(result).toHaveProperty('total', 1);
-      expect(result).toHaveProperty('page', 1);
-      expect(result).toHaveProperty('limit', 10);
+      expect(result).toHaveProperty("data");
+      expect(result).toHaveProperty("total", 1);
+      expect(result).toHaveProperty("page", 1);
+      expect(result).toHaveProperty("limit", 10);
       expect(result.data).toHaveLength(1);
       expect(mockPrismaService.elevator.findMany).toHaveBeenCalled();
       expect(mockPrismaService.elevator.count).toHaveBeenCalled();
     });
 
-    it('deve aplicar filtros corretamente', async () => {
+    it("deve aplicar filtros corretamente", async () => {
       mockPrismaService.elevator.findMany.mockResolvedValue([mockElevator]);
       mockPrismaService.elevator.count.mockResolvedValue(1);
 
       const filters = {
-        name: 'Elevador',
+        name: "Elevador",
         status: ElevatorStatus.FREE,
         type: ElevatorType.HYDRAULIC,
         page: 1,
@@ -193,7 +193,7 @@ describe('ElevatorsService', () => {
           tenantId: mockTenantId,
           name: {
             contains: filters.name,
-            mode: 'insensitive',
+            mode: "insensitive",
           },
           status: filters.status,
           type: filters.type,
@@ -201,12 +201,12 @@ describe('ElevatorsService', () => {
         skip: 0,
         take: 10,
         orderBy: {
-          createdAt: 'desc',
+          createdAt: "desc",
         },
       });
     });
 
-    it('deve aplicar paginação corretamente', async () => {
+    it("deve aplicar paginação corretamente", async () => {
       mockPrismaService.elevator.findMany.mockResolvedValue([]);
       mockPrismaService.elevator.count.mockResolvedValue(0);
 
@@ -222,37 +222,37 @@ describe('ElevatorsService', () => {
     });
   });
 
-  describe('findOne', () => {
-    it('deve buscar elevador por ID com sucesso', async () => {
+  describe("findOne", () => {
+    it("deve buscar elevador por ID com sucesso", async () => {
       mockPrismaService.elevator.findFirst.mockResolvedValue(mockElevator);
 
-      const result = await service.findOne(mockTenantId, 'elevator-id');
+      const result = await service.findOne(mockTenantId, "elevator-id");
 
-      expect(result).toHaveProperty('id', 'elevator-id');
+      expect(result).toHaveProperty("id", "elevator-id");
       expect(mockPrismaService.elevator.findFirst).toHaveBeenCalledWith({
         where: {
-          id: 'elevator-id',
+          id: "elevator-id",
           tenantId: mockTenantId,
         },
       });
     });
 
-    it('deve lançar NotFoundException quando elevador não existe', async () => {
+    it("deve lançar NotFoundException quando elevador não existe", async () => {
       mockPrismaService.elevator.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.findOne(mockTenantId, 'non-existent-id'),
+        service.findOne(mockTenantId, "non-existent-id"),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('update', () => {
+  describe("update", () => {
     const updateElevatorDto: UpdateElevatorDto = {
-      name: 'Elevador 1 - Atualizado',
+      name: "Elevador 1 - Atualizado",
       status: ElevatorStatus.OCCUPIED,
     };
 
-    it('deve atualizar elevador com sucesso', async () => {
+    it("deve atualizar elevador com sucesso", async () => {
       mockPrismaService.elevator.findFirst
         .mockResolvedValueOnce(mockElevator) // Verifica existência
         .mockResolvedValueOnce(null); // Verifica se número já existe (não existe)
@@ -263,66 +263,66 @@ describe('ElevatorsService', () => {
 
       const result = await service.update(
         mockTenantId,
-        'elevator-id',
+        "elevator-id",
         updateElevatorDto,
       );
 
-      expect(result).toHaveProperty('name', 'Elevador 1 - Atualizado');
-      expect(result).toHaveProperty('status', ElevatorStatus.OCCUPIED);
+      expect(result).toHaveProperty("name", "Elevador 1 - Atualizado");
+      expect(result).toHaveProperty("status", ElevatorStatus.OCCUPIED);
       expect(mockPrismaService.elevator.update).toHaveBeenCalled();
     });
 
-    it('deve lançar NotFoundException quando elevador não existe', async () => {
+    it("deve lançar NotFoundException quando elevador não existe", async () => {
       mockPrismaService.elevator.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.update(mockTenantId, 'non-existent-id', updateElevatorDto),
+        service.update(mockTenantId, "non-existent-id", updateElevatorDto),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('deve lançar ConflictException quando número já existe em outro elevador', async () => {
+    it("deve lançar ConflictException quando número já existe em outro elevador", async () => {
       mockPrismaService.elevator.findFirst
         .mockResolvedValueOnce(mockElevator)
         .mockResolvedValueOnce({
           ...mockElevator,
-          id: 'other-elevator-id',
+          id: "other-elevator-id",
         });
 
       const dtoWithNumber: UpdateElevatorDto = {
-        number: 'ELEV-002',
+        number: "ELEV-002",
       };
 
       await expect(
-        service.update(mockTenantId, 'elevator-id', dtoWithNumber),
+        service.update(mockTenantId, "elevator-id", dtoWithNumber),
       ).rejects.toThrow(ConflictException);
     });
 
-    it('deve atualizar apenas campos fornecidos', async () => {
+    it("deve atualizar apenas campos fornecidos", async () => {
       mockPrismaService.elevator.findFirst
         .mockResolvedValueOnce(mockElevator)
         .mockResolvedValueOnce(null);
       mockPrismaService.elevator.update.mockResolvedValue({
         ...mockElevator,
-        name: 'Novo Nome',
+        name: "Novo Nome",
       });
 
       const partialDto: UpdateElevatorDto = {
-        name: 'Novo Nome',
+        name: "Novo Nome",
       };
 
-      await service.update(mockTenantId, 'elevator-id', partialDto);
+      await service.update(mockTenantId, "elevator-id", partialDto);
 
       expect(mockPrismaService.elevator.update).toHaveBeenCalledWith({
-        where: { id: 'elevator-id' },
+        where: { id: "elevator-id" },
         data: {
-          name: 'Novo Nome',
+          name: "Novo Nome",
         },
       });
     });
   });
 
-  describe('remove', () => {
-    it('deve remover elevador com sucesso', async () => {
+  describe("remove", () => {
+    it("deve remover elevador com sucesso", async () => {
       // Configurar mocks explicitamente
       mockPrismaService.elevator.findFirst = jest
         .fn()
@@ -334,194 +334,194 @@ describe('ElevatorsService', () => {
         .fn()
         .mockResolvedValue(mockElevator);
 
-      await service.remove(mockTenantId, 'elevator-id');
+      await service.remove(mockTenantId, "elevator-id");
 
       expect(mockPrismaService.elevator.findFirst).toHaveBeenCalledWith({
         where: {
-          id: 'elevator-id',
+          id: "elevator-id",
           tenantId: mockTenantId,
         },
       });
       expect(mockPrismaService.elevatorUsage.findFirst).toHaveBeenCalledWith({
         where: {
-          elevatorId: 'elevator-id',
+          elevatorId: "elevator-id",
           endTime: null,
         },
       });
       expect(mockPrismaService.elevator.delete).toHaveBeenCalledWith({
-        where: { id: 'elevator-id' },
+        where: { id: "elevator-id" },
       });
     });
 
-    it('deve lançar NotFoundException quando elevador não existe', async () => {
+    it("deve lançar NotFoundException quando elevador não existe", async () => {
       mockPrismaService.elevator.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.remove(mockTenantId, 'non-existent-id'),
+        service.remove(mockTenantId, "non-existent-id"),
       ).rejects.toThrow(NotFoundException);
       expect(mockPrismaService.elevator.delete).not.toHaveBeenCalled();
     });
 
-    it('deve lançar BadRequestException quando há uso ativo', async () => {
+    it("deve lançar BadRequestException quando há uso ativo", async () => {
       mockPrismaService.elevator.findFirst.mockResolvedValue(mockElevator);
       mockPrismaService.elevatorUsage.findFirst.mockResolvedValue({
-        id: 'usage-id',
-        elevatorId: 'elevator-id',
+        id: "usage-id",
+        elevatorId: "elevator-id",
         endTime: null,
       });
 
-      await expect(service.remove(mockTenantId, 'elevator-id')).rejects.toThrow(
+      await expect(service.remove(mockTenantId, "elevator-id")).rejects.toThrow(
         BadRequestException,
       );
       expect(mockPrismaService.elevator.delete).not.toHaveBeenCalled();
     });
   });
 
-  describe('startUsage', () => {
+  describe("startUsage", () => {
     const startUsageDto = {
-      serviceOrderId: 'so-id',
-      vehicleId: 'vehicle-id',
-      notes: 'Iniciando uso do elevador',
+      serviceOrderId: "so-id",
+      vehicleId: "vehicle-id",
+      notes: "Iniciando uso do elevador",
     };
 
-    it('deve iniciar uso do elevador com sucesso', async () => {
+    it("deve iniciar uso do elevador com sucesso", async () => {
       mockPrismaService.elevator.findFirst.mockResolvedValue(mockElevator);
       mockPrismaService.elevatorUsage.findFirst.mockResolvedValue(null);
       mockPrismaService.customerVehicle.findFirst.mockResolvedValue({
-        id: 'vehicle-id',
+        id: "vehicle-id",
         customer: { tenantId: mockTenantId },
       });
       mockPrismaService.serviceOrder.findFirst.mockResolvedValue({
-        id: 'so-id',
+        id: "so-id",
         tenantId: mockTenantId,
       });
       mockPrismaService.elevatorUsage.create.mockResolvedValue({
-        id: 'usage-id',
-        elevatorId: 'elevator-id',
-        serviceOrderId: 'so-id',
-        vehicleId: 'vehicle-id',
+        id: "usage-id",
+        elevatorId: "elevator-id",
+        serviceOrderId: "so-id",
+        vehicleId: "vehicle-id",
         startTime: new Date(),
         endTime: null,
-        notes: 'Iniciando uso do elevador',
+        notes: "Iniciando uso do elevador",
         elevator: mockElevator,
         serviceOrder: {
-          id: 'so-id',
-          number: 'OS-001',
-          customer: { id: 'customer-id', name: 'Cliente' },
-          technician: { id: 'tech-id', name: 'Técnico' },
+          id: "so-id",
+          number: "OS-001",
+          customer: { id: "customer-id", name: "Cliente" },
+          technician: { id: "tech-id", name: "Técnico" },
         },
         vehicle: {
-          id: 'vehicle-id',
-          placa: 'ABC1234',
-          make: 'Toyota',
-          model: 'Corolla',
+          id: "vehicle-id",
+          placa: "ABC1234",
+          make: "Toyota",
+          model: "Corolla",
           year: 2020,
-          customer: { id: 'customer-id', name: 'Cliente' },
+          customer: { id: "customer-id", name: "Cliente" },
         },
         createdAt: new Date(),
       });
       mockPrismaService.elevator.update.mockResolvedValue({
         ...mockElevator,
-        status: 'occupied',
+        status: "occupied",
       });
 
       const result = await service.startUsage(
         mockTenantId,
-        'elevator-id',
+        "elevator-id",
         startUsageDto,
       );
 
       expect(result).toBeDefined();
-      expect(result.elevatorId).toBe('elevator-id');
+      expect(result.elevatorId).toBe("elevator-id");
       expect(mockPrismaService.elevatorUsage.create).toHaveBeenCalled();
       expect(mockPrismaService.elevator.update).toHaveBeenCalledWith({
-        where: { id: 'elevator-id' },
-        data: { status: 'occupied' },
+        where: { id: "elevator-id" },
+        data: { status: "occupied" },
       });
     });
 
-    it('deve lançar NotFoundException quando elevador não existe', async () => {
+    it("deve lançar NotFoundException quando elevador não existe", async () => {
       mockPrismaService.elevator.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.startUsage(mockTenantId, 'non-existent-id', startUsageDto),
+        service.startUsage(mockTenantId, "non-existent-id", startUsageDto),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('deve lançar BadRequestException quando elevador está ocupado', async () => {
+    it("deve lançar BadRequestException quando elevador está ocupado", async () => {
       mockPrismaService.elevator.findFirst.mockResolvedValue({
         ...mockElevator,
-        status: 'occupied',
+        status: "occupied",
       });
 
       await expect(
-        service.startUsage(mockTenantId, 'elevator-id', startUsageDto),
+        service.startUsage(mockTenantId, "elevator-id", startUsageDto),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve lançar BadRequestException quando elevador está em manutenção', async () => {
+    it("deve lançar BadRequestException quando elevador está em manutenção", async () => {
       mockPrismaService.elevator.findFirst.mockResolvedValue({
         ...mockElevator,
-        status: 'maintenance',
+        status: "maintenance",
       });
 
       await expect(
-        service.startUsage(mockTenantId, 'elevator-id', startUsageDto),
+        service.startUsage(mockTenantId, "elevator-id", startUsageDto),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve lançar ConflictException quando já existe uso ativo', async () => {
+    it("deve lançar ConflictException quando já existe uso ativo", async () => {
       mockPrismaService.elevator.findFirst.mockResolvedValue(mockElevator);
       mockPrismaService.elevatorUsage.findFirst.mockResolvedValue({
-        id: 'usage-id',
-        elevatorId: 'elevator-id',
+        id: "usage-id",
+        elevatorId: "elevator-id",
         endTime: null,
       });
 
       await expect(
-        service.startUsage(mockTenantId, 'elevator-id', startUsageDto),
+        service.startUsage(mockTenantId, "elevator-id", startUsageDto),
       ).rejects.toThrow(ConflictException);
     });
 
-    it('deve lançar NotFoundException quando veículo não existe', async () => {
+    it("deve lançar NotFoundException quando veículo não existe", async () => {
       mockPrismaService.elevator.findFirst.mockResolvedValue(mockElevator);
       mockPrismaService.elevatorUsage.findFirst.mockResolvedValue(null);
       mockPrismaService.customerVehicle.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.startUsage(mockTenantId, 'elevator-id', startUsageDto),
+        service.startUsage(mockTenantId, "elevator-id", startUsageDto),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('deve lançar NotFoundException quando OS não existe', async () => {
+    it("deve lançar NotFoundException quando OS não existe", async () => {
       mockPrismaService.elevator.findFirst.mockResolvedValue(mockElevator);
       mockPrismaService.elevatorUsage.findFirst.mockResolvedValue(null);
       mockPrismaService.customerVehicle.findFirst.mockResolvedValue({
-        id: 'vehicle-id',
+        id: "vehicle-id",
         customer: { tenantId: mockTenantId },
       });
       mockPrismaService.serviceOrder.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.startUsage(mockTenantId, 'elevator-id', startUsageDto),
+        service.startUsage(mockTenantId, "elevator-id", startUsageDto),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('deve iniciar uso sem veículo e OS quando não fornecidos', async () => {
+    it("deve iniciar uso sem veículo e OS quando não fornecidos", async () => {
       const dtoWithoutIds = {
-        notes: 'Uso sem veículo',
+        notes: "Uso sem veículo",
       };
 
       mockPrismaService.elevator.findFirst.mockResolvedValue(mockElevator);
       mockPrismaService.elevatorUsage.findFirst.mockResolvedValue(null);
       mockPrismaService.elevatorUsage.create.mockResolvedValue({
-        id: 'usage-id',
-        elevatorId: 'elevator-id',
+        id: "usage-id",
+        elevatorId: "elevator-id",
         serviceOrderId: null,
         vehicleId: null,
         startTime: new Date(),
         endTime: null,
-        notes: 'Uso sem veículo',
+        notes: "Uso sem veículo",
         elevator: mockElevator,
         serviceOrder: null,
         vehicle: null,
@@ -529,12 +529,12 @@ describe('ElevatorsService', () => {
       });
       mockPrismaService.elevator.update.mockResolvedValue({
         ...mockElevator,
-        status: 'occupied',
+        status: "occupied",
       });
 
       const result = await service.startUsage(
         mockTenantId,
-        'elevator-id',
+        "elevator-id",
         dtoWithoutIds,
       );
 
@@ -543,55 +543,55 @@ describe('ElevatorsService', () => {
     });
   });
 
-  describe('endUsage', () => {
+  describe("endUsage", () => {
     const endUsageDto = {
-      notes: 'Finalizando uso do elevador',
+      notes: "Finalizando uso do elevador",
     };
 
     const mockActiveUsage = {
-      id: 'usage-id',
-      elevatorId: 'elevator-id',
+      id: "usage-id",
+      elevatorId: "elevator-id",
       startTime: new Date(Date.now() - 3600000), // 1 hora atrás
       endTime: null,
-      notes: 'Nota inicial',
+      notes: "Nota inicial",
       elevator: mockElevator,
       serviceOrder: {
-        id: 'so-id',
-        number: 'OS-001',
-        customer: { id: 'customer-id', name: 'Cliente' },
-        technician: { id: 'tech-id', name: 'Técnico' },
+        id: "so-id",
+        number: "OS-001",
+        customer: { id: "customer-id", name: "Cliente" },
+        technician: { id: "tech-id", name: "Técnico" },
       },
       vehicle: {
-        id: 'vehicle-id',
-        placa: 'ABC1234',
-        make: 'Toyota',
-        model: 'Corolla',
+        id: "vehicle-id",
+        placa: "ABC1234",
+        make: "Toyota",
+        model: "Corolla",
         year: 2020,
-        customer: { id: 'customer-id', name: 'Cliente' },
+        customer: { id: "customer-id", name: "Cliente" },
       },
       createdAt: new Date(),
     };
 
-    it('deve finalizar uso do elevador com sucesso', async () => {
+    it("deve finalizar uso do elevador com sucesso", async () => {
       const endTime = new Date();
       mockPrismaService.elevator.findFirst.mockResolvedValue(mockElevator);
       mockPrismaService.elevatorUsage.findFirst.mockResolvedValue({
-        id: 'usage-id',
-        notes: 'Nota inicial',
+        id: "usage-id",
+        notes: "Nota inicial",
       });
       mockPrismaService.elevatorUsage.update.mockResolvedValue({
         ...mockActiveUsage,
         endTime,
-        notes: 'Nota inicial\nFinalizando uso do elevador',
+        notes: "Nota inicial\nFinalizando uso do elevador",
       });
       mockPrismaService.elevator.update.mockResolvedValue({
         ...mockElevator,
-        status: 'free',
+        status: "free",
       });
 
       const result = await service.endUsage(
         mockTenantId,
-        'elevator-id',
+        "elevator-id",
         endUsageDto,
       );
 
@@ -599,56 +599,56 @@ describe('ElevatorsService', () => {
       expect(result.endTime).toBeDefined();
       expect(mockPrismaService.elevatorUsage.update).toHaveBeenCalled();
       expect(mockPrismaService.elevator.update).toHaveBeenCalledWith({
-        where: { id: 'elevator-id' },
-        data: { status: 'free' },
+        where: { id: "elevator-id" },
+        data: { status: "free" },
       });
     });
 
-    it('deve lançar NotFoundException quando elevador não existe', async () => {
+    it("deve lançar NotFoundException quando elevador não existe", async () => {
       mockPrismaService.elevator.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.endUsage(mockTenantId, 'non-existent-id', endUsageDto),
+        service.endUsage(mockTenantId, "non-existent-id", endUsageDto),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('deve lançar NotFoundException quando não há uso ativo', async () => {
+    it("deve lançar NotFoundException quando não há uso ativo", async () => {
       mockPrismaService.elevator.findFirst.mockResolvedValue(mockElevator);
       mockPrismaService.elevatorUsage.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.endUsage(mockTenantId, 'elevator-id', endUsageDto),
+        service.endUsage(mockTenantId, "elevator-id", endUsageDto),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('deve finalizar uso usando usageId fornecido', async () => {
+    it("deve finalizar uso usando usageId fornecido", async () => {
       const dtoWithUsageId = {
-        usageId: 'usage-id',
-        notes: 'Finalizando',
+        usageId: "usage-id",
+        notes: "Finalizando",
       };
       const endTime = new Date();
 
       mockPrismaService.elevator.findFirst.mockResolvedValue(mockElevator);
       mockPrismaService.elevatorUsage.findFirst.mockResolvedValue({
-        id: 'usage-id',
+        id: "usage-id",
         notes: null,
       });
       mockPrismaService.elevatorUsage.update.mockResolvedValue({
         ...mockActiveUsage,
         endTime,
-        notes: 'Finalizando',
+        notes: "Finalizando",
       });
       mockPrismaService.elevator.update.mockResolvedValue({
         ...mockElevator,
-        status: 'free',
+        status: "free",
       });
 
-      await service.endUsage(mockTenantId, 'elevator-id', dtoWithUsageId);
+      await service.endUsage(mockTenantId, "elevator-id", dtoWithUsageId);
 
       expect(mockPrismaService.elevatorUsage.findFirst).toHaveBeenCalledWith({
         where: {
-          id: 'usage-id',
-          elevatorId: 'elevator-id',
+          id: "usage-id",
+          elevatorId: "elevator-id",
           endTime: null,
         },
         select: {
@@ -659,139 +659,139 @@ describe('ElevatorsService', () => {
     });
   });
 
-  describe('reserve', () => {
+  describe("reserve", () => {
     const reserveDto = {
-      serviceOrderId: 'so-id',
-      vehicleId: 'vehicle-id',
+      serviceOrderId: "so-id",
+      vehicleId: "vehicle-id",
       scheduledStartTime: new Date(Date.now() + 86400000).toISOString(), // Amanhã
-      notes: 'Reserva para amanhã',
+      notes: "Reserva para amanhã",
     };
 
-    it('deve reservar elevador com sucesso', async () => {
+    it("deve reservar elevador com sucesso", async () => {
       mockPrismaService.elevator.findFirst.mockResolvedValue(mockElevator);
       mockPrismaService.customerVehicle.findFirst.mockResolvedValue({
-        id: 'vehicle-id',
+        id: "vehicle-id",
         customer: { tenantId: mockTenantId },
       });
       mockPrismaService.serviceOrder.findFirst.mockResolvedValue({
-        id: 'so-id',
+        id: "so-id",
         tenantId: mockTenantId,
       });
       mockPrismaService.elevatorUsage.create.mockResolvedValue({
-        id: 'usage-id',
-        elevatorId: 'elevator-id',
-        serviceOrderId: 'so-id',
-        vehicleId: 'vehicle-id',
+        id: "usage-id",
+        elevatorId: "elevator-id",
+        serviceOrderId: "so-id",
+        vehicleId: "vehicle-id",
         startTime: new Date(reserveDto.scheduledStartTime),
         endTime: null,
-        notes: 'Reserva para amanhã',
+        notes: "Reserva para amanhã",
         elevator: mockElevator,
         serviceOrder: {
-          id: 'so-id',
-          number: 'OS-001',
-          customer: { id: 'customer-id', name: 'Cliente' },
-          technician: { id: 'tech-id', name: 'Técnico' },
+          id: "so-id",
+          number: "OS-001",
+          customer: { id: "customer-id", name: "Cliente" },
+          technician: { id: "tech-id", name: "Técnico" },
         },
         vehicle: {
-          id: 'vehicle-id',
-          placa: 'ABC1234',
-          make: 'Toyota',
-          model: 'Corolla',
+          id: "vehicle-id",
+          placa: "ABC1234",
+          make: "Toyota",
+          model: "Corolla",
           year: 2020,
-          customer: { id: 'customer-id', name: 'Cliente' },
+          customer: { id: "customer-id", name: "Cliente" },
         },
         createdAt: new Date(),
       });
       mockPrismaService.elevator.update.mockResolvedValue({
         ...mockElevator,
-        status: 'scheduled',
+        status: "scheduled",
       });
 
       const result = await service.reserve(
         mockTenantId,
-        'elevator-id',
+        "elevator-id",
         reserveDto,
       );
 
       expect(result).toBeDefined();
       expect(mockPrismaService.elevatorUsage.create).toHaveBeenCalled();
       expect(mockPrismaService.elevator.update).toHaveBeenCalledWith({
-        where: { id: 'elevator-id' },
-        data: { status: 'scheduled' },
+        where: { id: "elevator-id" },
+        data: { status: "scheduled" },
       });
     });
 
-    it('deve lançar NotFoundException quando elevador não existe', async () => {
+    it("deve lançar NotFoundException quando elevador não existe", async () => {
       mockPrismaService.elevator.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.reserve(mockTenantId, 'non-existent-id', reserveDto),
+        service.reserve(mockTenantId, "non-existent-id", reserveDto),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('deve lançar ConflictException quando elevador está ocupado', async () => {
+    it("deve lançar ConflictException quando elevador está ocupado", async () => {
       mockPrismaService.elevator.findFirst.mockResolvedValue({
         ...mockElevator,
-        status: 'occupied',
+        status: "occupied",
       });
 
       await expect(
-        service.reserve(mockTenantId, 'elevator-id', reserveDto),
+        service.reserve(mockTenantId, "elevator-id", reserveDto),
       ).rejects.toThrow(ConflictException);
     });
 
-    it('deve lançar BadRequestException quando elevador está em manutenção', async () => {
+    it("deve lançar BadRequestException quando elevador está em manutenção", async () => {
       mockPrismaService.elevator.findFirst.mockResolvedValue({
         ...mockElevator,
-        status: 'maintenance',
+        status: "maintenance",
       });
 
       await expect(
-        service.reserve(mockTenantId, 'elevator-id', reserveDto),
+        service.reserve(mockTenantId, "elevator-id", reserveDto),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve lançar NotFoundException quando veículo não existe', async () => {
+    it("deve lançar NotFoundException quando veículo não existe", async () => {
       mockPrismaService.elevator.findFirst.mockResolvedValue(mockElevator);
       mockPrismaService.customerVehicle.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.reserve(mockTenantId, 'elevator-id', reserveDto),
+        service.reserve(mockTenantId, "elevator-id", reserveDto),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('deve lançar NotFoundException quando OS não existe', async () => {
+    it("deve lançar NotFoundException quando OS não existe", async () => {
       mockPrismaService.elevator.findFirst.mockResolvedValue(mockElevator);
       mockPrismaService.customerVehicle.findFirst.mockResolvedValue({
-        id: 'vehicle-id',
+        id: "vehicle-id",
         customer: { tenantId: mockTenantId },
       });
       mockPrismaService.serviceOrder.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.reserve(mockTenantId, 'elevator-id', reserveDto),
+        service.reserve(mockTenantId, "elevator-id", reserveDto),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('deve usar data atual quando scheduledStartTime não for fornecido', async () => {
+    it("deve usar data atual quando scheduledStartTime não for fornecido", async () => {
       const dtoWithoutTime = {
-        serviceOrderId: 'so-id',
-        vehicleId: 'vehicle-id',
-        notes: 'Reserva',
+        serviceOrderId: "so-id",
+        vehicleId: "vehicle-id",
+        notes: "Reserva",
       };
 
       mockPrismaService.elevator.findFirst.mockResolvedValue(mockElevator);
       mockPrismaService.customerVehicle.findFirst.mockResolvedValue({
-        id: 'vehicle-id',
+        id: "vehicle-id",
         customer: { tenantId: mockTenantId },
       });
       mockPrismaService.serviceOrder.findFirst.mockResolvedValue({
-        id: 'so-id',
+        id: "so-id",
         tenantId: mockTenantId,
       });
       mockPrismaService.elevatorUsage.create.mockResolvedValue({
-        id: 'usage-id',
-        elevatorId: 'elevator-id',
+        id: "usage-id",
+        elevatorId: "elevator-id",
         startTime: new Date(),
         endTime: null,
         elevator: mockElevator,
@@ -801,37 +801,37 @@ describe('ElevatorsService', () => {
       });
       mockPrismaService.elevator.update.mockResolvedValue({
         ...mockElevator,
-        status: 'scheduled',
+        status: "scheduled",
       });
 
-      await service.reserve(mockTenantId, 'elevator-id', dtoWithoutTime);
+      await service.reserve(mockTenantId, "elevator-id", dtoWithoutTime);
 
       expect(mockPrismaService.elevatorUsage.create).toHaveBeenCalled();
     });
   });
 
-  describe('getCurrentUsage', () => {
-    it('deve retornar uso atual quando existe', async () => {
+  describe("getCurrentUsage", () => {
+    it("deve retornar uso atual quando existe", async () => {
       const mockUsage = {
-        id: 'usage-id',
-        elevatorId: 'elevator-id',
+        id: "usage-id",
+        elevatorId: "elevator-id",
         startTime: new Date(),
         endTime: null,
-        notes: 'Uso ativo',
+        notes: "Uso ativo",
         elevator: mockElevator,
         serviceOrder: {
-          id: 'so-id',
-          number: 'OS-001',
-          customer: { id: 'customer-id', name: 'Cliente' },
-          technician: { id: 'tech-id', name: 'Técnico' },
+          id: "so-id",
+          number: "OS-001",
+          customer: { id: "customer-id", name: "Cliente" },
+          technician: { id: "tech-id", name: "Técnico" },
         },
         vehicle: {
-          id: 'vehicle-id',
-          placa: 'ABC1234',
-          make: 'Toyota',
-          model: 'Corolla',
+          id: "vehicle-id",
+          placa: "ABC1234",
+          make: "Toyota",
+          model: "Corolla",
           year: 2020,
-          customer: { id: 'customer-id', name: 'Cliente' },
+          customer: { id: "customer-id", name: "Cliente" },
         },
         createdAt: new Date(),
       };
@@ -839,50 +839,50 @@ describe('ElevatorsService', () => {
       mockPrismaService.elevator.findFirst.mockResolvedValue(mockElevator);
       mockPrismaService.elevatorUsage.findFirst.mockResolvedValue(mockUsage);
 
-      const result = await service.getCurrentUsage(mockTenantId, 'elevator-id');
+      const result = await service.getCurrentUsage(mockTenantId, "elevator-id");
 
       expect(result).toBeDefined();
-      expect(result?.elevatorId).toBe('elevator-id');
+      expect(result?.elevatorId).toBe("elevator-id");
     });
 
-    it('deve retornar null quando não há uso ativo', async () => {
+    it("deve retornar null quando não há uso ativo", async () => {
       mockPrismaService.elevator.findFirst.mockResolvedValue(mockElevator);
       mockPrismaService.elevatorUsage.findFirst.mockResolvedValue(null);
 
-      const result = await service.getCurrentUsage(mockTenantId, 'elevator-id');
+      const result = await service.getCurrentUsage(mockTenantId, "elevator-id");
 
       expect(result).toBeNull();
     });
 
-    it('deve lançar NotFoundException quando elevador não existe', async () => {
+    it("deve lançar NotFoundException quando elevador não existe", async () => {
       mockPrismaService.elevator.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.getCurrentUsage(mockTenantId, 'non-existent-id'),
+        service.getCurrentUsage(mockTenantId, "non-existent-id"),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('getUsageHistory', () => {
-    it('deve retornar histórico de uso com sucesso', async () => {
+  describe("getUsageHistory", () => {
+    it("deve retornar histórico de uso com sucesso", async () => {
       const mockUsages = [
         {
-          id: 'usage-1',
-          elevatorId: 'elevator-id',
+          id: "usage-1",
+          elevatorId: "elevator-id",
           startTime: new Date(),
           endTime: new Date(),
-          notes: 'Uso 1',
+          notes: "Uso 1",
           elevator: mockElevator,
           serviceOrder: null,
           vehicle: null,
           createdAt: new Date(),
         },
         {
-          id: 'usage-2',
-          elevatorId: 'elevator-id',
+          id: "usage-2",
+          elevatorId: "elevator-id",
           startTime: new Date(),
           endTime: new Date(),
-          notes: 'Uso 2',
+          notes: "Uso 2",
           elevator: mockElevator,
           serviceOrder: null,
           vehicle: null,
@@ -893,7 +893,7 @@ describe('ElevatorsService', () => {
       mockPrismaService.elevator.findFirst.mockResolvedValue(mockElevator);
       mockPrismaService.$transaction.mockResolvedValue([mockUsages, 2]);
 
-      const result = await service.getUsageHistory(mockTenantId, 'elevator-id');
+      const result = await service.getUsageHistory(mockTenantId, "elevator-id");
 
       expect(result).toBeDefined();
       expect(result.data).toHaveLength(2);
@@ -902,14 +902,14 @@ describe('ElevatorsService', () => {
       expect(result.limit).toBe(10);
     });
 
-    it('deve aplicar filtros de data', async () => {
-      const startDate = new Date('2024-01-01');
-      const endDate = new Date('2024-12-31');
+    it("deve aplicar filtros de data", async () => {
+      const startDate = new Date("2024-01-01");
+      const endDate = new Date("2024-12-31");
 
       mockPrismaService.elevator.findFirst.mockResolvedValue(mockElevator);
       mockPrismaService.$transaction.mockResolvedValue([[], 0]);
 
-      await service.getUsageHistory(mockTenantId, 'elevator-id', {
+      await service.getUsageHistory(mockTenantId, "elevator-id", {
         startDate,
         endDate,
         page: 1,
@@ -919,11 +919,11 @@ describe('ElevatorsService', () => {
       expect(mockPrismaService.$transaction).toHaveBeenCalled();
     });
 
-    it('deve aplicar paginação corretamente', async () => {
+    it("deve aplicar paginação corretamente", async () => {
       mockPrismaService.elevator.findFirst.mockResolvedValue(mockElevator);
       mockPrismaService.$transaction.mockResolvedValue([[], 0]);
 
-      await service.getUsageHistory(mockTenantId, 'elevator-id', {
+      await service.getUsageHistory(mockTenantId, "elevator-id", {
         page: 2,
         limit: 5,
       });
@@ -931,11 +931,11 @@ describe('ElevatorsService', () => {
       expect(mockPrismaService.$transaction).toHaveBeenCalled();
     });
 
-    it('deve lançar NotFoundException quando elevador não existe', async () => {
+    it("deve lançar NotFoundException quando elevador não existe", async () => {
       mockPrismaService.elevator.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.getUsageHistory(mockTenantId, 'non-existent-id'),
+        service.getUsageHistory(mockTenantId, "non-existent-id"),
       ).rejects.toThrow(NotFoundException);
     });
   });

@@ -2,11 +2,11 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
-} from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from '../../../database/prisma.service';
-import { CreateAdminPlanDto } from './dto/create-admin-plan.dto';
-import { UpdateAdminPlanDto } from './dto/update-admin-plan.dto';
+} from "@nestjs/common";
+import { Prisma } from "@prisma/client";
+import { PrismaService } from "../../../database/prisma.service";
+import { CreateAdminPlanDto } from "./dto/create-admin-plan.dto";
+import { UpdateAdminPlanDto } from "./dto/update-admin-plan.dto";
 
 @Injectable()
 export class AdminPlansService {
@@ -15,7 +15,7 @@ export class AdminPlansService {
   async findAll(includeInactive = false) {
     const plans = await this.prisma.plan.findMany({
       where: includeInactive ? undefined : { isActive: true },
-      orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
     });
 
     return plans;
@@ -25,7 +25,7 @@ export class AdminPlansService {
     const plan = await this.prisma.plan.findUnique({ where: { id } });
 
     if (!plan) {
-      throw new NotFoundException('Plano não encontrado');
+      throw new NotFoundException("Plano não encontrado");
     }
 
     return plan;
@@ -35,7 +35,7 @@ export class AdminPlansService {
     const plan = await this.prisma.plan.findUnique({ where: { code } });
 
     if (!plan) {
-      throw new NotFoundException('Plano não encontrado');
+      throw new NotFoundException("Plano não encontrado");
     }
 
     return plan;
@@ -56,9 +56,9 @@ export class AdminPlansService {
     } catch (error: unknown) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2002'
+        error.code === "P2002"
       ) {
-        throw new BadRequestException('Código do plano já está em uso');
+        throw new BadRequestException("Código do plano já está em uso");
       }
       throw error;
     }
@@ -68,7 +68,7 @@ export class AdminPlansService {
     const existing = await this.prisma.plan.findUnique({ where: { id } });
 
     if (!existing) {
-      throw new NotFoundException('Plano não encontrado');
+      throw new NotFoundException("Plano não encontrado");
     }
 
     if (dto.code && dto.code !== existing.code) {
@@ -93,29 +93,29 @@ export class AdminPlansService {
     const existing = await this.prisma.plan.findUnique({ where: { id } });
 
     if (!existing) {
-      throw new NotFoundException('Plano não encontrado');
+      throw new NotFoundException("Plano não encontrado");
     }
 
     if (existing.isDefault) {
-      throw new BadRequestException('Não é possível remover o plano padrão');
+      throw new BadRequestException("Não é possível remover o plano padrão");
     }
 
     const activeSubscriptions = await this.prisma.subscription.count({
       where: {
         planId: id,
-        status: 'active',
+        status: "active",
       },
     });
 
     if (activeSubscriptions > 0) {
       throw new BadRequestException(
-        'Existem assinaturas ativas associadas a este plano',
+        "Existem assinaturas ativas associadas a este plano",
       );
     }
 
     await this.prisma.plan.delete({ where: { id } });
 
-    return { message: 'Plano removido com sucesso' };
+    return { message: "Plano removido com sucesso" };
   }
 
   async getStats() {
@@ -124,7 +124,7 @@ export class AdminPlansService {
         this.prisma.plan.count(),
         this.prisma.plan.count({ where: { isActive: true } }),
         this.prisma.subscription.groupBy({
-          by: ['planId'],
+          by: ["planId"],
           _count: { planId: true },
           where: { planId: { not: null } },
         }),
@@ -143,7 +143,7 @@ export class AdminPlansService {
       .filter((item) => item.planId)
       .map((item) => ({
         planId: item.planId as string,
-        planName: planMap.get(item.planId as string) ?? 'Plano desconhecido',
+        planName: planMap.get(item.planId as string) ?? "Plano desconhecido",
         count: item._count.planId,
       }));
 
@@ -159,7 +159,7 @@ export class AdminPlansService {
     const existing = await this.prisma.plan.findUnique({ where: { code } });
 
     if (existing) {
-      throw new BadRequestException('Código do plano já está em uso');
+      throw new BadRequestException("Código do plano já está em uso");
     }
   }
 
@@ -178,9 +178,11 @@ export class AdminPlansService {
       monthlyPrice: new Prisma.Decimal(dto.monthlyPrice),
       annualPrice: new Prisma.Decimal(dto.annualPrice),
       serviceOrdersLimit:
-        dto.serviceOrdersLimit === null ? null : dto.serviceOrdersLimit ?? null,
-      partsLimit: dto.partsLimit === null ? null : dto.partsLimit ?? null,
-      usersLimit: dto.usersLimit === null ? null : dto.usersLimit ?? null,
+        dto.serviceOrdersLimit === null
+          ? null
+          : (dto.serviceOrdersLimit ?? null),
+      partsLimit: dto.partsLimit === null ? null : (dto.partsLimit ?? null),
+      usersLimit: dto.usersLimit === null ? null : (dto.usersLimit ?? null),
       features: dto.features,
       isActive: dto.isActive ?? true,
       isDefault: dto.isDefault ?? false,

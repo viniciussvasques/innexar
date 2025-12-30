@@ -4,15 +4,15 @@ import {
   ExecutionContext,
   HttpException,
   HttpStatus,
-} from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import { BillingService } from '../billing.service';
-import { RequestWithTenant } from '@common/interfaces/request-with-tenant.interface';
+} from "@nestjs/common";
+import { Reflector } from "@nestjs/core";
+import { BillingService } from "../billing.service";
+import { RequestWithTenant } from "@common/interfaces/request-with-tenant.interface";
 
 export enum LimitType {
-  SERVICE_ORDERS = 'serviceOrders',
-  PARTS = 'parts',
-  USERS = 'users',
+  SERVICE_ORDERS = "serviceOrders",
+  PARTS = "parts",
+  USERS = "users",
 }
 
 @Injectable()
@@ -39,7 +39,7 @@ export class PlanLimitGuard implements CanActivate {
           throw new HttpException(
             {
               statusCode: HttpStatus.TOO_MANY_REQUESTS,
-              message: 'Limite de service orders atingido para este período',
+              message: "Limite de service orders atingido para este período",
               limit: subscription.serviceOrdersLimit,
               used: subscription.serviceOrdersUsed,
             },

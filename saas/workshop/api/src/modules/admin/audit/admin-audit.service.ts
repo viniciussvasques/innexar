@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../../database/prisma.service';
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "../../../database/prisma.service";
 
 interface AuditFilters {
   page: number;
@@ -14,10 +14,19 @@ interface AuditFilters {
 
 @Injectable()
 export class AdminAuditService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async findAll(filters: AuditFilters) {
-    const { page, limit, action, resourceType, tenantId, userId, startDate, endDate } = filters;
+    const {
+      page,
+      limit,
+      action,
+      resourceType,
+      tenantId,
+      userId,
+      startDate,
+      endDate,
+    } = filters;
     const skip = (page - 1) * limit;
 
     const where: any = {};
@@ -37,7 +46,7 @@ export class AdminAuditService {
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         include: {
           user: {
             select: {
@@ -73,7 +82,15 @@ export class AdminAuditService {
     const last7d = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const last30d = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    const [total, today, last7days, last30days, byAction, byResource, byTenant] = await Promise.all([
+    const [
+      total,
+      today,
+      last7days,
+      last30days,
+      byAction,
+      byResource,
+      byTenant,
+    ] = await Promise.all([
       this.prisma.auditLog.count(),
       this.prisma.auditLog.count({
         where: { createdAt: { gte: last24h } },
@@ -85,21 +102,21 @@ export class AdminAuditService {
         where: { createdAt: { gte: last30d } },
       }),
       this.prisma.auditLog.groupBy({
-        by: ['action'],
+        by: ["action"],
         _count: true,
-        orderBy: { _count: { action: 'desc' } },
+        orderBy: { _count: { action: "desc" } },
         take: 10,
       }),
       this.prisma.auditLog.groupBy({
-        by: ['resourceType'],
+        by: ["resourceType"],
         _count: true,
-        orderBy: { _count: { resourceType: 'desc' } },
+        orderBy: { _count: { resourceType: "desc" } },
         take: 10,
       }),
       this.prisma.auditLog.groupBy({
-        by: ['tenantId'],
+        by: ["tenantId"],
         _count: true,
-        orderBy: { _count: { tenantId: 'desc' } },
+        orderBy: { _count: { tenantId: "desc" } },
         take: 10,
       }),
     ]);

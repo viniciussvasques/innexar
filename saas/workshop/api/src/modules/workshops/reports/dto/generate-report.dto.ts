@@ -1,23 +1,23 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import {
   IsString,
   IsOptional,
   IsEnum,
   IsDateString,
   IsArray,
-} from 'class-validator';
-import { ReportType, ReportFormat } from './report-type.enum';
+} from "class-validator";
+import { ReportType, ReportFormat } from "./report-type.enum";
 
 export class GenerateReportDto {
   @ApiProperty({
-    description: 'Tipo de relatório',
+    description: "Tipo de relatório",
     enum: ReportType,
   })
   @IsEnum(ReportType)
   type: ReportType;
 
   @ApiPropertyOptional({
-    description: 'Formato de exportação',
+    description: "Formato de exportação",
     enum: ReportFormat,
     default: ReportFormat.PDF,
   })
@@ -26,21 +26,21 @@ export class GenerateReportDto {
   format?: ReportFormat;
 
   @ApiPropertyOptional({
-    description: 'Data inicial',
+    description: "Data inicial",
   })
   @IsOptional()
   @IsDateString()
   startDate?: string;
 
   @ApiPropertyOptional({
-    description: 'Data final',
+    description: "Data final",
   })
   @IsOptional()
   @IsDateString()
   endDate?: string;
 
   @ApiPropertyOptional({
-    description: 'Filtros adicionais (dependem do tipo de relatório)',
+    description: "Filtros adicionais (dependem do tipo de relatório)",
     type: Object,
     additionalProperties: true,
   })
@@ -48,7 +48,7 @@ export class GenerateReportDto {
   filters?: Record<string, unknown>;
 
   @ApiPropertyOptional({
-    description: 'Campos a incluir no relatório',
+    description: "Campos a incluir no relatório",
     type: [String],
   })
   @IsOptional()

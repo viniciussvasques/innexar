@@ -1,6 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { Cron, CronExpression } from '@nestjs/schedule';
-import { BackupService } from '../backup.service';
+import { Injectable, Logger } from "@nestjs/common";
+import { Cron, CronExpression } from "@nestjs/schedule";
+import { BackupService } from "../backup.service";
 
 /**
  * Job agendado para limpar backups expirados
@@ -15,7 +15,7 @@ export class CleanupExpiredBackupsJob {
   @Cron(CronExpression.EVERY_DAY_AT_3AM)
   async handleCleanup(): Promise<void> {
     try {
-      this.logger.log('Iniciando limpeza de backups expirados');
+      this.logger.log("Iniciando limpeza de backups expirados");
 
       const deleted = await this.backupService.cleanupExpiredBackups();
 

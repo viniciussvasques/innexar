@@ -1,30 +1,30 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
-import { IntegrationsService } from './integrations.service';
-import { PrismaService } from '@database/prisma.service';
+import { Test, TestingModule } from "@nestjs/testing";
+import { NotFoundException, BadRequestException } from "@nestjs/common";
+import { IntegrationsService } from "./integrations.service";
+import { PrismaService } from "@database/prisma.service";
 import {
   CreateIntegrationDto,
   UpdateIntegrationDto,
   IntegrationType,
   IntegrationStatus,
   TestIntegrationDto,
-} from './dto';
-import axios, { AxiosError } from 'axios';
+} from "./dto";
+import axios, { AxiosError } from "axios";
 
-jest.mock('axios');
+jest.mock("axios");
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 
-describe('IntegrationsService', () => {
+describe("IntegrationsService", () => {
   let service: IntegrationsService;
 
-  const mockTenantId = 'tenant-id';
+  const mockTenantId = "tenant-id";
   const mockIntegration = {
-    id: 'integration-id',
+    id: "integration-id",
     tenantId: mockTenantId,
-    name: 'API RENAVAN',
+    name: "API RENAVAN",
     type: IntegrationType.RENAVAN,
-    apiUrl: 'https://api.example.com',
-    apiKey: 'test-key',
+    apiUrl: "https://api.example.com",
+    apiKey: "test-key",
     config: {},
     status: IntegrationStatus.ACTIVE,
     isActive: true,
@@ -60,24 +60,24 @@ describe('IntegrationsService', () => {
     jest.clearAllMocks();
   });
 
-  describe('create', () => {
+  describe("create", () => {
     const createIntegrationDto: CreateIntegrationDto = {
-      name: 'API RENAVAN',
+      name: "API RENAVAN",
       type: IntegrationType.RENAVAN,
-      apiUrl: 'https://api.example.com',
-      apiKey: 'test-key',
+      apiUrl: "https://api.example.com",
+      apiKey: "test-key",
       isActive: true,
     };
 
-    it('deve criar uma integração com sucesso', async () => {
+    it("deve criar uma integração com sucesso", async () => {
       mockPrismaService.integration.create.mockResolvedValue(mockIntegration);
 
       const result = await service.create(mockTenantId, createIntegrationDto);
 
-      expect(result).toHaveProperty('id');
-      expect(result.name).toBe('API RENAVAN');
+      expect(result).toHaveProperty("id");
+      expect(result.name).toBe("API RENAVAN");
       expect(result.type).toBe(IntegrationType.RENAVAN);
-      expect(result.apiUrl).toBe('https://api.example.com');
+      expect(result.apiUrl).toBe("https://api.example.com");
       expect(result.status).toBe(IntegrationStatus.ACTIVE);
       expect(result.isActive).toBe(true);
       expect(mockPrismaService.integration.create).toHaveBeenCalledWith({
@@ -94,19 +94,19 @@ describe('IntegrationsService', () => {
       });
     });
 
-    it('deve criar integração sem API key', async () => {
+    it("deve criar integração sem API key", async () => {
       const dtoWithoutKey: CreateIntegrationDto = {
-        name: 'API CEP',
+        name: "API CEP",
         type: IntegrationType.CEP,
-        apiUrl: 'https://api.cep.com',
+        apiUrl: "https://api.cep.com",
       };
 
       const mockIntegrationWithoutKey = {
         ...mockIntegration,
-        id: 'integration-cep',
-        name: 'API CEP',
+        id: "integration-cep",
+        name: "API CEP",
         type: IntegrationType.CEP,
-        apiUrl: 'https://api.cep.com',
+        apiUrl: "https://api.cep.com",
         apiKey: null,
       };
 
@@ -120,11 +120,11 @@ describe('IntegrationsService', () => {
       expect(result.type).toBe(IntegrationType.CEP);
     });
 
-    it('deve criar integração com config', async () => {
+    it("deve criar integração com config", async () => {
       const dtoWithConfig: CreateIntegrationDto = {
-        name: 'API Custom',
+        name: "API Custom",
         type: IntegrationType.CUSTOM,
-        apiUrl: 'https://api.custom.com',
+        apiUrl: "https://api.custom.com",
         config: {
           timeout: 5000,
           retry: 3,
@@ -133,10 +133,10 @@ describe('IntegrationsService', () => {
 
       const mockIntegrationWithConfig = {
         ...mockIntegration,
-        id: 'integration-custom',
-        name: 'API Custom',
+        id: "integration-custom",
+        name: "API Custom",
         type: IntegrationType.CUSTOM,
-        apiUrl: 'https://api.custom.com',
+        apiUrl: "https://api.custom.com",
         config: dtoWithConfig.config,
       };
 
@@ -149,20 +149,20 @@ describe('IntegrationsService', () => {
       expect(result.config).toEqual(dtoWithConfig.config);
     });
 
-    it('deve criar integração inativa quando isActive false', async () => {
+    it("deve criar integração inativa quando isActive false", async () => {
       const dtoInactive: CreateIntegrationDto = {
-        name: 'API Inativa',
+        name: "API Inativa",
         type: IntegrationType.VIN,
-        apiUrl: 'https://api.vin.com',
+        apiUrl: "https://api.vin.com",
         isActive: false,
       };
 
       const mockIntegrationInactive = {
         ...mockIntegration,
-        id: 'integration-inactive',
-        name: 'API Inativa',
+        id: "integration-inactive",
+        name: "API Inativa",
         type: IntegrationType.VIN,
-        apiUrl: 'https://api.vin.com',
+        apiUrl: "https://api.vin.com",
         isActive: false,
       };
 
@@ -175,19 +175,19 @@ describe('IntegrationsService', () => {
       expect(result.isActive).toBe(false);
     });
 
-    it('deve criar integração ativa por padrão', async () => {
+    it("deve criar integração ativa por padrão", async () => {
       const dtoWithoutActive: CreateIntegrationDto = {
-        name: 'API Default',
+        name: "API Default",
         type: IntegrationType.CEP,
-        apiUrl: 'https://api.default.com',
+        apiUrl: "https://api.default.com",
       };
 
       const mockIntegrationDefault = {
         ...mockIntegration,
-        id: 'integration-default',
-        name: 'API Default',
+        id: "integration-default",
+        name: "API Default",
         type: IntegrationType.CEP,
-        apiUrl: 'https://api.default.com',
+        apiUrl: "https://api.default.com",
         isActive: true,
       };
 
@@ -200,7 +200,7 @@ describe('IntegrationsService', () => {
       expect(result.isActive).toBe(true);
     });
 
-    it('deve criar integração com todos os tipos', async () => {
+    it("deve criar integração com todos os tipos", async () => {
       const types = [
         IntegrationType.RENAVAN,
         IntegrationType.VIN,
@@ -233,8 +233,8 @@ describe('IntegrationsService', () => {
     });
   });
 
-  describe('findAll', () => {
-    it('deve listar integrações com sucesso', async () => {
+  describe("findAll", () => {
+    it("deve listar integrações com sucesso", async () => {
       mockPrismaService.integration.findMany.mockResolvedValue([
         mockIntegration,
       ]);
@@ -243,41 +243,41 @@ describe('IntegrationsService', () => {
 
       expect(Array.isArray(result)).toBe(true);
       expect(result).toHaveLength(1);
-      expect(result[0]).toHaveProperty('id', mockIntegration.id);
+      expect(result[0]).toHaveProperty("id", mockIntegration.id);
     });
   });
 
-  describe('findOne', () => {
-    it('deve buscar integração por ID com sucesso', async () => {
+  describe("findOne", () => {
+    it("deve buscar integração por ID com sucesso", async () => {
       mockPrismaService.integration.findFirst.mockResolvedValue(
         mockIntegration,
       );
 
-      const result = await service.findOne(mockTenantId, 'integration-id');
+      const result = await service.findOne(mockTenantId, "integration-id");
 
-      expect(result).toHaveProperty('id', mockIntegration.id);
+      expect(result).toHaveProperty("id", mockIntegration.id);
       expect(result.name).toBe(mockIntegration.name);
     });
 
-    it('deve lançar erro se integração não encontrada', async () => {
+    it("deve lançar erro se integração não encontrada", async () => {
       mockPrismaService.integration.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.findOne(mockTenantId, 'non-existent'),
+        service.findOne(mockTenantId, "non-existent"),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('update', () => {
-    it('deve atualizar integração com sucesso', async () => {
+  describe("update", () => {
+    it("deve atualizar integração com sucesso", async () => {
       const updateDto: UpdateIntegrationDto = {
-        name: 'Updated Name',
+        name: "Updated Name",
         isActive: false,
       };
 
       const updatedIntegration = {
         ...mockIntegration,
-        name: 'Updated Name',
+        name: "Updated Name",
         isActive: false,
       };
 
@@ -290,80 +290,80 @@ describe('IntegrationsService', () => {
 
       const result = await service.update(
         mockTenantId,
-        'integration-id',
+        "integration-id",
         updateDto,
       );
 
-      expect(result.name).toBe('Updated Name');
+      expect(result.name).toBe("Updated Name");
       expect(result.isActive).toBe(false);
       expect(mockPrismaService.integration.update).toHaveBeenCalled();
     });
 
-    it('deve lançar erro se integração não encontrada', async () => {
+    it("deve lançar erro se integração não encontrada", async () => {
       const updateDto: UpdateIntegrationDto = {
-        name: 'Updated Name',
+        name: "Updated Name",
       };
 
       mockPrismaService.integration.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.update(mockTenantId, 'non-existent', updateDto),
+        service.update(mockTenantId, "non-existent", updateDto),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('remove', () => {
-    it('deve remover integração com sucesso', async () => {
+  describe("remove", () => {
+    it("deve remover integração com sucesso", async () => {
       mockPrismaService.integration.findFirst.mockResolvedValue(
         mockIntegration,
       );
       mockPrismaService.integration.delete.mockResolvedValue(mockIntegration);
 
-      await service.remove(mockTenantId, 'integration-id');
+      await service.remove(mockTenantId, "integration-id");
 
       expect(mockPrismaService.integration.delete).toHaveBeenCalledWith({
-        where: { id: 'integration-id' },
+        where: { id: "integration-id" },
       });
     });
 
-    it('deve lançar erro se integração não encontrada', async () => {
+    it("deve lançar erro se integração não encontrada", async () => {
       mockPrismaService.integration.findFirst.mockResolvedValue(null);
 
       await expect(
-        service.remove(mockTenantId, 'non-existent'),
+        service.remove(mockTenantId, "non-existent"),
       ).rejects.toThrow(NotFoundException);
     });
   });
 
-  describe('test', () => {
-    it('deve lançar erro se integração não encontrada', async () => {
+  describe("test", () => {
+    it("deve lançar erro se integração não encontrada", async () => {
       const testData: TestIntegrationDto = {
-        testData: { renavan: '12345678901' },
+        testData: { renavan: "12345678901" },
       };
 
       await expect(
-        service.test(mockTenantId, 'non-existent', testData),
+        service.test(mockTenantId, "non-existent", testData),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('deve lançar erro se integração não está ativa', async () => {
+    it("deve lançar erro se integração não está ativa", async () => {
       // Mock findOne para retornar integração inativa
-      jest.spyOn(service, 'findOne').mockResolvedValue({
+      jest.spyOn(service, "findOne").mockResolvedValue({
         ...mockIntegration,
         isActive: false,
       });
 
       const testData: TestIntegrationDto = {
-        testData: { renavan: '12345678901' },
+        testData: { renavan: "12345678901" },
       };
 
       await expect(
-        service.test(mockTenantId, 'integration-id', testData),
+        service.test(mockTenantId, "integration-id", testData),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve testar integração com sucesso', async () => {
-      jest.spyOn(service, 'findOne').mockResolvedValue(mockIntegration);
+    it("deve testar integração com sucesso", async () => {
+      jest.spyOn(service, "findOne").mockResolvedValue(mockIntegration);
 
       mockedAxios.post.mockResolvedValue({
         status: 200,
@@ -371,36 +371,36 @@ describe('IntegrationsService', () => {
       });
 
       const testData: TestIntegrationDto = {
-        testData: { renavan: '12345678901' },
+        testData: { renavan: "12345678901" },
       };
 
       const result = await service.test(
         mockTenantId,
-        'integration-id',
+        "integration-id",
         testData,
       );
 
       expect(result.success).toBe(true);
-      expect(result.message).toContain('sucesso');
+      expect(result.message).toContain("sucesso");
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockedAxios.post).toHaveBeenCalledWith(
         mockIntegration.apiUrl,
         testData.testData,
         expect.objectContaining({
           headers: expect.objectContaining({
-            'X-API-Key': mockIntegration.apiKey,
+            "X-API-Key": mockIntegration.apiKey,
           }) as never,
         }) as never,
       );
     });
 
-    it('deve testar integração sem API key', async () => {
+    it("deve testar integração sem API key", async () => {
       const integrationWithoutKey = {
         ...mockIntegration,
         apiKey: undefined,
       };
 
-      jest.spyOn(service, 'findOne').mockResolvedValue(integrationWithoutKey);
+      jest.spyOn(service, "findOne").mockResolvedValue(integrationWithoutKey);
 
       mockedAxios.post.mockResolvedValue({
         status: 200,
@@ -408,12 +408,12 @@ describe('IntegrationsService', () => {
       });
 
       const testData: TestIntegrationDto = {
-        testData: { cep: '01310-100' },
+        testData: { cep: "01310-100" },
       };
 
       const result = await service.test(
         mockTenantId,
-        'integration-id',
+        "integration-id",
         testData,
       );
 
@@ -424,92 +424,92 @@ describe('IntegrationsService', () => {
         testData.testData,
         expect.objectContaining({
           headers: expect.not.objectContaining({
-            'X-API-Key': expect.anything() as never,
+            "X-API-Key": expect.anything() as never,
           }) as never,
         }) as never,
       );
     });
 
-    it('deve retornar erro quando teste falha', async () => {
-      jest.spyOn(service, 'findOne').mockResolvedValue(mockIntegration);
+    it("deve retornar erro quando teste falha", async () => {
+      jest.spyOn(service, "findOne").mockResolvedValue(mockIntegration);
 
       const axiosError = {
         response: {
           status: 500,
-          data: { error: 'Internal Server Error' },
+          data: { error: "Internal Server Error" },
         },
-        message: 'Network Error',
+        message: "Network Error",
       } as AxiosError;
 
       mockedAxios.post.mockRejectedValue(axiosError);
 
       const testData: TestIntegrationDto = {
-        testData: { renavan: '12345678901' },
+        testData: { renavan: "12345678901" },
       };
 
       const result = await service.test(
         mockTenantId,
-        'integration-id',
+        "integration-id",
         testData,
       );
 
       expect(result.success).toBe(false);
-      expect(result.message).toContain('Erro');
+      expect(result.message).toContain("Erro");
       expect(result.data).toEqual(axiosError.response?.data);
     });
 
-    it('deve lidar com timeout', async () => {
-      jest.spyOn(service, 'findOne').mockResolvedValue(mockIntegration);
+    it("deve lidar com timeout", async () => {
+      jest.spyOn(service, "findOne").mockResolvedValue(mockIntegration);
 
       const timeoutError = {
-        message: 'timeout of 10000ms exceeded',
-        code: 'ECONNABORTED',
+        message: "timeout of 10000ms exceeded",
+        code: "ECONNABORTED",
       };
 
       mockedAxios.post.mockRejectedValue(timeoutError);
 
       const testData: TestIntegrationDto = {
-        testData: { renavan: '12345678901' },
+        testData: { renavan: "12345678901" },
       };
 
       const result = await service.test(
         mockTenantId,
-        'integration-id',
+        "integration-id",
         testData,
       );
 
       expect(result.success).toBe(false);
-      expect(result.message).toContain('Erro');
+      expect(result.message).toContain("Erro");
     });
   });
 
-  describe('toResponseDto', () => {
-    it('deve ocultar API key na resposta', async () => {
+  describe("toResponseDto", () => {
+    it("deve ocultar API key na resposta", async () => {
       const createDto: CreateIntegrationDto = {
-        name: 'API Test',
+        name: "API Test",
         type: IntegrationType.RENAVAN,
-        apiUrl: 'https://api.test.com',
-        apiKey: 'secret-key',
+        apiUrl: "https://api.test.com",
+        apiKey: "secret-key",
       };
 
       const result = await service.create(mockTenantId, createDto);
 
-      expect(result.apiKey).toBe('***');
+      expect(result.apiKey).toBe("***");
     });
 
-    it('deve retornar undefined quando não há API key', async () => {
+    it("deve retornar undefined quando não há API key", async () => {
       const createDto: CreateIntegrationDto = {
-        name: 'API Test',
+        name: "API Test",
         type: IntegrationType.CEP,
-        apiUrl: 'https://api.test.com',
+        apiUrl: "https://api.test.com",
       };
 
       const mockIntegrationWithoutKey = {
         ...mockIntegration,
-        id: 'integration-test',
-        name: 'API Test',
+        id: "integration-test",
+        name: "API Test",
         type: IntegrationType.RENAVAN,
-        apiUrl: 'https://api.test.com',
+        apiUrl: "https://api.test.com",
         apiKey: null,
       };
 
@@ -523,31 +523,31 @@ describe('IntegrationsService', () => {
     });
   });
 
-  describe('error handling', () => {
-    it('deve lidar com erros ao criar integração', async () => {
+  describe("error handling", () => {
+    it("deve lidar com erros ao criar integração", async () => {
       const createDto: CreateIntegrationDto = {
-        name: 'API Test',
+        name: "API Test",
         type: IntegrationType.RENAVAN,
-        apiUrl: 'https://api.test.com',
-        apiKey: 'secret-key',
+        apiUrl: "https://api.test.com",
+        apiKey: "secret-key",
       };
 
       mockPrismaService.integration.create.mockRejectedValue(
-        new Error('Database error'),
+        new Error("Database error"),
       );
 
       await expect(service.create(mockTenantId, createDto)).rejects.toThrow(
-        'Database error',
+        "Database error",
       );
     });
 
-    it('deve lidar com erros ao listar integrações', async () => {
+    it("deve lidar com erros ao listar integrações", async () => {
       mockPrismaService.integration.findMany.mockRejectedValue(
-        new Error('Database error'),
+        new Error("Database error"),
       );
 
       await expect(service.findAll(mockTenantId)).rejects.toThrow(
-        'Database error',
+        "Database error",
       );
     });
   });

@@ -1,14 +1,14 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '@database/prisma.service';
+import { Injectable, Logger } from "@nestjs/common";
+import { PrismaService } from "@database/prisma.service";
 import {
   MaintenancePredictionDto,
   VehiclePredictionDto,
   PredictionAlertDto,
   PredictiveInsightsDto,
-} from './dto/predictive-response.dto';
-import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
+} from "./dto/predictive-response.dto";
+import { getErrorMessage, getErrorStack } from "@common/utils/error.utils";
 
-type UrgencyLevel = 'low' | 'medium' | 'high' | 'urgent';
+type UrgencyLevel = "low" | "medium" | "high" | "urgent";
 
 @Injectable()
 export class PredictiveService {
@@ -43,7 +43,7 @@ export class PredictiveService {
       });
 
       if (!vehicle) {
-        throw new Error('Veículo não encontrado');
+        throw new Error("Veículo não encontrado");
       }
 
       // Buscar histórico de manutenção do veículo
@@ -52,7 +52,7 @@ export class PredictiveService {
           tenantId,
           vehicleId,
         },
-        orderBy: { performedAt: 'desc' },
+        orderBy: { performedAt: "desc" },
       });
 
       // Buscar manutenções programadas ativas
@@ -61,7 +61,7 @@ export class PredictiveService {
           where: {
             tenantId,
             vehicleId,
-            status: { in: ['pending', 'due'] },
+            status: { in: ["pending", "due"] },
           },
         });
 
@@ -97,9 +97,9 @@ export class PredictiveService {
       return {
         vehicleId: vehicle.id,
         vehicle: {
-          placa: vehicle.placa || '',
-          make: vehicle.make || '',
-          model: vehicle.model || '',
+          placa: vehicle.placa || "",
+          make: vehicle.make || "",
+          model: vehicle.model || "",
           year: vehicle.year || 0,
           currentKm: vehicle.mileage || 0,
         },
@@ -173,7 +173,7 @@ export class PredictiveService {
     return vehiclePredictions.predictions
       .filter(
         (prediction) =>
-          prediction.urgency === 'urgent' || prediction.urgency === 'high',
+          prediction.urgency === "urgent" || prediction.urgency === "high",
       )
       .map((prediction) => this.createAlertFromPrediction(prediction, vehicle));
   }
@@ -185,7 +185,7 @@ export class PredictiveService {
     return {
       alertId: `${prediction.id}_alert`,
       vehicleId: prediction.vehicleId,
-      placa: vehicle.placa || '',
+      placa: vehicle.placa || "",
       alertType: this.determineAlertType(prediction.daysUntilMaintenance),
       severity: prediction.urgency,
       title: this.createAlertTitle(prediction.urgency),
@@ -202,27 +202,27 @@ export class PredictiveService {
 
   private determineAlertType(
     daysUntilMaintenance: number,
-  ): 'overdue_maintenance' | 'critical_maintenance' | 'upcoming_maintenance' {
+  ): "overdue_maintenance" | "critical_maintenance" | "upcoming_maintenance" {
     if (daysUntilMaintenance <= 0) {
-      return 'overdue_maintenance';
+      return "overdue_maintenance";
     }
     if (daysUntilMaintenance <= 7) {
-      return 'critical_maintenance';
+      return "critical_maintenance";
     }
-    return 'upcoming_maintenance';
+    return "upcoming_maintenance";
   }
 
   private createAlertTitle(urgency: string): string {
-    const urgencyText = urgency === 'urgent' ? 'Urgente' : 'Importante';
+    const urgencyText = urgency === "urgent" ? "Urgente" : "Importante";
     return `Manutenção ${urgencyText}`;
   }
 
   private createAlertMessage(prediction: MaintenancePredictionDto): string {
-    const dateStr = prediction.predictedDate?.toLocaleDateString('pt-BR');
+    const dateStr = prediction.predictedDate?.toLocaleDateString("pt-BR");
     const kmStr = prediction.predictedKm
       ? `${prediction.predictedKm}km`
       : undefined;
-    const whenStr = kmStr || dateStr || 'data não definida';
+    const whenStr = kmStr || dateStr || "data não definida";
     const message = `${prediction.maintenanceName} prevista para ${whenStr}`;
     return message;
   }
@@ -396,13 +396,13 @@ export class PredictiveService {
     }
 
     // Determinar urgência
-    let urgency: UrgencyLevel = 'low';
+    let urgency: UrgencyLevel = "low";
     if (kmUntilMaintenance <= 0 || daysUntilMaintenance <= 0) {
-      urgency = 'urgent';
+      urgency = "urgent";
     } else if (kmUntilMaintenance <= 1000 || daysUntilMaintenance <= 7) {
-      urgency = 'high';
+      urgency = "high";
     } else if (kmUntilMaintenance <= 5000 || daysUntilMaintenance <= 30) {
-      urgency = 'medium';
+      urgency = "medium";
     }
 
     return {
@@ -410,7 +410,7 @@ export class PredictiveService {
       vehicleId: scheduled.vehicleId,
       maintenanceName: scheduled.maintenanceName,
       category: scheduled.category,
-      intervalType: 'km', // placeholder
+      intervalType: "km", // placeholder
       intervalValue: 0, // placeholder
       currentKm,
       currentDate,
@@ -426,8 +426,8 @@ export class PredictiveService {
         : undefined,
       recommendations: [
         this.formatScheduledRecommendation(predictedKm, predictedDate),
-        'Verificar peças necessárias',
-        'Agendar com antecedência',
+        "Verificar peças necessárias",
+        "Agendar com antecedência",
       ],
     };
   }
@@ -539,7 +539,7 @@ export class PredictiveService {
       vehicleId: vehicle.id,
       maintenanceName: `${pattern.category} (baseado em padrão)`,
       category: pattern.category,
-      intervalType: 'km',
+      intervalType: "km",
       intervalValue: pattern.avgInterval,
       currentKm,
       currentDate,
@@ -552,7 +552,7 @@ export class PredictiveService {
       recommendations: [
         `Baseado em ${pattern.count} manutenções similares`,
         `Intervalo médio: ${pattern.avgInterval}km`,
-        'Considere agendamento preventivo',
+        "Considere agendamento preventivo",
       ],
     };
   }
@@ -621,7 +621,7 @@ export class PredictiveService {
       vehicleId: vehicle.id,
       maintenanceName: `${pattern.category} (baseado em tempo)`,
       category: pattern.category,
-      intervalType: 'months',
+      intervalType: "months",
       intervalValue: pattern.avgIntervalMonths,
       currentKm,
       currentDate,
@@ -634,7 +634,7 @@ export class PredictiveService {
       recommendations: [
         `Baseado em ${pattern.count} manutenções similares`,
         `Intervalo médio: ${pattern.avgIntervalMonths} meses`,
-        'Manutenção preventiva recomendada',
+        "Manutenção preventiva recomendada",
       ],
     };
   }
@@ -655,9 +655,9 @@ export class PredictiveService {
       return `Agendada para ${predictedKm}km`;
     }
     if (predictedDate) {
-      return `Agendada para ${predictedDate.toLocaleDateString('pt-BR')}`;
+      return `Agendada para ${predictedDate.toLocaleDateString("pt-BR")}`;
     }
-    return 'Agendada para data não definida';
+    return "Agendada para data não definida";
   }
 
   /**
@@ -812,21 +812,21 @@ export class PredictiveService {
       (kmRemaining !== undefined && kmRemaining <= 0) ||
       (daysRemaining !== undefined && daysRemaining <= 0)
     ) {
-      return 'urgent';
+      return "urgent";
     }
     if (
       (kmRemaining !== undefined && kmRemaining <= 1000) ||
       (daysRemaining !== undefined && daysRemaining <= 7)
     ) {
-      return 'high';
+      return "high";
     }
     if (
       (kmRemaining !== undefined && kmRemaining <= 5000) ||
       (daysRemaining !== undefined && daysRemaining <= 30)
     ) {
-      return 'medium';
+      return "medium";
     }
-    return 'low';
+    return "low";
   }
 
   private calculateUrgencyByDays(daysRemaining: number): UrgencyLevel {
@@ -867,7 +867,7 @@ export class PredictiveService {
    */
   private calculatePredictionSummary(predictions: MaintenancePredictionDto[]) {
     const urgentPredictions = predictions.filter(
-      (p) => p.urgency === 'urgent' || p.urgency === 'high',
+      (p) => p.urgency === "urgent" || p.urgency === "high",
     ).length;
     const totalEstimatedCost = predictions.reduce(
       (sum, p) => sum + (p.estimatedCost || 0),
@@ -893,10 +893,10 @@ export class PredictiveService {
   private async calculateTrends(tenantId: string) {
     // Manutenções mais comuns
     const commonMaintenances = await this.prisma.maintenanceHistory.groupBy({
-      by: ['category'],
+      by: ["category"],
       where: { tenantId },
       _count: { category: true },
-      orderBy: { _count: { category: 'desc' } },
+      orderBy: { _count: { category: "desc" } },
       take: 5,
     });
 

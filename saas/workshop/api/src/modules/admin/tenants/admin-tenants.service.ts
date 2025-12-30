@@ -1,9 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from '../../../database/prisma.service';
-import { EmailService } from '../../shared/email/email.service';
-import { TenantsService } from '../../core/tenants/tenants.service';
-import { CreateTenantDto } from '../../core/tenants/dto';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { Prisma } from "@prisma/client";
+import { PrismaService } from "../../../database/prisma.service";
+import { EmailService } from "../../shared/email/email.service";
+import { TenantsService } from "../../core/tenants/tenants.service";
+import { CreateTenantDto } from "../../core/tenants/dto";
 
 @Injectable()
 export class AdminTenantsService {
@@ -11,7 +11,7 @@ export class AdminTenantsService {
     private prisma: PrismaService,
     private emailService: EmailService,
     private tenantsService: TenantsService,
-  ) { }
+  ) {}
 
   async create(createDto: CreateTenantDto) {
     return this.tenantsService.create(createDto);
@@ -38,8 +38,8 @@ export class AdminTenantsService {
 
     if (filters?.search) {
       where.OR = [
-        { name: { contains: filters.search, mode: 'insensitive' } },
-        { subdomain: { contains: filters.search, mode: 'insensitive' } },
+        { name: { contains: filters.search, mode: "insensitive" } },
+        { subdomain: { contains: filters.search, mode: "insensitive" } },
         { document: { contains: filters.search } },
       ];
     }
@@ -61,7 +61,7 @@ export class AdminTenantsService {
           },
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     return tenants;
@@ -77,7 +77,7 @@ export class AdminTenantsService {
           },
         },
         invoices: {
-          orderBy: { createdAt: 'desc' },
+          orderBy: { createdAt: "desc" },
           take: 10,
         },
         users: {
@@ -89,7 +89,7 @@ export class AdminTenantsService {
             isActive: true,
             createdAt: true,
           },
-          orderBy: { createdAt: 'desc' },
+          orderBy: { createdAt: "desc" },
         },
         _count: {
           select: {
@@ -103,7 +103,7 @@ export class AdminTenantsService {
     });
 
     if (!tenant) {
-      throw new NotFoundException('Tenant não encontrado');
+      throw new NotFoundException("Tenant não encontrado");
     }
 
     return tenant;
@@ -119,15 +119,15 @@ export class AdminTenantsService {
       activeSubscriptions,
     ] = await Promise.all([
       this.prisma.tenant.count(),
-      this.prisma.tenant.count({ where: { status: 'active' } }),
-      this.prisma.tenant.count({ where: { status: 'suspended' } }),
-      this.prisma.tenant.count({ where: { status: 'canceled' } }),
+      this.prisma.tenant.count({ where: { status: "active" } }),
+      this.prisma.tenant.count({ where: { status: "suspended" } }),
+      this.prisma.tenant.count({ where: { status: "canceled" } }),
       this.prisma.invoice.aggregate({
-        where: { status: 'paid' },
+        where: { status: "paid" },
         _sum: { total: true },
       }),
       this.prisma.subscription.count({
-        where: { status: 'active' },
+        where: { status: "active" },
       }),
     ]);
 
@@ -144,7 +144,7 @@ export class AdminTenantsService {
   async activate(id: string) {
     const tenant = await this.prisma.tenant.update({
       where: { id },
-      data: { status: 'active' },
+      data: { status: "active" },
       include: {
         subscription: {
           include: { planRef: true },
@@ -158,7 +158,7 @@ export class AdminTenantsService {
   async suspend(id: string) {
     const tenant = await this.prisma.tenant.update({
       where: { id },
-      data: { status: 'suspended' },
+      data: { status: "suspended" },
       include: {
         subscription: {
           include: { planRef: true },
@@ -172,7 +172,7 @@ export class AdminTenantsService {
   async cancel(id: string) {
     const tenant = await this.prisma.tenant.update({
       where: { id },
-      data: { status: 'canceled' },
+      data: { status: "canceled" },
       include: {
         subscription: {
           include: { planRef: true },
@@ -186,7 +186,7 @@ export class AdminTenantsService {
   async updatePlan(id: string, planId: string) {
     const plan = await this.prisma.plan.findUnique({ where: { id: planId } });
     if (!plan) {
-      throw new NotFoundException('Plano não encontrado');
+      throw new NotFoundException("Plano não encontrado");
     }
 
     const tenant = await this.prisma.tenant.findUnique({
@@ -195,7 +195,7 @@ export class AdminTenantsService {
     });
 
     if (!tenant) {
-      throw new NotFoundException('Tenant não encontrado');
+      throw new NotFoundException("Tenant não encontrado");
     }
 
     await this.prisma.$transaction(async (tx) => {
@@ -236,7 +236,7 @@ export class AdminTenantsService {
         isActive: true,
         createdAt: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     return users;
@@ -249,11 +249,11 @@ export class AdminTenantsService {
     });
 
     if (!user) {
-      throw new NotFoundException('Usuário não encontrado para este tenant');
+      throw new NotFoundException("Usuário não encontrado para este tenant");
     }
 
-    const bcrypt = await import('bcrypt');
-    const tempPassword = Math.random().toString(36).slice(-8) + 'A1!';
+    const bcrypt = await import("bcrypt");
+    const tempPassword = Math.random().toString(36).slice(-8) + "A1!";
     const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
     await this.prisma.user.update({
@@ -262,7 +262,8 @@ export class AdminTenantsService {
     });
 
     // Enviar e-mail com a nova senha
-    const frontendUrl = process.env.FRONTEND_URL || 'https://app.mecanica365.com';
+    const frontendUrl =
+      process.env.FRONTEND_URL || "https://app.mecanica365.com";
     const loginUrl = `${frontendUrl}/login?subdomain=${user.tenant.subdomain}`;
 
     await this.emailService.sendAdminPasswordResetEmail({
@@ -273,7 +274,7 @@ export class AdminTenantsService {
     });
 
     return {
-      message: 'Senha resetada com sucesso. E-mail enviado ao usuário.',
+      message: "Senha resetada com sucesso. E-mail enviado ao usuário.",
       tempPassword,
     };
   }

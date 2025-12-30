@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
     BarChartIcon,
     ClockIcon,
@@ -28,7 +29,14 @@ interface Commission {
     };
 }
 
-const statusConfig: Record<string, { label: string; color: string; bg: string; icon: any }> = {
+interface StatusConfigItem {
+    label: string;
+    color: string;
+    bg: string;
+    icon: React.ElementType;
+}
+
+const statusConfig: Record<string, StatusConfigItem> = {
     pending: { label: 'Pendente', color: 'text-[#f59e0b]', bg: 'bg-[#f59e0b]/10', icon: ClockIcon },
     approved: { label: 'Aprovada', color: 'text-[#10b981]', bg: 'bg-[#10b981]/10', icon: CheckCircledIcon },
     paid: { label: 'Pago', color: 'text-[#4aa8b3]', bg: 'bg-[#4aa8b3]/10', icon: CheckCircledIcon },
@@ -46,19 +54,17 @@ export default function CommissionsPage() {
         total: 0,
     });
 
-    useEffect(() => {
-        loadCommissions();
-    }, [filter]);
 
-    async function loadCommissions() {
+
+    const loadCommissions = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await innexarApi.getCommissions(filter === 'all' ? undefined : filter);
+            const data = await innexarApi.getCommissions(filter === 'all' ? undefined : filter) as Commission[];
             setCommissions(data);
-            
+
             // Calculate totals
-            const newTotals = data.reduce((acc: any, c: Commission) => {
-                acc[c.status] = (acc[c.status] || 0) + Number(c.amount);
+            const newTotals = data.reduce((acc: { pending: number; approved: number; paid: number; total: number }, c: Commission) => {
+                acc[c.status as keyof typeof acc] = (acc[c.status as keyof typeof acc] || 0) + Number(c.amount);
                 acc.total += Number(c.amount);
                 return acc;
             }, { pending: 0, approved: 0, paid: 0, total: 0 });
@@ -68,7 +74,11 @@ export default function CommissionsPage() {
         } finally {
             setLoading(false);
         }
-    }
+    }, [filter]);
+
+    useEffect(() => {
+        loadCommissions();
+    }, [loadCommissions]);
 
     const formatDate = (date: string) => {
         return new Date(date).toLocaleDateString('pt-BR', {
@@ -102,7 +112,7 @@ export default function CommissionsPage() {
                     </div>
                     <p className="text-2xl font-bold text-[#f59e0b]">{formatCurrency(totals.pending)}</p>
                 </div>
-                
+
                 <div className="bg-[#0a1628] border border-[#10b981]/20 rounded-2xl p-6">
                     <div className="flex items-center gap-3 mb-3">
                         <div className="w-10 h-10 bg-[#10b981]/10 rounded-xl flex items-center justify-center">
@@ -112,7 +122,7 @@ export default function CommissionsPage() {
                     </div>
                     <p className="text-2xl font-bold text-[#10b981]">{formatCurrency(totals.approved)}</p>
                 </div>
-                
+
                 <div className="bg-[#0a1628] border border-[#4aa8b3]/20 rounded-2xl p-6">
                     <div className="flex items-center gap-3 mb-3">
                         <div className="w-10 h-10 bg-[#4aa8b3]/10 rounded-xl flex items-center justify-center">
@@ -122,7 +132,7 @@ export default function CommissionsPage() {
                     </div>
                     <p className="text-2xl font-bold text-[#4aa8b3]">{formatCurrency(totals.paid)}</p>
                 </div>
-                
+
                 <div className="bg-[#0a1628] border border-white/10 rounded-2xl p-6">
                     <div className="flex items-center gap-3 mb-3">
                         <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
@@ -140,11 +150,10 @@ export default function CommissionsPage() {
                     <button
                         key={status}
                         onClick={() => setFilter(status)}
-                        className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
-                            filter === status
-                                ? 'bg-[#4aa8b3] text-white'
-                                : 'bg-[#0a1628] text-[#6b7a8a] hover:text-white border border-[#4aa8b3]/10'
-                        }`}
+                        className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${filter === status
+                            ? 'bg-[#4aa8b3] text-white'
+                            : 'bg-[#0a1628] text-[#6b7a8a] hover:text-white border border-[#4aa8b3]/10'
+                            }`}
                     >
                         {status === 'all' ? 'Todas' : statusConfig[status]?.label || status}
                     </button>
@@ -181,7 +190,7 @@ export default function CommissionsPage() {
                                 {commissions.map((commission) => {
                                     const status = statusConfig[commission.status] || statusConfig.pending;
                                     const StatusIcon = status.icon;
-                                    
+
                                     return (
                                         <tr key={commission.id} className="hover:bg-[#4aa8b3]/5 transition-colors">
                                             <td className="px-6 py-4">

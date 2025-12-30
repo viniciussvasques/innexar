@@ -1,9 +1,9 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
-import { PrismaService } from '@database/prisma.service';
-import { CreateWebhookDto, UpdateWebhookDto, WebhookResponseDto } from './dto';
-import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
-import axios, { AxiosError } from 'axios';
-import * as crypto from 'node:crypto';
+import { Injectable, NotFoundException, Logger } from "@nestjs/common";
+import { PrismaService } from "@database/prisma.service";
+import { CreateWebhookDto, UpdateWebhookDto, WebhookResponseDto } from "./dto";
+import { getErrorMessage, getErrorStack } from "@common/utils/error.utils";
+import axios, { AxiosError } from "axios";
+import * as crypto from "node:crypto";
 
 @Injectable()
 export class WebhooksService {
@@ -49,7 +49,7 @@ export class WebhooksService {
     try {
       const webhooks = await this.prisma.webhook.findMany({
         where: { tenantId },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
       });
 
       return webhooks.map((webhook) => this.toResponseDto(webhook));
@@ -75,7 +75,7 @@ export class WebhooksService {
       });
 
       if (!webhook) {
-        throw new NotFoundException('Webhook não encontrado');
+        throw new NotFoundException("Webhook não encontrado");
       }
 
       return this.toResponseDto(webhook);
@@ -202,7 +202,7 @@ export class WebhooksService {
         webhookId: webhook.id,
         event,
         payload: payload as never,
-        status: 'pending',
+        status: "pending",
       },
     });
 
@@ -268,9 +268,9 @@ export class WebhooksService {
       },
       {
         headers: {
-          'X-Webhook-Signature': signature,
-          'X-Webhook-Event': event,
-          'Content-Type': 'application/json',
+          "X-Webhook-Signature": signature,
+          "X-Webhook-Event": event,
+          "Content-Type": "application/json",
         },
         timeout: this.TIMEOUT_MS,
         validateStatus: (status) => status >= 200 && status < 300,
@@ -282,7 +282,7 @@ export class WebhooksService {
     await this.prisma.webhookAttempt.update({
       where: { id: attemptId },
       data: {
-        status: 'success',
+        status: "success",
         statusCode: responseData.status,
         response: JSON.stringify(responseData.data),
       },
@@ -319,10 +319,10 @@ export class WebhooksService {
     await this.prisma.webhookAttempt.update({
       where: { id: attemptId },
       data: {
-        status: isLastAttempt || !isRetryable ? 'failed' : 'pending',
+        status: isLastAttempt || !isRetryable ? "failed" : "pending",
         error: getErrorMessage(error),
         statusCode:
-          axiosError.response && 'status' in axiosError.response
+          axiosError.response && "status" in axiosError.response
             ? axiosError.response.status
             : null,
       },
@@ -356,7 +356,7 @@ export class WebhooksService {
       return true; // Erro de rede
     }
 
-    if (axiosError?.response && 'status' in axiosError.response) {
+    if (axiosError?.response && "status" in axiosError.response) {
       // Status codes 5xx são retryable
       const status = axiosError.response.status;
       if (status >= 500 && status < 600) {
@@ -381,7 +381,7 @@ export class WebhooksService {
    * Gera assinatura HMAC para webhook
    */
   private generateSignature(payload: string, secret: string): string {
-    return crypto.createHmac('sha256', secret).update(payload).digest('hex');
+    return crypto.createHmac("sha256", secret).update(payload).digest("hex");
   }
 
   /**
@@ -401,7 +401,7 @@ export class WebhooksService {
     try {
       const failedAttempts = await this.prisma.webhookAttempt.findMany({
         where: {
-          status: 'failed',
+          status: "failed",
           webhook: {
             tenantId,
             isActive: true,
@@ -412,7 +412,7 @@ export class WebhooksService {
         },
         take: limit,
         orderBy: {
-          attemptedAt: 'desc',
+          attemptedAt: "desc",
         },
       });
 
@@ -470,7 +470,7 @@ export class WebhooksService {
     });
 
     if (!webhook) {
-      throw new NotFoundException('Webhook não encontrado');
+      throw new NotFoundException("Webhook não encontrado");
     }
 
     return webhook;

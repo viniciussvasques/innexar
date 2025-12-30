@@ -1,5 +1,5 @@
-import { Request } from 'express';
-import { Prisma } from '@prisma/client';
+import { Request } from "express";
+import { Prisma } from "@prisma/client";
 
 type TenantWithSubscription = Prisma.TenantGetPayload<{
   include: { subscription: true };

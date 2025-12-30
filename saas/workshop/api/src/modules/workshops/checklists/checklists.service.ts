@@ -3,8 +3,8 @@ import {
   NotFoundException,
   BadRequestException,
   Logger,
-} from '@nestjs/common';
-import { PrismaService } from '@database/prisma.service';
+} from "@nestjs/common";
+import { PrismaService } from "@database/prisma.service";
 import {
   CreateChecklistDto,
   UpdateChecklistDto,
@@ -14,11 +14,11 @@ import {
   ChecklistType,
   ChecklistEntityType,
   ChecklistItemResponseDto,
-} from './dto';
+} from "./dto";
 
-import { ChecklistStatus } from './dto/checklist-type.enum';
-import { Prisma } from '@prisma/client';
-import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
+import { ChecklistStatus } from "./dto/checklist-type.enum";
+import { Prisma } from "@prisma/client";
+import { getErrorMessage, getErrorStack } from "@common/utils/error.utils";
 
 @Injectable()
 export class ChecklistsService {
@@ -67,7 +67,7 @@ export class ChecklistsService {
         },
         include: {
           items: {
-            orderBy: { order: 'asc' },
+            orderBy: { order: "asc" },
           },
         },
       });
@@ -132,10 +132,10 @@ export class ChecklistsService {
         take: limit,
         include: {
           items: {
-            orderBy: { order: 'asc' },
+            orderBy: { order: "asc" },
           },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
       }),
       this.prisma.checklist.count({ where }),
     ]);
@@ -161,13 +161,13 @@ export class ChecklistsService {
         },
         include: {
           items: {
-            orderBy: { order: 'asc' },
+            orderBy: { order: "asc" },
           },
         },
       });
 
       if (!checklist) {
-        throw new NotFoundException('Checklist não encontrado');
+        throw new NotFoundException("Checklist não encontrado");
       }
 
       return this.toResponseDto(checklist);
@@ -194,14 +194,14 @@ export class ChecklistsService {
       });
 
       if (!existingChecklist) {
-        throw new NotFoundException('Checklist não encontrado');
+        throw new NotFoundException("Checklist não encontrado");
       }
 
       // Não permitir atualizar checklist completo
       const checklistStatus = existingChecklist.status as ChecklistStatus;
       if (checklistStatus === ChecklistStatus.COMPLETED) {
         throw new BadRequestException(
-          'Não é possível atualizar um checklist já completo',
+          "Não é possível atualizar um checklist já completo",
         );
       }
 
@@ -262,7 +262,7 @@ export class ChecklistsService {
         data: updateData,
         include: {
           items: {
-            orderBy: { order: 'asc' },
+            orderBy: { order: "asc" },
           },
         },
       });
@@ -297,12 +297,12 @@ export class ChecklistsService {
       });
 
       if (!checklist) {
-        throw new NotFoundException('Checklist não encontrado');
+        throw new NotFoundException("Checklist não encontrado");
       }
 
       const checklistStatus = checklist.status as ChecklistStatus;
       if (checklistStatus === ChecklistStatus.COMPLETED) {
-        throw new BadRequestException('Checklist já está completo');
+        throw new BadRequestException("Checklist já está completo");
       }
 
       // Atualizar itens
@@ -354,7 +354,7 @@ export class ChecklistsService {
         },
         include: {
           items: {
-            orderBy: { order: 'asc' },
+            orderBy: { order: "asc" },
           },
         },
       });
@@ -384,7 +384,7 @@ export class ChecklistsService {
       });
 
       if (!checklist) {
-        throw new NotFoundException('Checklist não encontrado');
+        throw new NotFoundException("Checklist não encontrado");
       }
 
       const allRequiredItemsCompleted = checklist.items
@@ -411,7 +411,7 @@ export class ChecklistsService {
       });
 
       if (!checklist) {
-        throw new NotFoundException('Checklist não encontrado');
+        throw new NotFoundException("Checklist não encontrado");
       }
 
       await this.prisma.checklist.delete({
@@ -469,7 +469,7 @@ export class ChecklistsService {
       entityType !== ChecklistEntityType.QUOTE
     ) {
       throw new BadRequestException(
-        'Checklist pré-diagnóstico só pode ser usado com Quote',
+        "Checklist pré-diagnóstico só pode ser usado com Quote",
       );
     }
 
@@ -478,7 +478,7 @@ export class ChecklistsService {
       checklistType !== ChecklistType.PRE_DIAGNOSIS
     ) {
       throw new BadRequestException(
-        'Quote só pode ter checklist do tipo pré-diagnóstico',
+        "Quote só pode ter checklist do tipo pré-diagnóstico",
       );
     }
 
@@ -487,7 +487,7 @@ export class ChecklistsService {
       checklistType === ChecklistType.PRE_DIAGNOSIS
     ) {
       throw new BadRequestException(
-        'Service Order não pode ter checklist pré-diagnóstico',
+        "Service Order não pode ter checklist pré-diagnóstico",
       );
     }
   }

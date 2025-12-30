@@ -1,25 +1,25 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
+import { Test, TestingModule } from "@nestjs/testing";
+import { JwtService } from "@nestjs/jwt";
+import { ConfigService } from "@nestjs/config";
 import {
   UnauthorizedException,
   BadRequestException,
   NotFoundException,
-} from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
-import { AuthService } from './auth.service';
-import { PrismaService } from '../../../database/prisma.service';
-import { LoginDto } from './dto/login.dto';
-import { RefreshTokenDto } from './dto/refresh-token.dto';
-import { ChangePasswordDto } from './dto/change-password.dto';
+} from "@nestjs/common";
+import * as bcrypt from "bcrypt";
+import { AuthService } from "./auth.service";
+import { PrismaService } from "../../../database/prisma.service";
+import { LoginDto } from "./dto/login.dto";
+import { RefreshTokenDto } from "./dto/refresh-token.dto";
+import { ChangePasswordDto } from "./dto/change-password.dto";
 
 // Mock do bcrypt
-jest.mock('bcrypt', () => ({
+jest.mock("bcrypt", () => ({
   compare: jest.fn(),
   hash: jest.fn(),
 }));
 
-describe('AuthService', () => {
+describe("AuthService", () => {
   let service: AuthService;
 
   const mockPrismaService = {
@@ -65,8 +65,8 @@ describe('AuthService', () => {
 
     // Configurações padrão
     mockConfigService.get.mockImplementation((key: string) => {
-      if (key === 'jwt.expiresIn') return '15m';
-      if (key === 'JWT_REFRESH_EXPIRES_IN') return '7d';
+      if (key === "jwt.expiresIn") return "15m";
+      if (key === "JWT_REFRESH_EXPIRES_IN") return "7d";
       return null;
     });
   });
@@ -75,46 +75,46 @@ describe('AuthService', () => {
     jest.clearAllMocks();
   });
 
-  describe('login', () => {
+  describe("login", () => {
     const loginDto: LoginDto = {
-      email: 'test@example.com',
-      password: 'password123',
+      email: "test@example.com",
+      password: "password123",
     };
 
     const mockUser = {
-      id: 'user-id',
-      email: 'test@example.com',
-      name: 'Test User',
-      role: 'admin',
-      tenantId: 'tenant-id',
-      password: 'hashedPassword',
+      id: "user-id",
+      email: "test@example.com",
+      name: "Test User",
+      role: "admin",
+      tenantId: "tenant-id",
+      password: "hashedPassword",
       isActive: true,
       createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000), // Criado há 12 horas (primeiro login)
       tenant: {
-        id: 'tenant-id',
-        status: 'active',
+        id: "tenant-id",
+        status: "active",
       },
     };
 
-    it('deve realizar login com sucesso', async () => {
+    it("deve realizar login com sucesso", async () => {
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-      mockJwtService.sign.mockReturnValue('access-token');
+      mockJwtService.sign.mockReturnValue("access-token");
       mockPrismaService.refreshToken.create.mockResolvedValue({});
 
-      const result = await service.login(loginDto, 'tenant-id');
+      const result = await service.login(loginDto, "tenant-id");
 
-      expect(result).toHaveProperty('accessToken');
-      expect(result).toHaveProperty('refreshToken');
-      expect(result).toHaveProperty('user');
-      expect(result).toHaveProperty('isFirstLogin');
+      expect(result).toHaveProperty("accessToken");
+      expect(result).toHaveProperty("refreshToken");
+      expect(result).toHaveProperty("user");
+      expect(result).toHaveProperty("isFirstLogin");
       expect(result.user.email).toBe(mockUser.email);
       expect(result.isFirstLogin).toBe(true); // Criado há 12 horas, então é primeiro login
       expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
         where: {
           tenantId_email: {
-            tenantId: 'tenant-id',
-            email: 'test@example.com',
+            tenantId: "tenant-id",
+            email: "test@example.com",
           },
         },
         include: {
@@ -123,113 +123,113 @@ describe('AuthService', () => {
       });
     });
 
-    it('deve lançar UnauthorizedException quando usuário não existe', async () => {
+    it("deve lançar UnauthorizedException quando usuário não existe", async () => {
       mockPrismaService.user.findUnique.mockResolvedValue(null);
 
-      await expect(service.login(loginDto, 'tenant-id')).rejects.toThrow(
+      await expect(service.login(loginDto, "tenant-id")).rejects.toThrow(
         UnauthorizedException,
       );
     });
 
-    it('deve lançar UnauthorizedException quando usuário está inativo', async () => {
+    it("deve lançar UnauthorizedException quando usuário está inativo", async () => {
       mockPrismaService.user.findUnique.mockResolvedValue({
         ...mockUser,
         isActive: false,
       });
 
-      await expect(service.login(loginDto, 'tenant-id')).rejects.toThrow(
+      await expect(service.login(loginDto, "tenant-id")).rejects.toThrow(
         UnauthorizedException,
       );
     });
 
-    it('deve lançar UnauthorizedException quando tenant está inativo', async () => {
+    it("deve lançar UnauthorizedException quando tenant está inativo", async () => {
       mockPrismaService.user.findUnique.mockResolvedValue({
         ...mockUser,
-        tenant: { ...mockUser.tenant, status: 'suspended' },
+        tenant: { ...mockUser.tenant, status: "suspended" },
       });
 
-      await expect(service.login(loginDto, 'tenant-id')).rejects.toThrow(
+      await expect(service.login(loginDto, "tenant-id")).rejects.toThrow(
         UnauthorizedException,
       );
     });
 
-    it('deve lançar UnauthorizedException quando senha está incorreta', async () => {
+    it("deve lançar UnauthorizedException quando senha está incorreta", async () => {
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
-      await expect(service.login(loginDto, 'tenant-id')).rejects.toThrow(
+      await expect(service.login(loginDto, "tenant-id")).rejects.toThrow(
         UnauthorizedException,
       );
     });
 
-    it('deve lançar BadRequestException quando email está vazio', async () => {
-      const invalidDto = { ...loginDto, email: '' };
+    it("deve lançar BadRequestException quando email está vazio", async () => {
+      const invalidDto = { ...loginDto, email: "" };
 
-      await expect(service.login(invalidDto, 'tenant-id')).rejects.toThrow(
+      await expect(service.login(invalidDto, "tenant-id")).rejects.toThrow(
         BadRequestException,
       );
     });
   });
 
-  describe('logout', () => {
-    it('deve realizar logout com sucesso', async () => {
+  describe("logout", () => {
+    it("deve realizar logout com sucesso", async () => {
       mockPrismaService.refreshToken.updateMany.mockResolvedValue({ count: 1 });
 
-      await service.logout('user-id', 'refresh-token');
+      await service.logout("user-id", "refresh-token");
 
       expect(mockPrismaService.refreshToken.updateMany).toHaveBeenCalled();
     });
 
-    it('deve lançar BadRequestException quando refresh token está vazio', async () => {
-      await expect(service.logout('user-id', '')).rejects.toThrow(
+    it("deve lançar BadRequestException quando refresh token está vazio", async () => {
+      await expect(service.logout("user-id", "")).rejects.toThrow(
         BadRequestException,
       );
     });
   });
 
-  describe('refreshToken', () => {
+  describe("refreshToken", () => {
     const refreshTokenDto: RefreshTokenDto = {
-      refreshToken: 'valid-refresh-token',
+      refreshToken: "valid-refresh-token",
     };
 
     const mockRefreshToken = {
-      id: 'token-id',
-      userId: 'user-id',
-      token: 'valid-refresh-token',
+      id: "token-id",
+      userId: "user-id",
+      token: "valid-refresh-token",
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       revokedAt: null,
     };
 
     const mockUser = {
-      id: 'user-id',
-      email: 'test@example.com',
-      name: 'Test User',
-      role: 'admin',
-      tenantId: 'tenant-id',
+      id: "user-id",
+      email: "test@example.com",
+      name: "Test User",
+      role: "admin",
+      tenantId: "tenant-id",
       isActive: true,
       tenant: {
-        id: 'tenant-id',
-        status: 'active',
+        id: "tenant-id",
+        status: "active",
       },
     };
 
-    it('deve renovar token com sucesso', async () => {
+    it("deve renovar token com sucesso", async () => {
       mockPrismaService.refreshToken.findUnique.mockResolvedValue(
         mockRefreshToken,
       );
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
       mockPrismaService.refreshToken.updateMany.mockResolvedValue({ count: 1 });
-      mockJwtService.sign.mockReturnValue('new-access-token');
+      mockJwtService.sign.mockReturnValue("new-access-token");
       mockPrismaService.refreshToken.create.mockResolvedValue({});
 
       const result = await service.refreshToken(refreshTokenDto);
 
-      expect(result).toHaveProperty('accessToken');
-      expect(result).toHaveProperty('refreshToken');
+      expect(result).toHaveProperty("accessToken");
+      expect(result).toHaveProperty("refreshToken");
       expect(mockPrismaService.refreshToken.updateMany).toHaveBeenCalled();
     });
 
-    it('deve lançar UnauthorizedException quando refresh token é inválido', async () => {
+    it("deve lançar UnauthorizedException quando refresh token é inválido", async () => {
       mockPrismaService.refreshToken.findUnique.mockResolvedValue(null);
 
       await expect(service.refreshToken(refreshTokenDto)).rejects.toThrow(
@@ -237,7 +237,7 @@ describe('AuthService', () => {
       );
     });
 
-    it('deve lançar UnauthorizedException quando refresh token está revogado', async () => {
+    it("deve lançar UnauthorizedException quando refresh token está revogado", async () => {
       mockPrismaService.refreshToken.findUnique.mockResolvedValue({
         ...mockRefreshToken,
         revokedAt: new Date(),
@@ -248,7 +248,7 @@ describe('AuthService', () => {
       );
     });
 
-    it('deve lançar UnauthorizedException quando refresh token está expirado', async () => {
+    it("deve lançar UnauthorizedException quando refresh token está expirado", async () => {
       mockPrismaService.refreshToken.findUnique.mockResolvedValue({
         ...mockRefreshToken,
         expiresAt: new Date(Date.now() - 1000),
@@ -260,103 +260,103 @@ describe('AuthService', () => {
     });
   });
 
-  describe('getProfile', () => {
+  describe("getProfile", () => {
     const mockUser = {
-      id: 'user-id',
-      email: 'test@example.com',
-      name: 'Test User',
-      role: 'admin',
-      tenantId: 'tenant-id',
+      id: "user-id",
+      email: "test@example.com",
+      name: "Test User",
+      role: "admin",
+      tenantId: "tenant-id",
       isActive: true,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
-    it('deve retornar perfil do usuário', async () => {
+    it("deve retornar perfil do usuário", async () => {
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
 
-      const result = await service.getProfile('user-id');
+      const result = await service.getProfile("user-id");
 
-      expect(result).toHaveProperty('id', 'user-id');
-      expect(result).toHaveProperty('email', 'test@example.com');
-      expect(result).toHaveProperty('name', 'Test User');
+      expect(result).toHaveProperty("id", "user-id");
+      expect(result).toHaveProperty("email", "test@example.com");
+      expect(result).toHaveProperty("name", "Test User");
     });
 
-    it('deve lançar NotFoundException quando usuário não existe', async () => {
+    it("deve lançar NotFoundException quando usuário não existe", async () => {
       mockPrismaService.user.findUnique.mockResolvedValue(null);
 
-      await expect(service.getProfile('user-id')).rejects.toThrow(
+      await expect(service.getProfile("user-id")).rejects.toThrow(
         NotFoundException,
       );
     });
 
-    it('deve lançar BadRequestException quando userId está vazio', async () => {
-      await expect(service.getProfile('')).rejects.toThrow(BadRequestException);
+    it("deve lançar BadRequestException quando userId está vazio", async () => {
+      await expect(service.getProfile("")).rejects.toThrow(BadRequestException);
     });
   });
 
-  describe('changePassword', () => {
+  describe("changePassword", () => {
     const changePasswordDto: ChangePasswordDto = {
-      currentPassword: 'CurrentPass123',
-      newPassword: 'NewPassword123',
-      confirmPassword: 'NewPassword123',
+      currentPassword: "CurrentPass123",
+      newPassword: "NewPassword123",
+      confirmPassword: "NewPassword123",
     };
 
     const mockUser = {
-      id: 'user-id',
-      password: 'hashedCurrentPassword',
+      id: "user-id",
+      password: "hashedCurrentPassword",
     };
 
-    it('deve alterar senha com sucesso', async () => {
+    it("deve alterar senha com sucesso", async () => {
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
-      (bcrypt.hash as jest.Mock).mockResolvedValue('hashedNewPassword');
+      (bcrypt.hash as jest.Mock).mockResolvedValue("hashedNewPassword");
       mockPrismaService.user.update.mockResolvedValue({});
       mockPrismaService.refreshToken.updateMany.mockResolvedValue({ count: 1 });
 
-      await service.changePassword('user-id', changePasswordDto);
+      await service.changePassword("user-id", changePasswordDto);
 
       expect(mockPrismaService.user.update).toHaveBeenCalled();
       expect(mockPrismaService.refreshToken.updateMany).toHaveBeenCalled();
     });
 
-    it('deve lançar BadRequestException quando senhas não coincidem', async () => {
+    it("deve lançar BadRequestException quando senhas não coincidem", async () => {
       const invalidDto = {
         ...changePasswordDto,
-        confirmPassword: 'DifferentPassword123',
+        confirmPassword: "DifferentPassword123",
       };
 
       await expect(
-        service.changePassword('user-id', invalidDto),
+        service.changePassword("user-id", invalidDto),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve lançar BadRequestException quando nova senha é igual à atual', async () => {
+    it("deve lançar BadRequestException quando nova senha é igual à atual", async () => {
       const invalidDto = {
         ...changePasswordDto,
-        newPassword: 'CurrentPass123',
-        confirmPassword: 'CurrentPass123',
+        newPassword: "CurrentPass123",
+        confirmPassword: "CurrentPass123",
       };
 
       await expect(
-        service.changePassword('user-id', invalidDto),
+        service.changePassword("user-id", invalidDto),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve lançar UnauthorizedException quando senha atual está incorreta', async () => {
+    it("deve lançar UnauthorizedException quando senha atual está incorreta", async () => {
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
       await expect(
-        service.changePassword('user-id', changePasswordDto),
+        service.changePassword("user-id", changePasswordDto),
       ).rejects.toThrow(UnauthorizedException);
     });
 
-    it('deve lançar NotFoundException quando usuário não existe', async () => {
+    it("deve lançar NotFoundException quando usuário não existe", async () => {
       mockPrismaService.user.findUnique.mockResolvedValue(null);
 
       await expect(
-        service.changePassword('user-id', changePasswordDto),
+        service.changePassword("user-id", changePasswordDto),
       ).rejects.toThrow(NotFoundException);
     });
   });

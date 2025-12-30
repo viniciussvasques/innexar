@@ -1,16 +1,16 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '@database/prisma.service';
-import { Prisma } from '@prisma/client';
-import { getErrorMessage } from '@common/utils/error.utils';
+import { Injectable, Logger } from "@nestjs/common";
+import { PrismaService } from "@database/prisma.service";
+import { Prisma } from "@prisma/client";
+import { getErrorMessage } from "@common/utils/error.utils";
 
 export enum NotificationType {
-  QUOTE_ASSIGNED = 'quote_assigned',
-  QUOTE_AVAILABLE = 'quote_available',
-  QUOTE_DIAGNOSIS_COMPLETED = 'diagnosis_completed',
-  QUOTE_APPROVED = 'quote_approved',
-  QUOTE_REJECTED = 'quote_rejected',
-  SERVICE_ORDER_STARTED = 'service_order_started',
-  SERVICE_ORDER_COMPLETED = 'service_order_completed',
+  QUOTE_ASSIGNED = "quote_assigned",
+  QUOTE_AVAILABLE = "quote_available",
+  QUOTE_DIAGNOSIS_COMPLETED = "diagnosis_completed",
+  QUOTE_APPROVED = "quote_approved",
+  QUOTE_REJECTED = "quote_rejected",
+  SERVICE_ORDER_STARTED = "service_order_started",
+  SERVICE_ORDER_COMPLETED = "service_order_completed",
 }
 
 export interface CreateNotificationDto {
@@ -45,7 +45,7 @@ export class NotificationsService {
       });
 
       this.logger.log(
-        `Notificação criada: ${dto.type} para ${dto.userId || 'todos'} no tenant ${dto.tenantId}`,
+        `Notificação criada: ${dto.type} para ${dto.userId || "todos"} no tenant ${dto.tenantId}`,
       );
     } catch (error: unknown) {
       this.logger.error(`Erro ao criar notificação: ${getErrorMessage(error)}`);
@@ -68,7 +68,7 @@ export class NotificationsService {
       const mechanics = await this.prisma.user.findMany({
         where: {
           tenantId,
-          role: 'mechanic',
+          role: "mechanic",
           isActive: true,
         },
         select: { id: true },
@@ -183,7 +183,7 @@ export class NotificationsService {
     const [notifications, unreadCount] = await Promise.all([
       this.prisma.notification.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         take: limit,
       }),
       this.prisma.notification.count({

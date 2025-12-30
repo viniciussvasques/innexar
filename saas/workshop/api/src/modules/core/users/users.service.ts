@@ -3,15 +3,15 @@ import {
   NotFoundException,
   ConflictException,
   Logger,
-} from '@nestjs/common';
-import { PrismaService } from '../../../database/prisma.service';
-import { CreateUserDto, UpdateUserDto, UserResponseDto, UserRole } from './dto';
-import * as bcrypt from 'bcrypt';
+} from "@nestjs/common";
+import { PrismaService } from "../../../database/prisma.service";
+import { CreateUserDto, UpdateUserDto, UserResponseDto, UserRole } from "./dto";
+import * as bcrypt from "bcrypt";
 import {
   getErrorMessage,
   getErrorStack,
-} from '../../../common/utils/error.utils';
-import { Prisma } from '@prisma/client';
+} from "../../../common/utils/error.utils";
+import { Prisma } from "@prisma/client";
 
 // Tipo para User do Prisma
 type PrismaUser = Prisma.UserGetPayload<Record<string, never>>;
@@ -40,7 +40,7 @@ export class UsersService {
       });
 
       if (existingUser) {
-        throw new ConflictException('Email já cadastrado neste tenant');
+        throw new ConflictException("Email já cadastrado neste tenant");
       }
 
       // Hash da senha
@@ -84,7 +84,7 @@ export class UsersService {
           ...(role ? { role } : {}),
         },
         orderBy: {
-          createdAt: 'desc',
+          createdAt: "desc",
         },
       });
 
@@ -108,7 +108,7 @@ export class UsersService {
       });
 
       if (!user) {
-        throw new NotFoundException('Usuário não encontrado');
+        throw new NotFoundException("Usuário não encontrado");
       }
 
       return this.toResponseDto(user);
@@ -136,7 +136,7 @@ export class UsersService {
       });
 
       if (!existingUser) {
-        throw new NotFoundException('Usuário não encontrado');
+        throw new NotFoundException("Usuário não encontrado");
       }
 
       // Se email está sendo atualizado, verificar se não existe outro usuário com esse email
@@ -153,7 +153,7 @@ export class UsersService {
           });
 
           if (emailExists) {
-            throw new ConflictException('Email já cadastrado neste tenant');
+            throw new ConflictException("Email já cadastrado neste tenant");
           }
         }
       }
@@ -207,7 +207,7 @@ export class UsersService {
       });
 
       if (!user) {
-        throw new NotFoundException('Usuário não encontrado');
+        throw new NotFoundException("Usuário não encontrado");
       }
 
       // Soft delete: marcar como inativo ao invés de deletar

@@ -225,7 +225,7 @@ export default function CommissionsPage() {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {commissions.map((commission) => {
-              const user = users.find(u => u.id === commission.user_id)
+              const user = users.find(u => u.id === commission.seller_id)
               return (
                 <tr key={commission.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
@@ -241,11 +241,10 @@ export default function CommissionsPage() {
                     {new Date(commission.created_at).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                      commission.status === 'paid' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-yellow-100 text-yellow-800'
-                    }`}>
+                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${commission.status === 'paid'
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-yellow-100 text-yellow-800'
+                      }`}>
                       {commission.status === 'paid' ? t('commissions.paid') : t('commissions.pending')}
                     </span>
                   </td>
@@ -498,7 +497,7 @@ export default function CommissionsPage() {
               value={parseFloat(structureForm.recurring_commission_rate) * 100}
               onChange={(e) => setStructureForm({
                 ...structureForm,
-                recurring_commission_rate: (parseFloat(e.target.value) || 0) / 100
+                recurring_commission_rate: ((parseFloat(e.target.value) || 0) / 100).toString()
               })}
             />
             <Input

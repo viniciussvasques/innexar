@@ -407,8 +407,6 @@ export default {
     name: 'Nombre',
     email: 'Email',
     actions: 'Acciones',
-    status: 'Estado',
-    actions: 'Acciones',
     date: 'Fecha',
     value: 'Valor',
     type: 'Tipo',

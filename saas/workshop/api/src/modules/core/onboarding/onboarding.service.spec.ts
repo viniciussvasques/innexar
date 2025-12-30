@@ -1,43 +1,43 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { OnboardingService } from './onboarding.service';
-import { PrismaService } from '../../../database/prisma.service';
-import { TenantsService } from '../tenants/tenants.service';
-import { BillingService } from '../billing/billing.service';
-import { UsersService } from '../users/users.service';
-import { EmailService } from '../../shared/email/email.service';
-import { CloudflareService } from '../../shared/cloudflare/cloudflare.service';
-import { EncryptionService } from '../../shared/encryption/encryption.service';
-import { CreateOnboardingDto } from './dto/create-onboarding.dto';
-import { CreateCheckoutDto } from './dto/create-checkout.dto';
+import { Test, TestingModule } from "@nestjs/testing";
+import { BadRequestException, NotFoundException } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { OnboardingService } from "./onboarding.service";
+import { PrismaService } from "../../../database/prisma.service";
+import { TenantsService } from "../tenants/tenants.service";
+import { BillingService } from "../billing/billing.service";
+import { UsersService } from "../users/users.service";
+import { EmailService } from "../../shared/email/email.service";
+import { CloudflareService } from "../../shared/cloudflare/cloudflare.service";
+import { EncryptionService } from "../../shared/encryption/encryption.service";
+import { CreateOnboardingDto } from "./dto/create-onboarding.dto";
+import { CreateCheckoutDto } from "./dto/create-checkout.dto";
 import {
   TenantStatus,
   TenantPlan,
   DocumentType,
-} from '../tenants/dto/create-tenant.dto';
+} from "../tenants/dto/create-tenant.dto";
 import {
   BillingCycle,
   SubscriptionPlan,
-} from '../billing/dto/subscription-response.dto';
-import { UserRole } from '../users/dto/create-user.dto';
-import Stripe from 'stripe';
+} from "../billing/dto/subscription-response.dto";
+import { UserRole } from "../users/dto/create-user.dto";
+import Stripe from "stripe";
 
-jest.mock('stripe', () => {
+jest.mock("stripe", () => {
   return class MockStripe {
     checkout = {
       sessions: {
         create: jest.fn().mockResolvedValue({
-          id: 'cs_test_123',
-          url: 'https://checkout.stripe.com/test',
+          id: "cs_test_123",
+          url: "https://checkout.stripe.com/test",
         }),
       },
     };
-    constructor() { }
+    constructor() {}
   };
 });
 
-describe('OnboardingService', () => {
+describe("OnboardingService", () => {
   let service: OnboardingService;
   let prismaService: jest.Mocked<PrismaService>;
   let tenantsService: jest.Mocked<TenantsService>;
@@ -46,11 +46,11 @@ describe('OnboardingService', () => {
   let emailService: jest.Mocked<EmailService>;
 
   const mockTenant = {
-    id: 'tenant-id',
-    name: 'Oficina Teste',
-    documentType: 'cnpj',
-    document: '12345678000199',
-    subdomain: 'oficina-teste',
+    id: "tenant-id",
+    name: "Oficina Teste",
+    documentType: "cnpj",
+    document: "12345678000199",
+    subdomain: "oficina-teste",
     plan: TenantPlan.WORKSHOPS_STARTER,
     status: TenantStatus.PENDING,
     createdAt: new Date(),
@@ -76,11 +76,11 @@ describe('OnboardingService', () => {
       },
       systemPaymentGateway: {
         findFirst: jest.fn().mockResolvedValue({
-          id: 'gateway-id',
-          type: 'stripe',
+          id: "gateway-id",
+          type: "stripe",
           isActive: true,
-          secretKey: 'sk_test_mock',
-          publicKey: 'pk_test_mock',
+          secretKey: "sk_test_mock",
+          publicKey: "pk_test_mock",
         }),
       },
     };
@@ -118,7 +118,7 @@ describe('OnboardingService', () => {
 
     // Configurar STRIPE_SECRET_KEY antes de criar o módulo
     if (!process.env.STRIPE_SECRET_KEY) {
-      process.env.STRIPE_SECRET_KEY = 'sk_test_mock';
+      process.env.STRIPE_SECRET_KEY = "sk_test_mock";
     }
 
     const module: TestingModule = await Test.createTestingModule({
@@ -130,8 +130,20 @@ describe('OnboardingService', () => {
         { provide: UsersService, useValue: mockUsersService as unknown },
         { provide: EmailService, useValue: mockEmailService as unknown },
         { provide: ConfigService, useValue: mockConfigService as unknown },
-        { provide: CloudflareService, useValue: { createTenantSubdomain: jest.fn(), deleteTenantSubdomain: jest.fn() } },
-        { provide: EncryptionService, useValue: { encrypt: jest.fn(val => val), decrypt: jest.fn(val => val) } },
+        {
+          provide: CloudflareService,
+          useValue: {
+            createTenantSubdomain: jest.fn(),
+            deleteTenantSubdomain: jest.fn(),
+          },
+        },
+        {
+          provide: EncryptionService,
+          useValue: {
+            encrypt: jest.fn((val) => val),
+            decrypt: jest.fn((val) => val),
+          },
+        },
       ],
     }).compile();
 
@@ -143,82 +155,82 @@ describe('OnboardingService', () => {
     emailService = module.get(EmailService);
 
     // Mock Stripe
-    process.env.STRIPE_SECRET_KEY = 'sk_test_mock';
+    process.env.STRIPE_SECRET_KEY = "sk_test_mock";
   });
 
   afterEach(() => {
     jest.resetAllMocks();
   });
 
-  describe('checkPendingTenant', () => {
-    it('deve retornar tenant pendente se existir', async () => {
+  describe("checkPendingTenant", () => {
+    it("deve retornar tenant pendente se existir", async () => {
       (prismaService.tenant.findFirst as jest.Mock).mockResolvedValue({
-        id: 'tenant-id',
-        subdomain: 'oficina-teste',
+        id: "tenant-id",
+        subdomain: "oficina-teste",
       } as unknown);
 
       const result = await service.checkPendingTenant(
-        '12345678000199',
-        'test@email.com',
+        "12345678000199",
+        "test@email.com",
       );
 
       expect(result).toEqual({
-        tenantId: 'tenant-id',
-        subdomain: 'oficina-teste',
+        tenantId: "tenant-id",
+        subdomain: "oficina-teste",
         exists: true,
       });
     });
 
-    it('deve retornar null se não existir tenant pendente', async () => {
+    it("deve retornar null se não existir tenant pendente", async () => {
       (prismaService.tenant.findFirst as jest.Mock).mockResolvedValue(null);
 
       const result = await service.checkPendingTenant(
-        '12345678000199',
-        'test@email.com',
+        "12345678000199",
+        "test@email.com",
       );
 
       expect(result).toBeNull();
     });
   });
 
-  describe('register', () => {
+  describe("register", () => {
     const createOnboardingDto: CreateOnboardingDto = {
-      name: 'Oficina Teste',
-      email: 'admin@oficina.com',
+      name: "Oficina Teste",
+      email: "admin@oficina.com",
       documentType: DocumentType.CNPJ,
-      document: '12345678000199',
-      subdomain: 'oficina-teste',
+      document: "12345678000199",
+      subdomain: "oficina-teste",
       plan: TenantPlan.WORKSHOPS_STARTER,
-      password: 'TestPassword123',
+      password: "TestPassword123",
     };
 
-    it('deve retornar tenant existente se já houver pendente', async () => {
+    it("deve retornar tenant existente se já houver pendente", async () => {
       (prismaService.tenant.findFirst as jest.Mock).mockResolvedValue({
-        id: 'existing-tenant-id',
-        subdomain: 'oficina-teste',
+        id: "existing-tenant-id",
+        subdomain: "oficina-teste",
       } as unknown);
 
       const result = await service.register(createOnboardingDto);
 
       expect(result).toEqual({
-        tenantId: 'existing-tenant-id',
-        subdomain: 'oficina-teste',
+        tenantId: "existing-tenant-id",
+        subdomain: "oficina-teste",
       });
       expect((tenantsService.create as jest.Mock).mock.calls.length).toBe(0);
     });
 
-    it('deve criar novo tenant se não existir pendente', async () => {
+    it("deve criar novo tenant se não existir pendente", async () => {
       (prismaService.tenant.findFirst as jest.Mock).mockResolvedValue(null);
       (tenantsService.create as jest.Mock).mockResolvedValue({
-        id: 'new-tenant-id',
-        subdomain: 'oficina-teste',
+        id: "new-tenant-id",
+        subdomain: "oficina-teste",
       });
 
       const result = await service.register(createOnboardingDto);
 
       expect(result).toEqual({
-        tenantId: 'new-tenant-id',
-        subdomain: 'oficina-teste',
+        tenantId: "new-tenant-id",
+        subdomain: "oficina-teste",
       });
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(tenantsService.create).toHaveBeenCalledWith(
@@ -234,14 +246,14 @@ describe('OnboardingService', () => {
     });
   });
 
-  describe('createCheckoutSession', () => {
+  describe("createCheckoutSession", () => {
     const createCheckoutDto: CreateCheckoutDto = {
-      tenantId: 'tenant-id',
+      tenantId: "tenant-id",
       plan: SubscriptionPlan.WORKSHOPS_STARTER,
       billingCycle: BillingCycle.MONTHLY,
     };
 
-    it('deve lançar erro se Stripe não estiver configurado', async () => {
+    it("deve lançar erro se Stripe não estiver configurado", async () => {
       // Salvar o valor original
       const originalKey = process.env.STRIPE_SECRET_KEY;
       delete process.env.STRIPE_SECRET_KEY;
@@ -257,8 +269,20 @@ describe('OnboardingService', () => {
             { provide: UsersService, useValue: usersService },
             { provide: EmailService, useValue: emailService },
             { provide: ConfigService, useValue: { get: jest.fn() } },
-            { provide: CloudflareService, useValue: { createTenantSubdomain: jest.fn(), deleteTenantSubdomain: jest.fn() } },
-            { provide: EncryptionService, useValue: { encrypt: jest.fn(val => val), decrypt: jest.fn(val => val) } },
+            {
+              provide: CloudflareService,
+              useValue: {
+                createTenantSubdomain: jest.fn(),
+                deleteTenantSubdomain: jest.fn(),
+              },
+            },
+            {
+              provide: EncryptionService,
+              useValue: {
+                encrypt: jest.fn((val) => val),
+                decrypt: jest.fn((val) => val),
+              },
+            },
           ],
         },
       ).compile();
@@ -278,14 +302,16 @@ describe('OnboardingService', () => {
       // Force systemPaymentGateway to return null to simulate missing configuration
       // We need to access prismaService on the moduleWithoutStripe
       const prismaServiceLocal = moduleWithoutStripe.get(PrismaService);
-      (prismaServiceLocal.systemPaymentGateway.findFirst as jest.Mock).mockResolvedValue(null);
+      (
+        prismaServiceLocal.systemPaymentGateway.findFirst as jest.Mock
+      ).mockResolvedValue(null);
 
       await expect(
         serviceWithoutStripe.createCheckoutSession(createCheckoutDto),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve lançar erro se tenant não for encontrado', async () => {
+    it("deve lançar erro se tenant não for encontrado", async () => {
       (prismaService.tenant.findUnique as jest.Mock).mockResolvedValue(null);
 
       await expect(
@@ -293,7 +319,7 @@ describe('OnboardingService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve lançar erro se tenant não estiver pendente', async () => {
+    it("deve lançar erro se tenant não estiver pendente", async () => {
       (prismaService.tenant.findUnique as jest.Mock).mockResolvedValue({
         ...mockTenant,
         status: TenantStatus.ACTIVE,
@@ -305,21 +331,21 @@ describe('OnboardingService', () => {
     });
   });
 
-  describe('handleCheckoutCompleted', () => {
+  describe("handleCheckoutCompleted", () => {
     const mockSession: Partial<Stripe.Checkout.Session> = {
-      id: 'cs_test_123',
-      customer: 'cus_test_123',
-      subscription: 'sub_test_123',
+      id: "cs_test_123",
+      customer: "cus_test_123",
+      subscription: "sub_test_123",
       metadata: {
-        tenantId: 'tenant-id',
-        tenantName: 'Oficina Teste',
-        tenantEmail: 'admin@oficina.com',
+        tenantId: "tenant-id",
+        tenantName: "Oficina Teste",
+        tenantEmail: "admin@oficina.com",
         plan: TenantPlan.WORKSHOPS_STARTER,
         billingCycle: BillingCycle.MONTHLY,
       },
     };
 
-    it('deve lançar erro se metadata não existir', async () => {
+    it("deve lançar erro se metadata não existir", async () => {
       const sessionWithoutMetadata = { ...mockSession, metadata: null };
 
       await expect(
@@ -329,7 +355,7 @@ describe('OnboardingService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve lançar erro se tenantId não existir na metadata', async () => {
+    it("deve lançar erro se tenantId não existir na metadata", async () => {
       const sessionWithoutTenantId = {
         ...mockSession,
         metadata: { ...mockSession.metadata, tenantId: undefined },
@@ -342,7 +368,7 @@ describe('OnboardingService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve lançar erro se tenant não for encontrado', async () => {
+    it("deve lançar erro se tenant não for encontrado", async () => {
       (prismaService.tenant.findUnique as jest.Mock).mockResolvedValue(null);
 
       await expect(
@@ -350,7 +376,7 @@ describe('OnboardingService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve retornar early se tenant já foi processado', async () => {
+    it("deve retornar early se tenant já foi processado", async () => {
       (prismaService.tenant.findUnique as jest.Mock).mockResolvedValue({
         ...mockTenant,
         status: TenantStatus.ACTIVE,
@@ -365,9 +391,9 @@ describe('OnboardingService', () => {
       expect(tenantsService.update as jest.Mock).not.toHaveBeenCalled();
     });
 
-    it('deve criar checkout session com sucesso', async () => {
+    it("deve criar checkout session com sucesso", async () => {
       const createCheckoutDtoLocal: CreateCheckoutDto = {
-        tenantId: 'tenant-id',
+        tenantId: "tenant-id",
         plan: SubscriptionPlan.WORKSHOPS_STARTER,
         billingCycle: BillingCycle.MONTHLY,
       };
@@ -375,15 +401,15 @@ describe('OnboardingService', () => {
       (prismaService.tenant.findUnique as jest.Mock).mockResolvedValue({
         ...mockTenant,
         status: TenantStatus.PENDING,
-        adminEmail: 'admin@oficina.com',
+        adminEmail: "admin@oficina.com",
       } as unknown);
       (prismaService.user.findFirst as jest.Mock).mockResolvedValue(null);
 
       // Mock Stripe checkout session
       const mockStripeSession = {
-        id: 'cs_test_123',
-        url: 'https://checkout.stripe.com/test',
-        status: 'open',
+        id: "cs_test_123",
+        url: "https://checkout.stripe.com/test",
+        status: "open",
         expires_at: Math.floor(Date.now() / 1000) + 3600,
       };
 
@@ -402,34 +428,34 @@ describe('OnboardingService', () => {
       );
 
       expect(result).toEqual({
-        sessionId: 'cs_test_123',
-        url: 'https://checkout.stripe.com/test',
+        sessionId: "cs_test_123",
+        url: "https://checkout.stripe.com/test",
       });
     });
 
-    it('deve processar checkout completo com criação de subscription e usuário', async () => {
+    it("deve processar checkout completo com criação de subscription e usuário", async () => {
       (prismaService.tenant.findUnique as jest.Mock).mockResolvedValue({
         ...mockTenant,
         status: TenantStatus.PENDING,
-        adminEmail: 'admin@oficina.com',
+        adminEmail: "admin@oficina.com",
         users: [],
       } as unknown);
       (billingService.findByTenantId as jest.Mock).mockRejectedValue(
-        new NotFoundException('Subscription not found'),
+        new NotFoundException("Subscription not found"),
       );
       (billingService.create as jest.Mock).mockResolvedValue({
-        id: 'sub-id',
-        tenantId: 'tenant-id',
+        id: "sub-id",
+        tenantId: "tenant-id",
       });
       (usersService.create as jest.Mock).mockResolvedValue({
-        id: 'user-id',
-        email: 'admin@oficina.com',
-        name: 'Admin',
+        id: "user-id",
+        email: "admin@oficina.com",
+        name: "Admin",
       });
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue({
-        id: 'user-id',
-        email: 'admin@oficina.com',
-        name: 'Admin',
+        id: "user-id",
+        email: "admin@oficina.com",
+        name: "Admin",
         role: UserRole.ADMIN,
       });
       (emailService.sendWelcomeEmail as jest.Mock).mockResolvedValue(undefined);
@@ -448,30 +474,30 @@ describe('OnboardingService', () => {
       expect(emailService.sendWelcomeEmail).toHaveBeenCalled();
     });
 
-    it('deve atualizar subscription existente ao processar checkout', async () => {
+    it("deve atualizar subscription existente ao processar checkout", async () => {
       (prismaService.tenant.findUnique as jest.Mock).mockResolvedValue({
         ...mockTenant,
         status: TenantStatus.PENDING,
-        adminEmail: 'admin@oficina.com',
+        adminEmail: "admin@oficina.com",
         users: [],
       } as unknown);
       (billingService.findByTenantId as jest.Mock).mockResolvedValue({
-        id: 'sub-id',
-        tenantId: 'tenant-id',
+        id: "sub-id",
+        tenantId: "tenant-id",
       });
       (billingService.update as jest.Mock).mockResolvedValue({
-        id: 'sub-id',
-        tenantId: 'tenant-id',
+        id: "sub-id",
+        tenantId: "tenant-id",
       });
       (usersService.create as jest.Mock).mockResolvedValue({
-        id: 'user-id',
-        email: 'admin@oficina.com',
-        name: 'Admin',
+        id: "user-id",
+        email: "admin@oficina.com",
+        name: "Admin",
       });
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue({
-        id: 'user-id',
-        email: 'admin@oficina.com',
-        name: 'Admin',
+        id: "user-id",
+        email: "admin@oficina.com",
+        name: "Admin",
         role: UserRole.ADMIN,
       });
       (emailService.sendWelcomeEmail as jest.Mock).mockResolvedValue(undefined);
@@ -486,19 +512,19 @@ describe('OnboardingService', () => {
       expect(billingService.create).not.toHaveBeenCalled();
     });
 
-    it('deve usar email do tenant.adminEmail quando disponível', async () => {
+    it("deve usar email do tenant.adminEmail quando disponível", async () => {
       (prismaService.tenant.findUnique as jest.Mock).mockResolvedValue({
         ...mockTenant,
         status: TenantStatus.PENDING,
-        adminEmail: 'admin@oficina.com',
+        adminEmail: "admin@oficina.com",
         users: [],
       } as unknown);
       (prismaService.user.findFirst as jest.Mock).mockResolvedValue(null);
 
       const mockStripeSession = {
-        id: 'cs_test_123',
-        url: 'https://checkout.stripe.com/test',
-        status: 'open',
+        id: "cs_test_123",
+        url: "https://checkout.stripe.com/test",
+        status: "open",
         expires_at: Math.floor(Date.now() / 1000) + 3600,
       };
 
@@ -513,7 +539,7 @@ describe('OnboardingService', () => {
       }
 
       const createCheckoutDtoLocal: CreateCheckoutDto = {
-        tenantId: 'tenant-id',
+        tenantId: "tenant-id",
         plan: SubscriptionPlan.WORKSHOPS_STARTER,
         billingCycle: BillingCycle.MONTHLY,
       };
@@ -522,17 +548,17 @@ describe('OnboardingService', () => {
 
       // Verificar se o email do tenant foi usado
       // Verificar se o email do tenant foi usado
-      const stripeInstance = (service as any).stripe;
+      const stripeInstance = (service as unknown).stripe;
       expect(stripeInstance.checkout.sessions.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          customer_email: 'admin@oficina.com',
+          customer_email: "admin@oficina.com",
         }),
       );
     });
 
-    it('deve usar email do usuário existente quando adminEmail não estiver disponível', async () => {
+    it("deve usar email do usuário existente quando adminEmail não estiver disponível", async () => {
       const createCheckoutDtoLocal: CreateCheckoutDto = {
-        tenantId: 'tenant-id',
+        tenantId: "tenant-id",
         plan: SubscriptionPlan.WORKSHOPS_STARTER,
         billingCycle: BillingCycle.MONTHLY,
       };
@@ -544,13 +570,13 @@ describe('OnboardingService', () => {
         users: [],
       } as unknown);
       (prismaService.user.findFirst as jest.Mock).mockResolvedValue({
-        email: 'user@oficina.com',
+        email: "user@oficina.com",
       });
 
       const mockStripeSession = {
-        id: 'cs_test_123',
-        url: 'https://checkout.stripe.com/test',
-        status: 'open',
+        id: "cs_test_123",
+        url: "https://checkout.stripe.com/test",
+        status: "open",
         expires_at: Math.floor(Date.now() / 1000) + 3600,
       };
 
@@ -566,28 +592,28 @@ describe('OnboardingService', () => {
 
       await service.createCheckoutSession(createCheckoutDtoLocal);
 
-      const stripeInstance = (service as any).stripe;
+      const stripeInstance = (service as unknown).stripe;
       expect(stripeInstance.checkout.sessions.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          customer_email: 'user@oficina.com',
+          customer_email: "user@oficina.com",
         }),
       );
     });
 
-    it('deve usar email temporário quando nenhum email estiver disponível', async () => {
+    it("deve usar email temporário quando nenhum email estiver disponível", async () => {
       (prismaService.tenant.findUnique as jest.Mock).mockResolvedValue({
         ...mockTenant,
         status: TenantStatus.PENDING,
         adminEmail: null,
-        name: 'Oficina Teste',
+        name: "Oficina Teste",
         users: [],
       } as unknown);
       (prismaService.user.findFirst as jest.Mock).mockResolvedValue(null);
 
       const mockStripeSession = {
-        id: 'cs_test_123',
-        url: 'https://checkout.stripe.com/test',
-        status: 'open',
+        id: "cs_test_123",
+        url: "https://checkout.stripe.com/test",
+        status: "open",
         expires_at: Math.floor(Date.now() / 1000) + 3600,
       };
 
@@ -602,24 +628,24 @@ describe('OnboardingService', () => {
       }
 
       const createCheckoutDtoLocal: CreateCheckoutDto = {
-        tenantId: 'tenant-id',
+        tenantId: "tenant-id",
         plan: SubscriptionPlan.WORKSHOPS_STARTER,
         billingCycle: BillingCycle.MONTHLY,
       };
 
       await service.createCheckoutSession(createCheckoutDtoLocal);
 
-      const stripeInstance = (service as any).stripe;
+      const stripeInstance = (service as unknown).stripe;
       expect(stripeInstance.checkout.sessions.create).toHaveBeenCalledWith(
         expect.objectContaining({
-          customer_email: expect.stringContaining('@temp.com'),
+          customer_email: expect.stringContaining("@temp.com"),
         }),
       );
     });
 
-    it('deve lançar erro se session.url não estiver disponível', async () => {
+    it("deve lançar erro se session.url não estiver disponível", async () => {
       const createCheckoutDtoLocal: CreateCheckoutDto = {
-        tenantId: 'tenant-id',
+        tenantId: "tenant-id",
         plan: SubscriptionPlan.WORKSHOPS_STARTER,
         billingCycle: BillingCycle.MONTHLY,
       };
@@ -627,48 +653,50 @@ describe('OnboardingService', () => {
       (prismaService.tenant.findUnique as jest.Mock).mockResolvedValue({
         ...mockTenant,
         status: TenantStatus.PENDING,
-        adminEmail: 'admin@oficina.com',
+        adminEmail: "admin@oficina.com",
         users: [],
       } as unknown);
       (prismaService.user.findFirst as jest.Mock).mockResolvedValue(null);
 
       const mockStripeSession = {
-        id: 'cs_test_123',
+        id: "cs_test_123",
         url: null,
-        status: 'open',
+        status: "open",
         expires_at: Math.floor(Date.now() / 1000) + 3600,
       };
 
       // Inicializar Stripe para configurar o mock
-      await (service as any).getStripeInstance();
-      const stripeInstance = (service as any).stripe;
-      stripeInstance.checkout.sessions.create.mockResolvedValue(mockStripeSession);
+      await (service as unknown).getStripeInstance();
+      const stripeInstance = (service as unknown).stripe;
+      stripeInstance.checkout.sessions.create.mockResolvedValue(
+        mockStripeSession,
+      );
 
       await expect(
         service.createCheckoutSession(createCheckoutDtoLocal),
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve processar checkout quando usuário admin já existe', async () => {
+    it("deve processar checkout quando usuário admin já existe", async () => {
       (prismaService.tenant.findUnique as jest.Mock).mockResolvedValue({
         ...mockTenant,
         status: TenantStatus.PENDING,
-        adminEmail: 'admin@oficina.com',
+        adminEmail: "admin@oficina.com",
         users: [
           {
-            id: 'user-id',
-            email: 'admin@oficina.com',
-            name: 'Admin',
+            id: "user-id",
+            email: "admin@oficina.com",
+            name: "Admin",
             role: UserRole.ADMIN,
           },
         ],
       } as unknown);
       (billingService.findByTenantId as jest.Mock).mockRejectedValue(
-        new NotFoundException('Subscription not found'),
+        new NotFoundException("Subscription not found"),
       );
       (billingService.create as jest.Mock).mockResolvedValue({
-        id: 'sub-id',
-        tenantId: 'tenant-id',
+        id: "sub-id",
+        tenantId: "tenant-id",
       });
       (emailService.sendWelcomeEmail as jest.Mock).mockResolvedValue(undefined);
 
@@ -682,15 +710,15 @@ describe('OnboardingService', () => {
       expect(emailService.sendWelcomeEmail).not.toHaveBeenCalled();
     });
 
-    it('deve lançar erro se billingService.findByTenantId lançar erro diferente de NotFoundException', async () => {
+    it("deve lançar erro se billingService.findByTenantId lançar erro diferente de NotFoundException", async () => {
       (prismaService.tenant.findUnique as jest.Mock).mockResolvedValue({
         ...mockTenant,
         status: TenantStatus.PENDING,
-        adminEmail: 'admin@oficina.com',
+        adminEmail: "admin@oficina.com",
         users: [],
       } as unknown);
       (billingService.findByTenantId as jest.Mock).mockRejectedValue(
-        new Error('Database error'),
+        new Error("Database error"),
       );
 
       await expect(
@@ -698,24 +726,24 @@ describe('OnboardingService', () => {
       ).rejects.toThrow(Error);
     });
 
-    it('deve lançar erro se newAdminUser for null após criação', async () => {
+    it("deve lançar erro se newAdminUser for null após criação", async () => {
       (prismaService.tenant.findUnique as jest.Mock).mockResolvedValue({
         ...mockTenant,
         status: TenantStatus.PENDING,
-        adminEmail: 'admin@oficina.com',
+        adminEmail: "admin@oficina.com",
         users: [],
       } as unknown);
       (billingService.findByTenantId as jest.Mock).mockRejectedValue(
-        new NotFoundException('Subscription not found'),
+        new NotFoundException("Subscription not found"),
       );
       (billingService.create as jest.Mock).mockResolvedValue({
-        id: 'sub-id',
-        tenantId: 'tenant-id',
+        id: "sub-id",
+        tenantId: "tenant-id",
       });
       (usersService.create as jest.Mock).mockResolvedValue({
-        id: 'user-id',
-        email: 'admin@oficina.com',
-        name: 'Admin',
+        id: "user-id",
+        email: "admin@oficina.com",
+        name: "Admin",
       });
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue(null);
 
@@ -724,13 +752,13 @@ describe('OnboardingService', () => {
       ).rejects.toThrow(BadRequestException);
     });
 
-    it('deve usar email da session.customer_email quando tenantEmail não estiver disponível', async () => {
+    it("deve usar email da session.customer_email quando tenantEmail não estiver disponível", async () => {
       const sessionWithEmail = {
         ...mockSession,
-        customer_email: 'customer@email.com',
+        customer_email: "customer@email.com",
         metadata: {
-          tenantId: 'tenant-id',
-          tenantName: 'Oficina Teste',
+          tenantId: "tenant-id",
+          tenantName: "Oficina Teste",
           plan: TenantPlan.WORKSHOPS_STARTER,
           billingCycle: BillingCycle.MONTHLY,
         },
@@ -740,26 +768,26 @@ describe('OnboardingService', () => {
         ...mockTenant,
         status: TenantStatus.PENDING,
         adminEmail: null,
-        name: 'Oficina Teste',
+        name: "Oficina Teste",
         users: [],
       } as unknown);
       (prismaService.user.findFirst as jest.Mock).mockResolvedValue(null);
       (billingService.findByTenantId as jest.Mock).mockRejectedValue(
-        new NotFoundException('Subscription not found'),
+        new NotFoundException("Subscription not found"),
       );
       (billingService.create as jest.Mock).mockResolvedValue({
-        id: 'sub-id',
-        tenantId: 'tenant-id',
+        id: "sub-id",
+        tenantId: "tenant-id",
       });
       (usersService.create as jest.Mock).mockResolvedValue({
-        id: 'user-id',
-        email: 'customer@email.com',
-        name: 'Admin',
+        id: "user-id",
+        email: "customer@email.com",
+        name: "Admin",
       });
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue({
-        id: 'user-id',
-        email: 'customer@email.com',
-        name: 'Admin',
+        id: "user-id",
+        email: "customer@email.com",
+        name: "Admin",
         role: UserRole.ADMIN,
       });
       (emailService.sendWelcomeEmail as jest.Mock).mockResolvedValue(undefined);
@@ -770,27 +798,27 @@ describe('OnboardingService', () => {
 
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(usersService.create).toHaveBeenCalledWith(
-        'tenant-id',
+        "tenant-id",
         expect.objectContaining({
-          email: 'customer@email.com',
+          email: "customer@email.com",
         }),
       );
     });
   });
 
-  describe('handleAsyncPaymentFailed', () => {
+  describe("handleAsyncPaymentFailed", () => {
     const mockSession: Partial<Stripe.Checkout.Session> = {
-      id: 'cs_test_123',
-      customer: 'cus_test_123',
+      id: "cs_test_123",
+      customer: "cus_test_123",
       metadata: {
-        tenantId: 'tenant-id',
+        tenantId: "tenant-id",
       },
       amount_total: 4990,
-      currency: 'brl',
-      invoice: 'in_test_123',
+      currency: "brl",
+      invoice: "in_test_123",
     };
 
-    it('deve retornar early se metadata não existir', async () => {
+    it("deve retornar early se metadata não existir", async () => {
       const sessionWithoutMetadata = { ...mockSession, metadata: null };
 
       (emailService.sendPaymentFailedEmail as jest.Mock).mockClear();
@@ -803,7 +831,7 @@ describe('OnboardingService', () => {
       expect(emailService.sendPaymentFailedEmail).not.toHaveBeenCalled();
     });
 
-    it('deve retornar early se tenantId não existir na metadata', async () => {
+    it("deve retornar early se tenantId não existir na metadata", async () => {
       const sessionWithoutTenantId = {
         ...mockSession,
         metadata: {},
@@ -819,7 +847,7 @@ describe('OnboardingService', () => {
       expect(emailService.sendPaymentFailedEmail).not.toHaveBeenCalled();
     });
 
-    it('deve retornar early se tenant não for encontrado', async () => {
+    it("deve retornar early se tenant não for encontrado", async () => {
       (prismaService.tenant.findUnique as jest.Mock).mockResolvedValueOnce(
         null,
       );
@@ -832,14 +860,14 @@ describe('OnboardingService', () => {
       expect(emailService.sendPaymentFailedEmail).not.toHaveBeenCalled();
     });
 
-    it('deve enviar email de pagamento falhado', async () => {
+    it("deve enviar email de pagamento falhado", async () => {
       (prismaService.tenant.findUnique as jest.Mock).mockResolvedValue({
         ...mockTenant,
         users: [
           {
-            id: 'user-id',
-            email: 'admin@oficina.com',
-            name: 'Admin',
+            id: "user-id",
+            email: "admin@oficina.com",
+            name: "Admin",
             role: UserRole.ADMIN,
           },
         ],
@@ -855,25 +883,25 @@ describe('OnboardingService', () => {
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(emailService.sendPaymentFailedEmail).toHaveBeenCalledWith(
         expect.objectContaining({
-          to: 'admin@oficina.com',
-          retryUrl: expect.stringContaining('/onboarding/checkout'),
+          to: "admin@oficina.com",
+          retryUrl: expect.stringContaining("/onboarding/checkout"),
         }),
       );
     });
   });
 
-  describe('handleChargeFailed', () => {
+  describe("handleChargeFailed", () => {
     const mockCharge = {
-      id: 'ch_test_123',
-      customer: 'cus_test_123',
+      id: "ch_test_123",
+      customer: "cus_test_123",
       amount: 4990,
-      currency: 'brl',
+      currency: "brl",
       billing_details: {
-        email: 'admin@oficina.com',
+        email: "admin@oficina.com",
       },
     } as unknown as Stripe.Charge;
 
-    it('deve retornar early se customerId não for encontrado', async () => {
+    it("deve retornar early se customerId não for encontrado", async () => {
       const chargeWithoutCustomer = {
         ...mockCharge,
         customer: null,
@@ -885,7 +913,7 @@ describe('OnboardingService', () => {
       expect(emailService.sendPaymentFailedEmail).not.toHaveBeenCalled();
     });
 
-    it('deve retornar early se tenant não for encontrado', async () => {
+    it("deve retornar early se tenant não for encontrado", async () => {
       (prismaService.subscription.findFirst as jest.Mock).mockResolvedValue(
         null,
       );
@@ -900,16 +928,16 @@ describe('OnboardingService', () => {
     });
   });
 
-  describe('handlePaymentIntentFailed', () => {
+  describe("handlePaymentIntentFailed", () => {
     const mockPaymentIntent: Partial<Stripe.PaymentIntent> = {
-      id: 'pi_test_123',
-      customer: 'cus_test_123',
+      id: "pi_test_123",
+      customer: "cus_test_123",
       amount: 4990,
-      currency: 'brl',
-      payment_method_types: ['card'],
+      currency: "brl",
+      payment_method_types: ["card"],
     };
 
-    it('deve retornar early se customerId não for encontrado', async () => {
+    it("deve retornar early se customerId não for encontrado", async () => {
       const paymentIntentWithoutCustomer = {
         ...mockPaymentIntent,
         customer: null,
@@ -923,7 +951,7 @@ describe('OnboardingService', () => {
       expect(emailService.sendPaymentFailedEmail).not.toHaveBeenCalled();
     });
 
-    it('deve retornar early se tenant não for encontrado', async () => {
+    it("deve retornar early se tenant não for encontrado", async () => {
       (prismaService.subscription.findFirst as jest.Mock).mockResolvedValue(
         null,
       );
@@ -938,14 +966,14 @@ describe('OnboardingService', () => {
     });
   });
 
-  describe('handleInvoicePaymentFailed', () => {
+  describe("handleInvoicePaymentFailed", () => {
     const mockInvoice = {
-      id: 'in_test_123',
-      customer: 'cus_test_123',
-      subscription: 'sub_test_123',
+      id: "in_test_123",
+      customer: "cus_test_123",
+      subscription: "sub_test_123",
     } as unknown as Stripe.Invoice;
 
-    it('deve retornar early se customerId e subscriptionId não forem encontrados', async () => {
+    it("deve retornar early se customerId e subscriptionId não forem encontrados", async () => {
       const invoiceWithoutIds = {
         ...mockInvoice,
         customer: null,
@@ -958,7 +986,7 @@ describe('OnboardingService', () => {
       expect(emailService.sendPaymentFailedEmail).not.toHaveBeenCalled();
     });
 
-    it('deve retornar early se tenant não for encontrado', async () => {
+    it("deve retornar early se tenant não for encontrado", async () => {
       (prismaService.subscription.findFirst as jest.Mock).mockResolvedValue(
         null,
       );
@@ -971,14 +999,14 @@ describe('OnboardingService', () => {
     });
   });
 
-  describe('handleInvoicePaymentSucceeded', () => {
+  describe("handleInvoicePaymentSucceeded", () => {
     const mockInvoice = {
-      id: 'in_test_123',
-      customer: 'cus_test_123',
-      subscription: 'sub_test_123',
+      id: "in_test_123",
+      customer: "cus_test_123",
+      subscription: "sub_test_123",
     } as unknown as Stripe.Invoice;
 
-    it('deve retornar early se customerId e subscriptionId não forem encontrados', async () => {
+    it("deve retornar early se customerId e subscriptionId não forem encontrados", async () => {
       const invoiceWithoutIds = {
         ...mockInvoice,
         customer: null,
@@ -993,7 +1021,7 @@ describe('OnboardingService', () => {
       ).not.toHaveBeenCalled();
     });
 
-    it('deve retornar early se tenant não for encontrado', async () => {
+    it("deve retornar early se tenant não for encontrado", async () => {
       (prismaService.subscription.findFirst as jest.Mock).mockResolvedValue(
         null,
       );
@@ -1008,14 +1036,14 @@ describe('OnboardingService', () => {
     });
   });
 
-  describe('handleInvoiceUpcoming', () => {
+  describe("handleInvoiceUpcoming", () => {
     const mockInvoice = {
-      id: 'in_test_123',
-      customer: 'cus_test_123',
-      subscription: 'sub_test_123',
+      id: "in_test_123",
+      customer: "cus_test_123",
+      subscription: "sub_test_123",
     } as unknown as Stripe.Invoice;
 
-    it('deve retornar early se customerId e subscriptionId não forem encontrados', async () => {
+    it("deve retornar early se customerId e subscriptionId não forem encontrados", async () => {
       const invoiceWithoutIds = {
         ...mockInvoice,
         customer: null,
@@ -1028,7 +1056,7 @@ describe('OnboardingService', () => {
       expect(emailService.sendInvoiceUpcomingEmail).not.toHaveBeenCalled();
     });
 
-    it('deve retornar early se tenant não for encontrado', async () => {
+    it("deve retornar early se tenant não for encontrado", async () => {
       (prismaService.subscription.findFirst as jest.Mock).mockResolvedValue(
         null,
       );
@@ -1041,13 +1069,13 @@ describe('OnboardingService', () => {
     });
   });
 
-  describe('handleSubscriptionDeleted', () => {
+  describe("handleSubscriptionDeleted", () => {
     const mockSubscription: Partial<Stripe.Subscription> = {
-      id: 'sub_test_123',
-      customer: 'cus_test_123',
+      id: "sub_test_123",
+      customer: "cus_test_123",
     };
 
-    it('deve retornar early se tenant não for encontrado', async () => {
+    it("deve retornar early se tenant não for encontrado", async () => {
       (prismaService.subscription.findFirst as jest.Mock).mockResolvedValue(
         null,
       );
@@ -1062,13 +1090,13 @@ describe('OnboardingService', () => {
     });
   });
 
-  describe('handleSubscriptionUpdated', () => {
+  describe("handleSubscriptionUpdated", () => {
     const mockSubscription: Partial<Stripe.Subscription> = {
-      id: 'sub_test_123',
-      customer: 'cus_test_123',
+      id: "sub_test_123",
+      customer: "cus_test_123",
     };
 
-    it('deve retornar early se tenant não for encontrado', async () => {
+    it("deve retornar early se tenant não for encontrado", async () => {
       (prismaService.subscription.findFirst as jest.Mock).mockResolvedValue(
         null,
       );
@@ -1083,13 +1111,13 @@ describe('OnboardingService', () => {
     });
   });
 
-  describe('handleTrialWillEnd', () => {
+  describe("handleTrialWillEnd", () => {
     const mockSubscription: Partial<Stripe.Subscription> = {
-      id: 'sub_test_123',
-      customer: 'cus_test_123',
+      id: "sub_test_123",
+      customer: "cus_test_123",
     };
 
-    it('deve retornar early se tenant não for encontrado', async () => {
+    it("deve retornar early se tenant não for encontrado", async () => {
       (prismaService.subscription.findFirst as jest.Mock).mockResolvedValue(
         null,
       );
@@ -1101,17 +1129,17 @@ describe('OnboardingService', () => {
       expect(emailService.sendTrialEndingEmail).not.toHaveBeenCalled();
     });
 
-    it('deve processar trial will end com sucesso', async () => {
+    it("deve processar trial will end com sucesso", async () => {
       const mockSubscriptionWithItems = {
-        id: 'sub_test_123',
-        customer: 'cus_test_123',
+        id: "sub_test_123",
+        customer: "cus_test_123",
         trial_end: Math.floor(Date.now() / 1000) + 86400,
         items: {
           data: [
             {
               price: {
                 unit_amount: 4990,
-                currency: 'brl',
+                currency: "brl",
               },
             },
           ],
@@ -1119,17 +1147,17 @@ describe('OnboardingService', () => {
       } as unknown as Stripe.Subscription;
 
       (prismaService.subscription.findFirst as jest.Mock).mockResolvedValue({
-        id: 'sub-id',
-        tenantId: 'tenant-id',
-        plan: 'workshops_starter',
+        id: "sub-id",
+        tenantId: "tenant-id",
+        plan: "workshops_starter",
         tenant: {
-          id: 'tenant-id',
-          subdomain: 'oficina-teste',
+          id: "tenant-id",
+          subdomain: "oficina-teste",
           users: [
             {
-              id: 'user-id',
-              email: 'admin@oficina.com',
-              name: 'Admin',
+              id: "user-id",
+              email: "admin@oficina.com",
+              name: "Admin",
               role: UserRole.ADMIN,
             },
           ],
@@ -1147,26 +1175,26 @@ describe('OnboardingService', () => {
     });
   });
 
-  describe('findTenantByStripeId - casos de sucesso', () => {
-    it('deve encontrar tenant por subscription', async () => {
+  describe("findTenantByStripeId - casos de sucesso", () => {
+    it("deve encontrar tenant por subscription", async () => {
       (prismaService.subscription.findFirst as jest.Mock).mockResolvedValue({
-        id: 'sub-id',
-        tenantId: 'tenant-id',
-        plan: 'workshops_starter',
-        status: 'active',
-        billingCycle: 'monthly',
+        id: "sub-id",
+        tenantId: "tenant-id",
+        plan: "workshops_starter",
+        status: "active",
+        billingCycle: "monthly",
         currentPeriodEnd: new Date(),
-        stripeSubscriptionId: 'sub_test_123',
-        stripeCustomerId: 'cus_test_123',
+        stripeSubscriptionId: "sub_test_123",
+        stripeCustomerId: "cus_test_123",
         tenant: {
-          id: 'tenant-id',
-          subdomain: 'oficina-teste',
-          status: 'active',
+          id: "tenant-id",
+          subdomain: "oficina-teste",
+          status: "active",
           users: [
             {
-              id: 'user-id',
-              email: 'admin@oficina.com',
-              name: 'Admin',
+              id: "user-id",
+              email: "admin@oficina.com",
+              name: "Admin",
               role: UserRole.ADMIN,
             },
           ],
@@ -1175,11 +1203,11 @@ describe('OnboardingService', () => {
 
       // Testar indiretamente via handlePaymentIntentFailed
       const mockPaymentIntent = {
-        id: 'pi_test_123',
-        customer: 'cus_test_123',
+        id: "pi_test_123",
+        customer: "cus_test_123",
         amount: 4990,
-        currency: 'brl',
-        payment_method_types: ['card'],
+        currency: "brl",
+        payment_method_types: ["card"],
       } as unknown as Stripe.PaymentIntent;
 
       (emailService.sendPaymentFailedEmail as jest.Mock).mockResolvedValue(
@@ -1192,20 +1220,20 @@ describe('OnboardingService', () => {
       expect(emailService.sendPaymentFailedEmail).toHaveBeenCalled();
     });
 
-    it('deve encontrar tenant pendente quando não encontrar por subscription', async () => {
+    it("deve encontrar tenant pendente quando não encontrar por subscription", async () => {
       (prismaService.subscription.findFirst as jest.Mock).mockResolvedValue(
         null,
       );
       (prismaService.tenant.findMany as jest.Mock).mockResolvedValue([
         {
-          id: 'tenant-id',
-          subdomain: 'oficina-teste',
-          status: 'pending',
+          id: "tenant-id",
+          subdomain: "oficina-teste",
+          status: "pending",
           users: [
             {
-              id: 'user-id',
-              email: 'admin@oficina.com',
-              name: 'Admin',
+              id: "user-id",
+              email: "admin@oficina.com",
+              name: "Admin",
               role: UserRole.ADMIN,
             },
           ],
@@ -1214,25 +1242,25 @@ describe('OnboardingService', () => {
 
       // Testar indiretamente via handleChargeFailed
       const mockCharge = {
-        id: 'ch_test_123',
-        customer: 'cus_test_123',
+        id: "ch_test_123",
+        customer: "cus_test_123",
         amount: 4990,
-        currency: 'brl',
+        currency: "brl",
         billing_details: {
-          email: 'admin@oficina.com',
+          email: "admin@oficina.com",
         },
       } as unknown as Stripe.Charge;
 
       (prismaService.user.findFirst as jest.Mock).mockResolvedValue(null);
       (prismaService.tenant.findFirst as jest.Mock).mockResolvedValue({
-        id: 'tenant-id',
-        subdomain: 'oficina-teste',
-        status: 'pending',
+        id: "tenant-id",
+        subdomain: "oficina-teste",
+        status: "pending",
         users: [
           {
-            id: 'user-id',
-            email: 'admin@oficina.com',
-            name: 'Admin',
+            id: "user-id",
+            email: "admin@oficina.com",
+            name: "Admin",
             role: UserRole.ADMIN,
           },
         ],
@@ -1249,28 +1277,28 @@ describe('OnboardingService', () => {
     });
   });
 
-  describe('handleInvoicePaymentFailed - caso de sucesso', () => {
-    it('deve processar invoice payment failed com sucesso', async () => {
+  describe("handleInvoicePaymentFailed - caso de sucesso", () => {
+    it("deve processar invoice payment failed com sucesso", async () => {
       const mockInvoice = {
-        id: 'in_test_123',
-        customer: 'cus_test_123',
-        subscription: 'sub_test_123',
+        id: "in_test_123",
+        customer: "cus_test_123",
+        subscription: "sub_test_123",
         amount_due: 4990,
-        currency: 'brl',
-        hosted_invoice_url: 'https://invoice.stripe.com/test',
+        currency: "brl",
+        hosted_invoice_url: "https://invoice.stripe.com/test",
       } as unknown as Stripe.Invoice;
 
       (prismaService.subscription.findFirst as jest.Mock).mockResolvedValue({
-        id: 'sub-id',
-        tenantId: 'tenant-id',
+        id: "sub-id",
+        tenantId: "tenant-id",
         tenant: {
-          id: 'tenant-id',
-          subdomain: 'oficina-teste',
+          id: "tenant-id",
+          subdomain: "oficina-teste",
           users: [
             {
-              id: 'user-id',
-              email: 'admin@oficina.com',
-              name: 'Admin',
+              id: "user-id",
+              email: "admin@oficina.com",
+              name: "Admin",
               role: UserRole.ADMIN,
             },
           ],
@@ -1292,29 +1320,29 @@ describe('OnboardingService', () => {
     });
   });
 
-  describe('handleInvoicePaymentSucceeded - caso de sucesso', () => {
-    it('deve processar invoice payment succeeded com sucesso', async () => {
+  describe("handleInvoicePaymentSucceeded - caso de sucesso", () => {
+    it("deve processar invoice payment succeeded com sucesso", async () => {
       const mockInvoice = {
-        id: 'in_test_123',
-        customer: 'cus_test_123',
-        subscription: 'sub_test_123',
+        id: "in_test_123",
+        customer: "cus_test_123",
+        subscription: "sub_test_123",
         amount_paid: 4990,
-        currency: 'brl',
-        number: 'INV-123',
-        hosted_invoice_url: 'https://invoice.stripe.com/test',
+        currency: "brl",
+        number: "INV-123",
+        hosted_invoice_url: "https://invoice.stripe.com/test",
       } as unknown as Stripe.Invoice;
 
       (prismaService.subscription.findFirst as jest.Mock).mockResolvedValue({
-        id: 'sub-id',
-        tenantId: 'tenant-id',
+        id: "sub-id",
+        tenantId: "tenant-id",
         tenant: {
-          id: 'tenant-id',
-          subdomain: 'oficina-teste',
+          id: "tenant-id",
+          subdomain: "oficina-teste",
           users: [
             {
-              id: 'user-id',
-              email: 'admin@oficina.com',
-              name: 'Admin',
+              id: "user-id",
+              email: "admin@oficina.com",
+              name: "Admin",
               role: UserRole.ADMIN,
             },
           ],
@@ -1340,29 +1368,29 @@ describe('OnboardingService', () => {
     });
   });
 
-  describe('handleInvoiceUpcoming - caso de sucesso', () => {
-    it('deve processar invoice upcoming com sucesso', async () => {
+  describe("handleInvoiceUpcoming - caso de sucesso", () => {
+    it("deve processar invoice upcoming com sucesso", async () => {
       const mockInvoice = {
-        id: 'in_test_123',
-        customer: 'cus_test_123',
-        subscription: 'sub_test_123',
+        id: "in_test_123",
+        customer: "cus_test_123",
+        subscription: "sub_test_123",
         amount_due: 4990,
-        currency: 'brl',
+        currency: "brl",
         due_date: Math.floor(Date.now() / 1000) + 86400,
-        hosted_invoice_url: 'https://invoice.stripe.com/test',
+        hosted_invoice_url: "https://invoice.stripe.com/test",
       } as unknown as Stripe.Invoice;
 
       (prismaService.subscription.findFirst as jest.Mock).mockResolvedValue({
-        id: 'sub-id',
-        tenantId: 'tenant-id',
+        id: "sub-id",
+        tenantId: "tenant-id",
         tenant: {
-          id: 'tenant-id',
-          subdomain: 'oficina-teste',
+          id: "tenant-id",
+          subdomain: "oficina-teste",
           users: [
             {
-              id: 'user-id',
-              email: 'admin@oficina.com',
-              name: 'Admin',
+              id: "user-id",
+              email: "admin@oficina.com",
+              name: "Admin",
               role: UserRole.ADMIN,
             },
           ],
@@ -1380,27 +1408,27 @@ describe('OnboardingService', () => {
     });
   });
 
-  describe('handleSubscriptionDeleted - caso de sucesso', () => {
-    it('deve processar subscription deleted com sucesso', async () => {
+  describe("handleSubscriptionDeleted - caso de sucesso", () => {
+    it("deve processar subscription deleted com sucesso", async () => {
       const mockSubscription = {
-        id: 'sub_test_123',
-        customer: 'cus_test_123',
+        id: "sub_test_123",
+        customer: "cus_test_123",
         canceled_at: Math.floor(Date.now() / 1000),
         current_period_end: Math.floor(Date.now() / 1000) + 86400,
       } as unknown as Stripe.Subscription;
 
       (prismaService.subscription.findFirst as jest.Mock).mockResolvedValue({
-        id: 'sub-id',
-        tenantId: 'tenant-id',
-        plan: 'workshops_starter',
+        id: "sub-id",
+        tenantId: "tenant-id",
+        plan: "workshops_starter",
         tenant: {
-          id: 'tenant-id',
-          subdomain: 'oficina-teste',
+          id: "tenant-id",
+          subdomain: "oficina-teste",
           users: [
             {
-              id: 'user-id',
-              email: 'admin@oficina.com',
-              name: 'Admin',
+              id: "user-id",
+              email: "admin@oficina.com",
+              name: "Admin",
               role: UserRole.ADMIN,
             },
           ],
@@ -1426,20 +1454,20 @@ describe('OnboardingService', () => {
     });
   });
 
-  describe('handleSubscriptionUpdated - caso de sucesso', () => {
-    it('deve processar subscription updated com sucesso', async () => {
+  describe("handleSubscriptionUpdated - caso de sucesso", () => {
+    it("deve processar subscription updated com sucesso", async () => {
       const mockSubscription = {
-        id: 'sub_test_123',
-        customer: 'cus_test_123',
-        status: 'active',
+        id: "sub_test_123",
+        customer: "cus_test_123",
+        status: "active",
         items: {
           data: [
             {
               price: {
-                nickname: 'workshops_starter',
-                recurring: { interval: 'month' },
+                nickname: "workshops_starter",
+                recurring: { interval: "month" },
                 unit_amount: 4990,
-                currency: 'brl',
+                currency: "brl",
               },
             },
           ],
@@ -1448,18 +1476,18 @@ describe('OnboardingService', () => {
       } as unknown as Stripe.Subscription;
 
       (prismaService.subscription.findFirst as jest.Mock).mockResolvedValue({
-        id: 'sub-id',
-        tenantId: 'tenant-id',
-        plan: 'workshops_starter',
-        status: 'active',
+        id: "sub-id",
+        tenantId: "tenant-id",
+        plan: "workshops_starter",
+        status: "active",
         tenant: {
-          id: 'tenant-id',
-          subdomain: 'oficina-teste',
+          id: "tenant-id",
+          subdomain: "oficina-teste",
           users: [
             {
-              id: 'user-id',
-              email: 'admin@oficina.com',
-              name: 'Admin',
+              id: "user-id",
+              email: "admin@oficina.com",
+              name: "Admin",
               role: UserRole.ADMIN,
             },
           ],
@@ -1480,19 +1508,19 @@ describe('OnboardingService', () => {
       expect(emailService.sendSubscriptionUpdatedEmail).toHaveBeenCalled();
     });
 
-    it('deve retornar early se adminUser não for encontrado', async () => {
+    it("deve retornar early se adminUser não for encontrado", async () => {
       const mockSubscription = {
-        id: 'sub_test_123',
-        customer: 'cus_test_123',
-        status: 'active',
+        id: "sub_test_123",
+        customer: "cus_test_123",
+        status: "active",
         items: {
           data: [
             {
               price: {
-                nickname: 'workshops_starter',
-                recurring: { interval: 'month' },
+                nickname: "workshops_starter",
+                recurring: { interval: "month" },
                 unit_amount: 4990,
-                currency: 'brl',
+                currency: "brl",
               },
             },
           ],
@@ -1501,13 +1529,13 @@ describe('OnboardingService', () => {
       } as unknown as Stripe.Subscription;
 
       (prismaService.subscription.findFirst as jest.Mock).mockResolvedValue({
-        id: 'sub-id',
-        tenantId: 'tenant-id',
-        plan: 'workshops_starter',
-        status: 'active',
+        id: "sub-id",
+        tenantId: "tenant-id",
+        plan: "workshops_starter",
+        status: "active",
         tenant: {
-          id: 'tenant-id',
-          subdomain: 'oficina-teste',
+          id: "tenant-id",
+          subdomain: "oficina-teste",
           users: [],
         },
       });
@@ -1518,19 +1546,19 @@ describe('OnboardingService', () => {
       expect(billingService.update).not.toHaveBeenCalled();
     });
 
-    it('deve retornar early se dbSubscription não for encontrado', async () => {
+    it("deve retornar early se dbSubscription não for encontrado", async () => {
       const mockSubscription = {
-        id: 'sub_test_123',
-        customer: 'cus_test_123',
-        status: 'active',
+        id: "sub_test_123",
+        customer: "cus_test_123",
+        status: "active",
         items: {
           data: [
             {
               price: {
-                nickname: 'workshops_starter',
-                recurring: { interval: 'month' },
+                nickname: "workshops_starter",
+                recurring: { interval: "month" },
                 unit_amount: 4990,
-                currency: 'brl',
+                currency: "brl",
               },
             },
           ],
@@ -1544,14 +1572,14 @@ describe('OnboardingService', () => {
       );
       (prismaService.tenant.findMany as jest.Mock).mockResolvedValue([
         {
-          id: 'tenant-id',
-          subdomain: 'oficina-teste',
-          status: 'pending',
+          id: "tenant-id",
+          subdomain: "oficina-teste",
+          status: "pending",
           users: [
             {
-              id: 'user-id',
-              email: 'admin@oficina.com',
-              name: 'Admin',
+              id: "user-id",
+              email: "admin@oficina.com",
+              name: "Admin",
               role: UserRole.ADMIN,
             },
           ],
@@ -1565,22 +1593,22 @@ describe('OnboardingService', () => {
     });
   });
 
-  describe('handleSubscriptionDeleted - casos de erro', () => {
-    it('deve retornar early se adminUser não for encontrado', async () => {
+  describe("handleSubscriptionDeleted - casos de erro", () => {
+    it("deve retornar early se adminUser não for encontrado", async () => {
       const mockSubscription = {
-        id: 'sub_test_123',
-        customer: 'cus_test_123',
+        id: "sub_test_123",
+        customer: "cus_test_123",
         canceled_at: Math.floor(Date.now() / 1000),
         current_period_end: Math.floor(Date.now() / 1000) + 86400,
       } as unknown as Stripe.Subscription;
 
       (prismaService.subscription.findFirst as jest.Mock).mockResolvedValue({
-        id: 'sub-id',
-        tenantId: 'tenant-id',
-        plan: 'workshops_starter',
+        id: "sub-id",
+        tenantId: "tenant-id",
+        plan: "workshops_starter",
         tenant: {
-          id: 'tenant-id',
-          subdomain: 'oficina-teste',
+          id: "tenant-id",
+          subdomain: "oficina-teste",
           users: [],
         },
       });
@@ -1591,10 +1619,10 @@ describe('OnboardingService', () => {
       expect(tenantsService.suspend).not.toHaveBeenCalled();
     });
 
-    it('deve retornar early se dbSubscription não for encontrado', async () => {
+    it("deve retornar early se dbSubscription não for encontrado", async () => {
       const mockSubscription = {
-        id: 'sub_test_123',
-        customer: 'cus_test_123',
+        id: "sub_test_123",
+        customer: "cus_test_123",
         canceled_at: Math.floor(Date.now() / 1000),
         current_period_end: Math.floor(Date.now() / 1000) + 86400,
       } as unknown as Stripe.Subscription;
@@ -1605,14 +1633,14 @@ describe('OnboardingService', () => {
       );
       (prismaService.tenant.findMany as jest.Mock).mockResolvedValue([
         {
-          id: 'tenant-id',
-          subdomain: 'oficina-teste',
-          status: 'pending',
+          id: "tenant-id",
+          subdomain: "oficina-teste",
+          status: "pending",
           users: [
             {
-              id: 'user-id',
-              email: 'admin@oficina.com',
-              name: 'Admin',
+              id: "user-id",
+              email: "admin@oficina.com",
+              name: "Admin",
               role: UserRole.ADMIN,
             },
           ],
@@ -1626,18 +1654,18 @@ describe('OnboardingService', () => {
     });
   });
 
-  describe('handleTrialWillEnd - casos de erro', () => {
-    it('deve retornar early se adminUser não for encontrado', async () => {
+  describe("handleTrialWillEnd - casos de erro", () => {
+    it("deve retornar early se adminUser não for encontrado", async () => {
       const mockSubscription = {
-        id: 'sub_test_123',
-        customer: 'cus_test_123',
+        id: "sub_test_123",
+        customer: "cus_test_123",
         trial_end: Math.floor(Date.now() / 1000) + 86400,
         items: {
           data: [
             {
               price: {
                 unit_amount: 4990,
-                currency: 'brl',
+                currency: "brl",
               },
             },
           ],
@@ -1645,12 +1673,12 @@ describe('OnboardingService', () => {
       } as unknown as Stripe.Subscription;
 
       (prismaService.subscription.findFirst as jest.Mock).mockResolvedValue({
-        id: 'sub-id',
-        tenantId: 'tenant-id',
-        plan: 'workshops_starter',
+        id: "sub-id",
+        tenantId: "tenant-id",
+        plan: "workshops_starter",
         tenant: {
-          id: 'tenant-id',
-          subdomain: 'oficina-teste',
+          id: "tenant-id",
+          subdomain: "oficina-teste",
           users: [],
         },
       });
@@ -1661,17 +1689,17 @@ describe('OnboardingService', () => {
       expect(emailService.sendTrialEndingEmail).not.toHaveBeenCalled();
     });
 
-    it('deve retornar early se dbSubscription não for encontrado', async () => {
+    it("deve retornar early se dbSubscription não for encontrado", async () => {
       const mockSubscription = {
-        id: 'sub_test_123',
-        customer: 'cus_test_123',
+        id: "sub_test_123",
+        customer: "cus_test_123",
         trial_end: Math.floor(Date.now() / 1000) + 86400,
         items: {
           data: [
             {
               price: {
                 unit_amount: 4990,
-                currency: 'brl',
+                currency: "brl",
               },
             },
           ],
@@ -1684,14 +1712,14 @@ describe('OnboardingService', () => {
       );
       (prismaService.tenant.findMany as jest.Mock).mockResolvedValue([
         {
-          id: 'tenant-id',
-          subdomain: 'oficina-teste',
-          status: 'pending',
+          id: "tenant-id",
+          subdomain: "oficina-teste",
+          status: "pending",
           users: [
             {
-              id: 'user-id',
-              email: 'admin@oficina.com',
-              name: 'Admin',
+              id: "user-id",
+              email: "admin@oficina.com",
+              name: "Admin",
               role: UserRole.ADMIN,
             },
           ],
@@ -1705,22 +1733,22 @@ describe('OnboardingService', () => {
     });
   });
 
-  describe('handleInvoicePaymentFailed - casos de erro', () => {
-    it('deve retornar early se adminUser não for encontrado', async () => {
+  describe("handleInvoicePaymentFailed - casos de erro", () => {
+    it("deve retornar early se adminUser não for encontrado", async () => {
       const mockInvoice = {
-        id: 'in_test_123',
-        customer: 'cus_test_123',
-        subscription: 'sub_test_123',
+        id: "in_test_123",
+        customer: "cus_test_123",
+        subscription: "sub_test_123",
         amount_due: 4990,
-        currency: 'brl',
+        currency: "brl",
       } as unknown as Stripe.Invoice;
 
       (prismaService.subscription.findFirst as jest.Mock).mockResolvedValue({
-        id: 'sub-id',
-        tenantId: 'tenant-id',
+        id: "sub-id",
+        tenantId: "tenant-id",
         tenant: {
-          id: 'tenant-id',
-          subdomain: 'oficina-teste',
+          id: "tenant-id",
+          subdomain: "oficina-teste",
           users: [],
         },
       });
@@ -1732,22 +1760,22 @@ describe('OnboardingService', () => {
     });
   });
 
-  describe('handleInvoicePaymentSucceeded - casos de erro', () => {
-    it('deve retornar early se adminUser não for encontrado', async () => {
+  describe("handleInvoicePaymentSucceeded - casos de erro", () => {
+    it("deve retornar early se adminUser não for encontrado", async () => {
       const mockInvoice = {
-        id: 'in_test_123',
-        customer: 'cus_test_123',
-        subscription: 'sub_test_123',
+        id: "in_test_123",
+        customer: "cus_test_123",
+        subscription: "sub_test_123",
         amount_paid: 4990,
-        currency: 'brl',
+        currency: "brl",
       } as unknown as Stripe.Invoice;
 
       (prismaService.subscription.findFirst as jest.Mock).mockResolvedValue({
-        id: 'sub-id',
-        tenantId: 'tenant-id',
+        id: "sub-id",
+        tenantId: "tenant-id",
         tenant: {
-          id: 'tenant-id',
-          subdomain: 'oficina-teste',
+          id: "tenant-id",
+          subdomain: "oficina-teste",
           users: [],
         },
       });
@@ -1761,22 +1789,22 @@ describe('OnboardingService', () => {
     });
   });
 
-  describe('handleInvoiceUpcoming - casos de erro', () => {
-    it('deve retornar early se adminUser não for encontrado', async () => {
+  describe("handleInvoiceUpcoming - casos de erro", () => {
+    it("deve retornar early se adminUser não for encontrado", async () => {
       const mockInvoice = {
-        id: 'in_test_123',
-        customer: 'cus_test_123',
-        subscription: 'sub_test_123',
+        id: "in_test_123",
+        customer: "cus_test_123",
+        subscription: "sub_test_123",
         amount_due: 4990,
-        currency: 'brl',
+        currency: "brl",
       } as unknown as Stripe.Invoice;
 
       (prismaService.subscription.findFirst as jest.Mock).mockResolvedValue({
-        id: 'sub-id',
-        tenantId: 'tenant-id',
+        id: "sub-id",
+        tenantId: "tenant-id",
         tenant: {
-          id: 'tenant-id',
-          subdomain: 'oficina-teste',
+          id: "tenant-id",
+          subdomain: "oficina-teste",
           users: [],
         },
       });
@@ -1788,16 +1816,16 @@ describe('OnboardingService', () => {
     });
   });
 
-  describe('handleCheckoutCompleted - caso de erro adminUser undefined', () => {
-    it('deve lançar erro se adminUser for undefined após processamento', async () => {
+  describe("handleCheckoutCompleted - caso de erro adminUser undefined", () => {
+    it("deve lançar erro se adminUser for undefined após processamento", async () => {
       const mockSession: Partial<Stripe.Checkout.Session> = {
-        id: 'cs_test_123',
-        customer: 'cus_test_123',
-        subscription: 'sub_test_123',
+        id: "cs_test_123",
+        customer: "cus_test_123",
+        subscription: "sub_test_123",
         metadata: {
-          tenantId: 'tenant-id',
-          tenantName: 'Oficina Teste',
-          tenantEmail: 'admin@oficina.com',
+          tenantId: "tenant-id",
+          tenantName: "Oficina Teste",
+          tenantEmail: "admin@oficina.com",
           plan: TenantPlan.WORKSHOPS_STARTER,
           billingCycle: BillingCycle.MONTHLY,
         },
@@ -1806,20 +1834,20 @@ describe('OnboardingService', () => {
       (prismaService.tenant.findUnique as jest.Mock).mockResolvedValue({
         ...mockTenant,
         status: TenantStatus.PENDING,
-        adminEmail: 'admin@oficina.com',
+        adminEmail: "admin@oficina.com",
         users: [],
       } as unknown);
       (billingService.findByTenantId as jest.Mock).mockRejectedValue(
-        new NotFoundException('Subscription not found'),
+        new NotFoundException("Subscription not found"),
       );
       (billingService.create as jest.Mock).mockResolvedValue({
-        id: 'sub-id',
-        tenantId: 'tenant-id',
+        id: "sub-id",
+        tenantId: "tenant-id",
       });
       (usersService.create as jest.Mock).mockResolvedValue({
-        id: 'user-id',
-        email: 'admin@oficina.com',
-        name: 'Admin',
+        id: "user-id",
+        email: "admin@oficina.com",
+        name: "Admin",
       });
       (prismaService.user.findUnique as jest.Mock).mockResolvedValue(null);
 

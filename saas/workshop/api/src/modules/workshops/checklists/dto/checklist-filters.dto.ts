@@ -1,5 +1,5 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { ApiPropertyOptional } from "@nestjs/swagger";
+import { Type } from "class-transformer";
 import {
   IsEnum,
   IsOptional,
@@ -8,16 +8,16 @@ import {
   IsInt,
   Min,
   Max,
-} from 'class-validator';
+} from "class-validator";
 import {
   ChecklistType,
   ChecklistEntityType,
   ChecklistStatus,
-} from './checklist-type.enum';
+} from "./checklist-type.enum";
 
 export class ChecklistFiltersDto {
   @ApiPropertyOptional({
-    description: 'Tipo de entidade',
+    description: "Tipo de entidade",
     enum: ChecklistEntityType,
   })
   @IsOptional()
@@ -25,15 +25,15 @@ export class ChecklistFiltersDto {
   entityType?: ChecklistEntityType;
 
   @ApiPropertyOptional({
-    description: 'ID da entidade relacionada',
-    example: '123e4567-e89b-12d3-a456-426614174000',
+    description: "ID da entidade relacionada",
+    example: "123e4567-e89b-12d3-a456-426614174000",
   })
   @IsOptional()
   @IsUUID()
   entityId?: string;
 
   @ApiPropertyOptional({
-    description: 'Tipo de checklist',
+    description: "Tipo de checklist",
     enum: ChecklistType,
   })
   @IsOptional()
@@ -41,7 +41,7 @@ export class ChecklistFiltersDto {
   checklistType?: ChecklistType;
 
   @ApiPropertyOptional({
-    description: 'Status do checklist',
+    description: "Status do checklist",
     enum: ChecklistStatus,
   })
   @IsOptional()
@@ -49,23 +49,23 @@ export class ChecklistFiltersDto {
   status?: ChecklistStatus;
 
   @ApiPropertyOptional({
-    description: 'Data inicial (ISO 8601)',
-    example: '2025-12-01T00:00:00.000Z',
+    description: "Data inicial (ISO 8601)",
+    example: "2025-12-01T00:00:00.000Z",
   })
   @IsOptional()
   @IsDateString()
   startDate?: string;
 
   @ApiPropertyOptional({
-    description: 'Data final (ISO 8601)',
-    example: '2025-12-31T23:59:59.999Z',
+    description: "Data final (ISO 8601)",
+    example: "2025-12-31T23:59:59.999Z",
   })
   @IsOptional()
   @IsDateString()
   endDate?: string;
 
   @ApiPropertyOptional({
-    description: 'Página (para paginação)',
+    description: "Página (para paginação)",
     example: 1,
     minimum: 1,
     default: 1,
@@ -77,7 +77,7 @@ export class ChecklistFiltersDto {
   page?: number = 1;
 
   @ApiPropertyOptional({
-    description: 'Limite de itens por página',
+    description: "Limite de itens por página",
     example: 20,
     minimum: 1,
     maximum: 100,

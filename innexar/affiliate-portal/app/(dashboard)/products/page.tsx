@@ -1,4 +1,7 @@
+
 'use client';
+
+import Image from 'next/image';
 
 import { useEffect, useState } from 'react';
 import {
@@ -44,8 +47,8 @@ export default function ProductsPage() {
                 innexarApi.getProducts(),
                 innexarApi.getLinks()
             ]);
-            setProducts(productsData);
-            setMyLinks(linksData);
+            setProducts(productsData as Product[]);
+            setMyLinks(linksData as AffiliateLink[]);
         } catch (error) {
             console.error('Erro ao carregar produtos:', error);
         } finally {
@@ -94,11 +97,11 @@ export default function ProductsPage() {
                     </div>
                 ) : products.map((product) => {
                     const hasLink = hasLinkFor(product.id);
-                    const link = getLinkFor(product.id);
-                    
+                    // const link = getLinkFor(product.id);
+
                     return (
-                        <div 
-                            key={product.id} 
+                        <div
+                            key={product.id}
                             className="bg-[#0a1628] border border-[#4aa8b3]/10 rounded-2xl overflow-hidden hover:border-[#4aa8b3]/20 transition-all group"
                         >
                             {/* Product Header */}
@@ -106,7 +109,14 @@ export default function ProductsPage() {
                                 <div className="flex items-center gap-4">
                                     <div className="w-14 h-14 bg-white/10 rounded-xl flex items-center justify-center">
                                         {product.logoUrl ? (
-                                            <img src={product.logoUrl} alt={product.name} className="w-10 h-10 rounded" />
+                                            <Image
+                                                src={product.logoUrl}
+                                                alt={product.name}
+                                                width={40}
+                                                height={40}
+                                                className="rounded"
+                                                unoptimized
+                                            />
                                         ) : (
                                             <RocketIcon className="w-7 h-7 text-[#4aa8b3]" />
                                         )}
@@ -139,7 +149,7 @@ export default function ProductsPage() {
                                 {/* Actions */}
                                 <div className="flex gap-2">
                                     {hasLink ? (
-                                        <button 
+                                        <button
                                             className="flex-1 inline-flex items-center justify-center gap-2 bg-[#10b981]/10 text-[#10b981] py-3 rounded-xl font-medium text-sm"
                                             disabled
                                         >
@@ -147,7 +157,7 @@ export default function ProductsPage() {
                                             Link Criado
                                         </button>
                                     ) : (
-                                        <button 
+                                        <button
                                             onClick={() => handleCreateLink(product.id)}
                                             disabled={creating === product.id}
                                             className="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-[#4aa8b3] to-[#2d7a85] text-white py-3 rounded-xl font-medium text-sm hover:shadow-lg hover:shadow-[#4aa8b3]/25 transition-all disabled:opacity-50"

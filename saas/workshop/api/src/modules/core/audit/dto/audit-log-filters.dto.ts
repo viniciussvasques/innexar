@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from "@nestjs/swagger";
 import {
   IsOptional,
   IsString,
@@ -7,9 +7,9 @@ import {
   IsInt,
   Min,
   Max,
-} from 'class-validator';
-import { Type } from 'class-transformer';
-import { AuditAction } from './create-audit-log.dto';
+} from "class-validator";
+import { Type } from "class-transformer";
+import { AuditAction } from "./create-audit-log.dto";
 
 export class AuditLogFiltersDto {
   @ApiProperty({ required: false })

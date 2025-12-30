@@ -1,5 +1,5 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../../../database/prisma.service';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { PrismaService } from "../../../database/prisma.service";
 
 interface JobFilters {
   page: number;
@@ -11,7 +11,7 @@ interface JobFilters {
 
 @Injectable()
 export class AdminJobsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async findAll(filters: JobFilters) {
     const { page, limit, type, status, tenantId } = filters;
@@ -27,7 +27,7 @@ export class AdminJobsService {
         where,
         skip,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         include: {
           tenant: {
             select: {
@@ -59,7 +59,7 @@ export class AdminJobsService {
     });
 
     if (!job) {
-      throw new NotFoundException('Job não encontrado');
+      throw new NotFoundException("Job não encontrado");
     }
 
     return job;
@@ -68,20 +68,20 @@ export class AdminJobsService {
   async retry(id: string) {
     const job = await this.findOne(id);
 
-    if (job.status !== 'failed') {
-      throw new Error('Apenas jobs falhados podem ser retentados');
+    if (job.status !== "failed") {
+      throw new Error("Apenas jobs falhados podem ser retentados");
     }
 
     await this.prisma.job.update({
       where: { id },
       data: {
-        status: 'pending',
+        status: "pending",
         attempts: job.attempts + 1,
         error: null,
       },
     });
 
-    return { success: true, message: 'Job reenfileirado com sucesso' };
+    return { success: true, message: "Job reenfileirado com sucesso" };
   }
 
   async remove(id: string) {
@@ -95,10 +95,10 @@ export class AdminJobsService {
   async getStats() {
     const [total, pending, processing, completed, failed] = await Promise.all([
       this.prisma.job.count(),
-      this.prisma.job.count({ where: { status: 'pending' } }),
-      this.prisma.job.count({ where: { status: 'processing' } }),
-      this.prisma.job.count({ where: { status: 'completed' } }),
-      this.prisma.job.count({ where: { status: 'failed' } }),
+      this.prisma.job.count({ where: { status: "pending" } }),
+      this.prisma.job.count({ where: { status: "processing" } }),
+      this.prisma.job.count({ where: { status: "completed" } }),
+      this.prisma.job.count({ where: { status: "failed" } }),
     ]);
 
     return {

@@ -1,17 +1,17 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsString } from 'class-validator';
-import { SubscriptionPlan, BillingCycle } from './subscription-response.dto';
+import { ApiProperty } from "@nestjs/swagger";
+import { IsEnum, IsOptional, IsString } from "class-validator";
+import { SubscriptionPlan, BillingCycle } from "./subscription-response.dto";
 
 export class CreateSubscriptionDto {
   @ApiProperty({
-    description: 'ID do tenant',
-    example: 'uuid-do-tenant',
+    description: "ID do tenant",
+    example: "uuid-do-tenant",
   })
   @IsString()
   tenantId: string;
 
   @ApiProperty({
-    description: 'Plano da assinatura',
+    description: "Plano da assinatura",
     enum: SubscriptionPlan,
     example: SubscriptionPlan.WORKSHOPS_STARTER,
   })
@@ -19,7 +19,7 @@ export class CreateSubscriptionDto {
   plan: SubscriptionPlan;
 
   @ApiProperty({
-    description: 'Ciclo de cobrança',
+    description: "Ciclo de cobrança",
     enum: BillingCycle,
     default: BillingCycle.MONTHLY,
     required: false,
@@ -29,7 +29,7 @@ export class CreateSubscriptionDto {
   billingCycle?: BillingCycle;
 
   @ApiProperty({
-    description: 'ID da subscription no Stripe (opcional)',
+    description: "ID da subscription no Stripe (opcional)",
     required: false,
   })
   @IsString()
@@ -37,7 +37,7 @@ export class CreateSubscriptionDto {
   stripeSubscriptionId?: string;
 
   @ApiProperty({
-    description: 'ID do customer no Stripe (opcional)',
+    description: "ID do customer no Stripe (opcional)",
     required: false,
   })
   @IsString()

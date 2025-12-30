@@ -1,20 +1,20 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { ChecklistsService } from './checklists.service';
-import { PrismaService } from '@database/prisma.service';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { Test, TestingModule } from "@nestjs/testing";
+import { ChecklistsService } from "./checklists.service";
+import { PrismaService } from "@database/prisma.service";
+import { NotFoundException, BadRequestException } from "@nestjs/common";
 import {
   CreateChecklistDto,
   ChecklistType,
   ChecklistEntityType,
   ChecklistStatus,
-} from './dto';
+} from "./dto";
 
-describe('ChecklistsService', () => {
+describe("ChecklistsService", () => {
   let service: ChecklistsService;
 
-  const mockTenantId = 'tenant-123';
-  const mockChecklistId = 'checklist-123';
-  const mockQuoteId = 'quote-123';
+  const mockTenantId = "tenant-123";
+  const mockChecklistId = "checklist-123";
+  const mockQuoteId = "quote-123";
 
   const mockChecklist = {
     id: mockChecklistId,
@@ -22,8 +22,8 @@ describe('ChecklistsService', () => {
     entityType: ChecklistEntityType.QUOTE,
     entityId: mockQuoteId,
     checklistType: ChecklistType.PRE_DIAGNOSIS,
-    name: 'Checklist Pré-Diagnóstico',
-    description: 'Checklist para verificação inicial',
+    name: "Checklist Pré-Diagnóstico",
+    description: "Checklist para verificação inicial",
     status: ChecklistStatus.PENDING,
     completedAt: null,
     completedById: null,
@@ -31,10 +31,10 @@ describe('ChecklistsService', () => {
     updatedAt: new Date(),
     items: [
       {
-        id: 'item-1',
+        id: "item-1",
         checklistId: mockChecklistId,
-        title: 'Verificar nível de óleo',
-        description: 'Verificar se o nível está entre mínimo e máximo',
+        title: "Verificar nível de óleo",
+        description: "Verificar se o nível está entre mínimo e máximo",
         isRequired: true,
         isCompleted: false,
         completedAt: null,
@@ -44,10 +44,10 @@ describe('ChecklistsService', () => {
         updatedAt: new Date(),
       },
       {
-        id: 'item-2',
+        id: "item-2",
         checklistId: mockChecklistId,
-        title: 'Verificar pneus',
-        description: 'Verificar pressão e estado dos pneus',
+        title: "Verificar pneus",
+        description: "Verificar pressão e estado dos pneus",
         isRequired: false,
         isCompleted: false,
         completedAt: null,
@@ -97,24 +97,24 @@ describe('ChecklistsService', () => {
     jest.clearAllMocks();
   });
 
-  describe('create', () => {
+  describe("create", () => {
     const createDto: CreateChecklistDto = {
       entityType: ChecklistEntityType.QUOTE,
       entityId: mockQuoteId,
       checklistType: ChecklistType.PRE_DIAGNOSIS,
-      name: 'Checklist Pré-Diagnóstico',
-      description: 'Checklist para verificação inicial',
+      name: "Checklist Pré-Diagnóstico",
+      description: "Checklist para verificação inicial",
       items: [
         {
-          title: 'Verificar nível de óleo',
-          description: 'Verificar se o nível está entre mínimo e máximo',
+          title: "Verificar nível de óleo",
+          description: "Verificar se o nível está entre mínimo e máximo",
           isRequired: true,
           order: 0,
         },
       ],
     };
 
-    it('deve criar um checklist com sucesso', async () => {
+    it("deve criar um checklist com sucesso", async () => {
       mockPrismaService.quote.findFirst.mockResolvedValue({ id: mockQuoteId });
       mockPrismaService.checklist.create.mockResolvedValue(mockChecklist);
 
@@ -122,11 +122,11 @@ describe('ChecklistsService', () => {
 
       expect(result).toBeDefined();
       expect(result.id).toBe(mockChecklistId);
-      expect(result.name).toBe('Checklist Pré-Diagnóstico');
+      expect(result.name).toBe("Checklist Pré-Diagnóstico");
       expect(mockPrismaService.checklist.create).toHaveBeenCalled();
     });
 
-    it('deve lançar BadRequestException se Quote não existir', async () => {
+    it("deve lançar BadRequestException se Quote não existir", async () => {
       mockPrismaService.quote.findFirst.mockResolvedValue(null);
 
       await expect(service.create(mockTenantId, createDto)).rejects.toThrow(
@@ -134,7 +134,7 @@ describe('ChecklistsService', () => {
       );
     });
 
-    it('deve lançar BadRequestException se tipo de checklist for incompatível com entidade', async () => {
+    it("deve lançar BadRequestException se tipo de checklist for incompatível com entidade", async () => {
       const invalidDto: CreateChecklistDto = {
         ...createDto,
         entityType: ChecklistEntityType.SERVICE_ORDER,
@@ -147,8 +147,8 @@ describe('ChecklistsService', () => {
     });
   });
 
-  describe('findAll', () => {
-    it('deve listar checklists com paginação', async () => {
+  describe("findAll", () => {
+    it("deve listar checklists com paginação", async () => {
       const mockChecklists = [mockChecklist];
       mockPrismaService.$transaction.mockResolvedValue([mockChecklists, 1]);
 
@@ -167,7 +167,7 @@ describe('ChecklistsService', () => {
       expect(mockPrismaService.$transaction).toHaveBeenCalled();
     });
 
-    it('deve filtrar checklists por tipo', async () => {
+    it("deve filtrar checklists por tipo", async () => {
       mockPrismaService.$transaction.mockResolvedValue([[], 0]);
 
       const filters = {
@@ -184,8 +184,8 @@ describe('ChecklistsService', () => {
     });
   });
 
-  describe('findOne', () => {
-    it('deve buscar um checklist por ID', async () => {
+  describe("findOne", () => {
+    it("deve buscar um checklist por ID", async () => {
       mockPrismaService.checklist.findFirst.mockResolvedValue(mockChecklist);
 
       const result = await service.findOne(mockTenantId, mockChecklistId);
@@ -202,7 +202,7 @@ describe('ChecklistsService', () => {
       );
     });
 
-    it('deve lançar NotFoundException se checklist não for encontrado', async () => {
+    it("deve lançar NotFoundException se checklist não for encontrado", async () => {
       mockPrismaService.checklist.findFirst.mockResolvedValue(null);
 
       await expect(
@@ -211,15 +211,15 @@ describe('ChecklistsService', () => {
     });
   });
 
-  describe('update', () => {
+  describe("update", () => {
     const updateDto = {
-      name: 'Checklist Atualizado',
+      name: "Checklist Atualizado",
     };
 
-    it('deve atualizar um checklist com sucesso', async () => {
+    it("deve atualizar um checklist com sucesso", async () => {
       const updatedChecklist = {
         ...mockChecklist,
-        name: 'Checklist Atualizado',
+        name: "Checklist Atualizado",
       };
       mockPrismaService.checklist.findFirst.mockResolvedValue(mockChecklist);
       mockPrismaService.checklist.update.mockResolvedValue(updatedChecklist);
@@ -231,11 +231,11 @@ describe('ChecklistsService', () => {
       );
 
       expect(result).toBeDefined();
-      expect(result.name).toBe('Checklist Atualizado');
+      expect(result.name).toBe("Checklist Atualizado");
       expect(mockPrismaService.checklist.update).toHaveBeenCalled();
     });
 
-    it('deve lançar NotFoundException se checklist não for encontrado', async () => {
+    it("deve lançar NotFoundException se checklist não for encontrado", async () => {
       mockPrismaService.checklist.findFirst.mockResolvedValue(null);
 
       await expect(
@@ -243,7 +243,7 @@ describe('ChecklistsService', () => {
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('deve lançar BadRequestException se checklist já estiver completo', async () => {
+    it("deve lançar BadRequestException se checklist já estiver completo", async () => {
       const completedChecklist = {
         ...mockChecklist,
         status: ChecklistStatus.COMPLETED,
@@ -258,18 +258,18 @@ describe('ChecklistsService', () => {
     });
   });
 
-  describe('complete', () => {
+  describe("complete", () => {
     const completeDto = {
       items: [
         {
-          itemId: 'item-1',
+          itemId: "item-1",
           isCompleted: true,
-          notes: 'Óleo verificado',
+          notes: "Óleo verificado",
         },
       ],
     };
 
-    it('deve completar um checklist com sucesso', async () => {
+    it("deve completar um checklist com sucesso", async () => {
       const completedChecklist = {
         ...mockChecklist,
         status: ChecklistStatus.COMPLETED,
@@ -277,7 +277,7 @@ describe('ChecklistsService', () => {
           {
             ...mockChecklist.items[0],
             isCompleted: true,
-            notes: 'Óleo verificado',
+            notes: "Óleo verificado",
           },
         ],
       };
@@ -300,7 +300,7 @@ describe('ChecklistsService', () => {
         mockTenantId,
         mockChecklistId,
         completeDto,
-        'user-123',
+        "user-123",
       );
 
       expect(result).toBeDefined();
@@ -308,7 +308,7 @@ describe('ChecklistsService', () => {
       expect(mockPrismaService.checklist.update).toHaveBeenCalled();
     });
 
-    it('deve lançar NotFoundException se checklist não for encontrado', async () => {
+    it("deve lançar NotFoundException se checklist não for encontrado", async () => {
       mockPrismaService.checklist.findFirst.mockResolvedValue(null);
 
       await expect(
@@ -316,12 +316,12 @@ describe('ChecklistsService', () => {
           mockTenantId,
           mockChecklistId,
           completeDto,
-          'user-123',
+          "user-123",
         ),
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('deve lançar BadRequestException se checklist já estiver completo', async () => {
+    it("deve lançar BadRequestException se checklist já estiver completo", async () => {
       const completedChecklist = {
         ...mockChecklist,
         status: ChecklistStatus.COMPLETED,
@@ -335,14 +335,14 @@ describe('ChecklistsService', () => {
           mockTenantId,
           mockChecklistId,
           completeDto,
-          'user-123',
+          "user-123",
         ),
       ).rejects.toThrow(BadRequestException);
     });
   });
 
-  describe('validate', () => {
-    it('deve retornar true se todos os itens obrigatórios estiverem completos', async () => {
+  describe("validate", () => {
+    it("deve retornar true se todos os itens obrigatórios estiverem completos", async () => {
       const checklistWithCompletedItems = {
         ...mockChecklist,
         items: [
@@ -362,7 +362,7 @@ describe('ChecklistsService', () => {
       expect(result).toBe(true);
     });
 
-    it('deve retornar false se algum item obrigatório não estiver completo', async () => {
+    it("deve retornar false se algum item obrigatório não estiver completo", async () => {
       mockPrismaService.checklist.findFirst.mockResolvedValue(mockChecklist);
 
       const result = await service.validate(mockTenantId, mockChecklistId);
@@ -370,7 +370,7 @@ describe('ChecklistsService', () => {
       expect(result).toBe(false);
     });
 
-    it('deve lançar NotFoundException se checklist não for encontrado', async () => {
+    it("deve lançar NotFoundException se checklist não for encontrado", async () => {
       mockPrismaService.checklist.findFirst.mockResolvedValue(null);
 
       await expect(
@@ -379,8 +379,8 @@ describe('ChecklistsService', () => {
     });
   });
 
-  describe('remove', () => {
-    it('deve remover um checklist com sucesso', async () => {
+  describe("remove", () => {
+    it("deve remover um checklist com sucesso", async () => {
       mockPrismaService.checklist.findFirst.mockResolvedValue(mockChecklist);
       mockPrismaService.checklist.delete.mockResolvedValue(mockChecklist);
 
@@ -391,7 +391,7 @@ describe('ChecklistsService', () => {
       });
     });
 
-    it('deve lançar NotFoundException se checklist não for encontrado', async () => {
+    it("deve lançar NotFoundException se checklist não for encontrado", async () => {
       mockPrismaService.checklist.findFirst.mockResolvedValue(null);
 
       await expect(

@@ -1,132 +1,132 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 
 export class OverviewMetricsDto {
-  @ApiProperty({ description: 'Total de ordens de serviço hoje' })
+  @ApiProperty({ description: "Total de ordens de serviço hoje" })
   todayServiceOrders: number;
 
-  @ApiProperty({ description: 'Receita total hoje' })
+  @ApiProperty({ description: "Receita total hoje" })
   todayRevenue: number;
 
-  @ApiProperty({ description: 'Veículos atendidos hoje' })
+  @ApiProperty({ description: "Veículos atendidos hoje" })
   todayVehicles: number;
 
-  @ApiProperty({ description: 'Tempo médio por OS (horas)' })
+  @ApiProperty({ description: "Tempo médio por OS (horas)" })
   avgTimePerService: number;
 
-  @ApiProperty({ description: 'Taxa de conclusão de OS (%)' })
+  @ApiProperty({ description: "Taxa de conclusão de OS (%)" })
   completionRate: number;
 
-  @ApiProperty({ description: 'Receita mensal atual' })
+  @ApiProperty({ description: "Receita mensal atual" })
   currentMonthRevenue: number;
 
-  @ApiProperty({ description: 'Comparação com mês anterior (%)' })
+  @ApiProperty({ description: "Comparação com mês anterior (%)" })
   revenueGrowth: number;
 }
 
 export class StatusDistributionDto {
-  @ApiProperty({ description: 'Status da OS' })
+  @ApiProperty({ description: "Status da OS" })
   status: string;
 
-  @ApiProperty({ description: 'Quantidade' })
+  @ApiProperty({ description: "Quantidade" })
   count: number;
 
-  @ApiProperty({ description: 'Percentual' })
+  @ApiProperty({ description: "Percentual" })
   percentage: number;
 }
 
 export class RevenueChartDto {
-  @ApiProperty({ description: 'Mês' })
+  @ApiProperty({ description: "Mês" })
   month: string;
 
-  @ApiProperty({ description: 'Receita' })
+  @ApiProperty({ description: "Receita" })
   revenue: number;
 
-  @ApiProperty({ description: 'Quantidade de OS' })
+  @ApiProperty({ description: "Quantidade de OS" })
   serviceOrders: number;
 }
 
 export class CommonProblemDto {
-  @ApiProperty({ description: 'Nome do problema' })
+  @ApiProperty({ description: "Nome do problema" })
   problem: string;
 
-  @ApiProperty({ description: 'Quantidade de ocorrências' })
+  @ApiProperty({ description: "Quantidade de ocorrências" })
   count: number;
 
-  @ApiProperty({ description: 'Percentual' })
+  @ApiProperty({ description: "Percentual" })
   percentage: number;
 
-  @ApiPropertyOptional({ description: 'Custo médio' })
+  @ApiPropertyOptional({ description: "Custo médio" })
   avgCost?: number;
 }
 
 export class TopPartDto {
-  @ApiProperty({ description: 'Nome da peça' })
+  @ApiProperty({ description: "Nome da peça" })
   partName: string;
 
-  @ApiProperty({ description: 'Quantidade utilizada' })
+  @ApiProperty({ description: "Quantidade utilizada" })
   quantity: number;
 
-  @ApiProperty({ description: 'Valor total' })
+  @ApiProperty({ description: "Valor total" })
   totalValue: number;
 }
 
 export class MechanicPerformanceDto {
-  @ApiProperty({ description: 'Nome do mecânico' })
+  @ApiProperty({ description: "Nome do mecânico" })
   mechanicName: string;
 
-  @ApiProperty({ description: 'OS concluídas' })
+  @ApiProperty({ description: "OS concluídas" })
   completedOrders: number;
 
-  @ApiProperty({ description: 'Tempo médio por OS (horas)' })
+  @ApiProperty({ description: "Tempo médio por OS (horas)" })
   avgTimePerOrder: number;
 
-  @ApiProperty({ description: 'Receita gerada' })
+  @ApiProperty({ description: "Receita gerada" })
   revenue: number;
 
-  @ApiProperty({ description: 'Nota média' })
+  @ApiProperty({ description: "Nota média" })
   rating: number;
 }
 
 export class AlertDto {
-  @ApiProperty({ description: 'Tipo do alerta' })
+  @ApiProperty({ description: "Tipo do alerta" })
   type:
-    | 'overdue_service_order'
-    | 'low_stock'
-    | 'due_maintenance'
-    | 'pending_quote';
+    | "overdue_service_order"
+    | "low_stock"
+    | "due_maintenance"
+    | "pending_quote";
 
-  @ApiProperty({ description: 'Severidade' })
-  severity: 'low' | 'medium' | 'high' | 'urgent';
+  @ApiProperty({ description: "Severidade" })
+  severity: "low" | "medium" | "high" | "urgent";
 
-  @ApiProperty({ description: 'Título' })
+  @ApiProperty({ description: "Título" })
   title: string;
 
-  @ApiProperty({ description: 'Descrição' })
+  @ApiProperty({ description: "Descrição" })
   description: string;
 
-  @ApiPropertyOptional({ description: 'Dados relacionados' })
+  @ApiPropertyOptional({ description: "Dados relacionados" })
   data?: Record<string, unknown>;
 }
 
 export class DashboardAnalyticsDto {
-  @ApiProperty({ description: 'Métricas de overview' })
+  @ApiProperty({ description: "Métricas de overview" })
   overview: OverviewMetricsDto;
 
-  @ApiProperty({ description: 'Distribuição de status das OS' })
+  @ApiProperty({ description: "Distribuição de status das OS" })
   statusDistribution: StatusDistributionDto[];
 
-  @ApiProperty({ description: 'Dados de receita mensal (últimos 6 meses)' })
+  @ApiProperty({ description: "Dados de receita mensal (últimos 6 meses)" })
   revenueChart: RevenueChartDto[];
 
-  @ApiProperty({ description: 'Problemas mais comuns (últimos 30 dias)' })
+  @ApiProperty({ description: "Problemas mais comuns (últimos 30 dias)" })
   commonProblems: CommonProblemDto[];
 
-  @ApiProperty({ description: 'Peças mais utilizadas (últimos 30 dias)' })
+  @ApiProperty({ description: "Peças mais utilizadas (últimos 30 dias)" })
   topParts: TopPartDto[];
 
-  @ApiProperty({ description: 'Performance dos mecânicos (últimos 30 dias)' })
+  @ApiProperty({ description: "Performance dos mecânicos (últimos 30 dias)" })
   mechanicPerformance: MechanicPerformanceDto[];
 
-  @ApiProperty({ description: 'Alertas ativos' })
+  @ApiProperty({ description: "Alertas ativos" })
   alerts: AlertDto[];
 }

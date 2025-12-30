@@ -1,5 +1,5 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { AuditAction } from './create-audit-log.dto';
+import { ApiProperty } from "@nestjs/swagger";
+import { AuditAction } from "./create-audit-log.dto";
 
 export class AuditLogResponseDto {
   @ApiProperty()

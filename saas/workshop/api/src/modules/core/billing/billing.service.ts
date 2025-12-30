@@ -3,10 +3,10 @@ import {
   NotFoundException,
   BadRequestException,
   Logger,
-} from '@nestjs/common';
-import { PrismaService } from '@database/prisma.service';
-import { FeatureFlagsService } from '../feature-flags/feature-flags.service';
-import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
+} from "@nestjs/common";
+import { PrismaService } from "@database/prisma.service";
+import { FeatureFlagsService } from "../feature-flags/feature-flags.service";
+import { getErrorMessage, getErrorStack } from "@common/utils/error.utils";
 import {
   CreateSubscriptionDto,
   UpdateSubscriptionDto,
@@ -14,8 +14,8 @@ import {
   SubscriptionPlan,
   SubscriptionStatus,
   BillingCycle,
-} from './dto';
-import { Prisma, Plan } from '@prisma/client';
+} from "./dto";
+import { Prisma, Plan } from "@prisma/client";
 
 export interface PlanConfig {
   serviceOrdersLimit: number | null;
@@ -34,18 +34,18 @@ export class BillingService {
       serviceOrdersLimit: 50,
       partsLimit: 100,
       usersLimit: 3,
-      features: ['basic_service_orders', 'basic_customers'],
+      features: ["basic_service_orders", "basic_customers"],
     },
     [SubscriptionPlan.WORKSHOPS_PROFESSIONAL]: {
       serviceOrdersLimit: 500,
       partsLimit: 1000,
       usersLimit: 10,
       features: [
-        'basic_service_orders',
-        'basic_customers',
-        'advanced_reports',
-        'multiple_locations',
-        'api_access',
+        "basic_service_orders",
+        "basic_customers",
+        "advanced_reports",
+        "multiple_locations",
+        "api_access",
       ],
     },
     [SubscriptionPlan.WORKSHOPS_ENTERPRISE]: {
@@ -53,14 +53,14 @@ export class BillingService {
       partsLimit: null,
       usersLimit: null,
       features: [
-        'basic_service_orders',
-        'basic_customers',
-        'advanced_reports',
-        'multiple_locations',
-        'api_access',
-        'white_label',
-        'priority_support',
-        'custom_integrations',
+        "basic_service_orders",
+        "basic_customers",
+        "advanced_reports",
+        "multiple_locations",
+        "api_access",
+        "white_label",
+        "priority_support",
+        "custom_integrations",
       ],
     },
   };
@@ -121,7 +121,7 @@ export class BillingService {
       });
 
       if (!tenant) {
-        throw new NotFoundException('Tenant não encontrado');
+        throw new NotFoundException("Tenant não encontrado");
       }
 
       // Verificar se já existe subscription para este tenant
@@ -130,13 +130,13 @@ export class BillingService {
       });
 
       if (existingSubscription) {
-        throw new BadRequestException('Tenant já possui uma subscription');
+        throw new BadRequestException("Tenant já possui uma subscription");
       }
 
       // Obter limites do plano (do banco ou fallback)
       const planConfig = await this.getPlanConfig(createSubscriptionDto.plan);
       if (!planConfig) {
-        throw new BadRequestException('Plano inválido');
+        throw new BadRequestException("Plano inválido");
       }
 
       // Buscar plano do banco para obter o ID
@@ -195,7 +195,7 @@ export class BillingService {
       });
 
       if (!subscription) {
-        throw new NotFoundException('Subscription não encontrada');
+        throw new NotFoundException("Subscription não encontrada");
       }
 
       return this.toResponseDto(subscription);
@@ -218,7 +218,7 @@ export class BillingService {
       });
 
       if (!subscription) {
-        throw new NotFoundException('Subscription não encontrada');
+        throw new NotFoundException("Subscription não encontrada");
       }
 
       const updateData: Prisma.SubscriptionUpdateInput = {};
@@ -227,7 +227,7 @@ export class BillingService {
         // Atualizar limites e features quando o plano muda
         const planConfig = await this.getPlanConfig(updateSubscriptionDto.plan);
         if (!planConfig) {
-          throw new BadRequestException('Plano inválido');
+          throw new BadRequestException("Plano inválido");
         }
 
         // Buscar plano do banco para obter o ID
@@ -299,7 +299,7 @@ export class BillingService {
       });
 
       if (!subscription) {
-        throw new NotFoundException('Subscription não encontrada');
+        throw new NotFoundException("Subscription não encontrada");
       }
 
       // Validar upgrade (só pode fazer upgrade, não downgrade)
@@ -308,14 +308,14 @@ export class BillingService {
 
       if (newPlanOrder <= currentPlanOrder) {
         throw new BadRequestException(
-          'Use o endpoint de downgrade para reduzir o plano',
+          "Use o endpoint de downgrade para reduzir o plano",
         );
       }
 
       // Obter configuração do novo plano
       const planConfig = await this.getPlanConfig(newPlan);
       if (!planConfig) {
-        throw new BadRequestException('Plano inválido');
+        throw new BadRequestException("Plano inválido");
       }
 
       // Buscar plano do banco para obter o ID
@@ -363,7 +363,7 @@ export class BillingService {
       });
 
       if (!subscription) {
-        throw new NotFoundException('Subscription não encontrada');
+        throw new NotFoundException("Subscription não encontrada");
       }
 
       // Validar downgrade
@@ -372,14 +372,14 @@ export class BillingService {
 
       if (newPlanOrder >= currentPlanOrder) {
         throw new BadRequestException(
-          'Use o endpoint de upgrade para aumentar o plano',
+          "Use o endpoint de upgrade para aumentar o plano",
         );
       }
 
       // Obter configuração do novo plano
       const planConfig = await this.getPlanConfig(newPlan);
       if (!planConfig) {
-        throw new BadRequestException('Plano inválido');
+        throw new BadRequestException("Plano inválido");
       }
 
       // Buscar plano do banco para obter o ID
@@ -424,7 +424,7 @@ export class BillingService {
       });
 
       if (!subscription) {
-        throw new NotFoundException('Subscription não encontrada');
+        throw new NotFoundException("Subscription não encontrada");
       }
 
       const updatedSubscription = await this.prisma.subscription.update({
@@ -450,7 +450,7 @@ export class BillingService {
       });
 
       if (!subscription) {
-        throw new NotFoundException('Subscription não encontrada');
+        throw new NotFoundException("Subscription não encontrada");
       }
 
       const updatedSubscription = await this.prisma.subscription.update({
@@ -487,7 +487,7 @@ export class BillingService {
     try {
       const plansFromDb = await this.prisma.plan.findMany({
         where: { isActive: true },
-        orderBy: { sortOrder: 'asc' },
+        orderBy: { sortOrder: "asc" },
       });
 
       if (plansFromDb.length > 0) {
@@ -514,8 +514,8 @@ export class BillingService {
       return [
         {
           id: SubscriptionPlan.WORKSHOPS_STARTER,
-          name: 'Starter',
-          description: 'Para pequenas oficinas',
+          name: "Starter",
+          description: "Para pequenas oficinas",
           price: { monthly: 99, annual: 990 },
           limits: this.fallbackPlanLimits[SubscriptionPlan.WORKSHOPS_STARTER],
           highlightText: null,
@@ -523,18 +523,18 @@ export class BillingService {
         },
         {
           id: SubscriptionPlan.WORKSHOPS_PROFESSIONAL,
-          name: 'Professional',
-          description: 'Para oficinas em crescimento',
+          name: "Professional",
+          description: "Para oficinas em crescimento",
           price: { monthly: 299, annual: 2990 },
           limits:
             this.fallbackPlanLimits[SubscriptionPlan.WORKSHOPS_PROFESSIONAL],
-          highlightText: 'Popular',
+          highlightText: "Popular",
           isDefault: false,
         },
         {
           id: SubscriptionPlan.WORKSHOPS_ENTERPRISE,
-          name: 'Enterprise',
-          description: 'Para grandes operações',
+          name: "Enterprise",
+          description: "Para grandes operações",
           price: { monthly: 999, annual: 9990 },
           limits:
             this.fallbackPlanLimits[SubscriptionPlan.WORKSHOPS_ENTERPRISE],
@@ -550,8 +550,8 @@ export class BillingService {
       return [
         {
           id: SubscriptionPlan.WORKSHOPS_STARTER,
-          name: 'Starter',
-          description: 'Para pequenas oficinas',
+          name: "Starter",
+          description: "Para pequenas oficinas",
           price: { monthly: 99, annual: 990 },
           limits: this.fallbackPlanLimits[SubscriptionPlan.WORKSHOPS_STARTER],
           highlightText: null,
@@ -559,18 +559,18 @@ export class BillingService {
         },
         {
           id: SubscriptionPlan.WORKSHOPS_PROFESSIONAL,
-          name: 'Professional',
-          description: 'Para oficinas em crescimento',
+          name: "Professional",
+          description: "Para oficinas em crescimento",
           price: { monthly: 299, annual: 2990 },
           limits:
             this.fallbackPlanLimits[SubscriptionPlan.WORKSHOPS_PROFESSIONAL],
-          highlightText: 'Popular',
+          highlightText: "Popular",
           isDefault: false,
         },
         {
           id: SubscriptionPlan.WORKSHOPS_ENTERPRISE,
-          name: 'Enterprise',
-          description: 'Para grandes operações',
+          name: "Enterprise",
+          description: "Para grandes operações",
           price: { monthly: 999, annual: 9990 },
           limits:
             this.fallbackPlanLimits[SubscriptionPlan.WORKSHOPS_ENTERPRISE],
@@ -617,32 +617,32 @@ export class BillingService {
   private getEnabledFeaturesForPlan(plan: string): string[] {
     // Mapear nome do plano para o formato usado no FeatureFlagsService
     const planMapping: Record<string, string> = {
-      [SubscriptionPlan.WORKSHOPS_STARTER]: 'workshops_starter',
-      [SubscriptionPlan.WORKSHOPS_PROFESSIONAL]: 'workshops_professional',
-      [SubscriptionPlan.WORKSHOPS_ENTERPRISE]: 'workshops_enterprise',
+      [SubscriptionPlan.WORKSHOPS_STARTER]: "workshops_starter",
+      [SubscriptionPlan.WORKSHOPS_PROFESSIONAL]: "workshops_professional",
+      [SubscriptionPlan.WORKSHOPS_ENTERPRISE]: "workshops_enterprise",
     };
 
     const featureFlagsPlan = planMapping[plan] || plan;
 
     // Lista de todas as features possíveis
     const allFeatures: string[] = [
-      'elevators',
-      'inventory',
-      'service_orders',
-      'quotes',
-      'customers',
-      'vehicles',
-      'appointments',
-      'bodywork',
-      'diagnostics',
-      'reports',
-      'suppliers',
-      'parts_catalog',
-      'documents',
-      'invoices',
-      'payments',
-      'vehicle_history',
-      'automations',
+      "elevators",
+      "inventory",
+      "service_orders",
+      "quotes",
+      "customers",
+      "vehicles",
+      "appointments",
+      "bodywork",
+      "diagnostics",
+      "reports",
+      "suppliers",
+      "parts_catalog",
+      "documents",
+      "invoices",
+      "payments",
+      "vehicle_history",
+      "automations",
     ];
 
     // Verificar cada feature usando o FeatureFlagsService
@@ -666,7 +666,7 @@ export class BillingService {
     }
 
     this.logger.log(
-      `Features habilitadas para plano ${plan}: ${enabledFeatures.join(', ')}`,
+      `Features habilitadas para plano ${plan}: ${enabledFeatures.join(", ")}`,
     );
 
     return enabledFeatures;

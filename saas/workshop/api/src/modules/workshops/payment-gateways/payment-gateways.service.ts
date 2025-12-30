@@ -1,11 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '@database/prisma.service';
-import { Prisma } from '@prisma/client';
-import type { PaymentGateway as PaymentGatewayModel } from '@prisma/client';
-import { CreatePaymentGatewayDto } from './dto/create-payment-gateway.dto';
-import { UpdatePaymentGatewayDto } from './dto/update-payment-gateway.dto';
-import { PaymentGatewayResponseDto } from './dto/payment-gateway-response.dto';
-import { PaymentGatewayType } from './dto/payment-gateway-types.enum';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { PrismaService } from "@database/prisma.service";
+import { Prisma } from "@prisma/client";
+import type { PaymentGateway as PaymentGatewayModel } from "@prisma/client";
+import { CreatePaymentGatewayDto } from "./dto/create-payment-gateway.dto";
+import { UpdatePaymentGatewayDto } from "./dto/update-payment-gateway.dto";
+import { PaymentGatewayResponseDto } from "./dto/payment-gateway-response.dto";
+import { PaymentGatewayType } from "./dto/payment-gateway-types.enum";
 
 @Injectable()
 export class PaymentGatewaysService {
@@ -14,7 +14,7 @@ export class PaymentGatewaysService {
   async findAll(tenantId: string): Promise<PaymentGatewayResponseDto[]> {
     const gateways = await this.prisma.paymentGateway.findMany({
       where: { tenantId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     return gateways.map((gateway) => this.toResponseDto(gateway));
@@ -29,7 +29,7 @@ export class PaymentGatewaysService {
     });
 
     if (!gateway) {
-      throw new NotFoundException('Gateway não encontrado');
+      throw new NotFoundException("Gateway não encontrado");
     }
 
     return this.toResponseDto(gateway);
@@ -68,7 +68,7 @@ export class PaymentGatewaysService {
     });
 
     if (!gateway) {
-      throw new NotFoundException('Gateway não encontrado');
+      throw new NotFoundException("Gateway não encontrado");
     }
 
     if (updateDto.isDefault) {
@@ -104,7 +104,7 @@ export class PaymentGatewaysService {
     });
 
     if (!gateway) {
-      throw new NotFoundException('Gateway não encontrado');
+      throw new NotFoundException("Gateway não encontrado");
     }
 
     await this.prisma.paymentGateway.delete({
@@ -118,7 +118,7 @@ export class PaymentGatewaysService {
     });
 
     if (!gateway) {
-      throw new NotFoundException('Gateway não encontrado');
+      throw new NotFoundException("Gateway não encontrado");
     }
 
     await this.clearDefaultGateway(tenantId);
@@ -147,7 +147,7 @@ export class PaymentGatewaysService {
     });
 
     if (!gateway) {
-      throw new NotFoundException('Gateway não encontrado');
+      throw new NotFoundException("Gateway não encontrado");
     }
 
     // TODO: Implementar testes reais por tipo de gateway
@@ -186,7 +186,7 @@ export class PaymentGatewaysService {
   private jsonToRecord(
     value: Prisma.JsonValue,
   ): Record<string, unknown> | undefined {
-    if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
       return undefined;
     }
     return value as Record<string, unknown>;

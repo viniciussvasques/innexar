@@ -1,4 +1,4 @@
-declare module 'axios' {
+declare module "axios" {
   export interface AxiosInstance {
     (config: unknown): Promise<unknown>;
     request<T = unknown>(config: unknown): Promise<T>;

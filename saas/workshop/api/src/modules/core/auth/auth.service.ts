@@ -5,22 +5,22 @@ import {
   NotFoundException,
   Logger,
   InternalServerErrorException,
-} from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
-import * as bcrypt from 'bcrypt';
-import { PrismaService } from '../../../database/prisma.service';
+} from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import { ConfigService } from "@nestjs/config";
+import * as bcrypt from "bcrypt";
+import { PrismaService } from "../../../database/prisma.service";
 import {
   getErrorMessage,
   getErrorStack,
-} from '../../../common/utils/error.utils';
-import { LoginDto } from './dto/login.dto';
-import { LoginResponseDto } from './dto/login-response.dto';
-import { RefreshTokenDto } from './dto/refresh-token.dto';
-import { ChangePasswordDto } from './dto/change-password.dto';
-import { ProfileResponseDto } from './dto/profile-response.dto';
-import { FindTenantByEmailDto } from './dto/find-tenant-by-email.dto';
-import { randomUUID } from 'node:crypto';
+} from "../../../common/utils/error.utils";
+import { LoginDto } from "./dto/login.dto";
+import { LoginResponseDto } from "./dto/login-response.dto";
+import { RefreshTokenDto } from "./dto/refresh-token.dto";
+import { ChangePasswordDto } from "./dto/change-password.dto";
+import { ProfileResponseDto } from "./dto/profile-response.dto";
+import { FindTenantByEmailDto } from "./dto/find-tenant-by-email.dto";
+import { randomUUID } from "node:crypto";
 
 @Injectable()
 export class AuthService {
@@ -36,7 +36,7 @@ export class AuthService {
     try {
       // Validar entrada
       if (!loginDto.email || !loginDto.password) {
-        throw new BadRequestException('Email e senha são obrigatórios');
+        throw new BadRequestException("Email e senha são obrigatórios");
       }
 
       // Normalizar email
@@ -59,19 +59,19 @@ export class AuthService {
         this.logger.warn(
           `Tentativa de login com credenciais inválidas: ${normalizedEmail} (tenant: ${tenantId})`,
         );
-        throw new UnauthorizedException('Credenciais inválidas');
+        throw new UnauthorizedException("Credenciais inválidas");
       }
 
       // Verificar se usuário está ativo
       if (!user.isActive) {
         this.logger.warn(`Tentativa de login com usuário inativo: ${user.id}`);
-        throw new UnauthorizedException('Usuário inativo');
+        throw new UnauthorizedException("Usuário inativo");
       }
 
       // Verificar se tenant está ativo
-      if (user.tenant.status !== 'active') {
+      if (user.tenant.status !== "active") {
         this.logger.warn(`Tentativa de login com tenant inativo: ${tenantId}`);
-        throw new UnauthorizedException('Tenant inativo');
+        throw new UnauthorizedException("Tenant inativo");
       }
 
       // Validar senha
@@ -84,7 +84,7 @@ export class AuthService {
         this.logger.warn(
           `Tentativa de login com senha incorreta: ${normalizedEmail} (tenant: ${tenantId})`,
         );
-        throw new UnauthorizedException('Credenciais inválidas');
+        throw new UnauthorizedException("Credenciais inválidas");
       }
 
       // Gerar tokens
@@ -92,8 +92,8 @@ export class AuthService {
       const refreshToken = this.generateRefreshToken();
       const expiresAt = new Date();
       const refreshExpiresIn =
-        this.configService.get<string>('JWT_REFRESH_EXPIRES_IN') || '7d';
-      const days = refreshExpiresIn.includes('d')
+        this.configService.get<string>("JWT_REFRESH_EXPIRES_IN") || "7d";
+      const days = refreshExpiresIn.includes("d")
         ? Number.parseInt(refreshExpiresIn)
         : 7;
       expiresAt.setDate(expiresAt.getDate() + days);
@@ -109,7 +109,7 @@ export class AuthService {
       const isFirstLogin = hoursSinceCreation < 24; // Usuário criado há menos de 24 horas
 
       this.logger.log(
-        `Login realizado com sucesso: ${user.id} (${normalizedEmail})${isFirstLogin ? ' [PRIMEIRO LOGIN]' : ''}`,
+        `Login realizado com sucesso: ${user.id} (${normalizedEmail})${isFirstLogin ? " [PRIMEIRO LOGIN]" : ""}`,
       );
 
       return {
@@ -134,14 +134,14 @@ export class AuthService {
         `Erro ao realizar login: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new InternalServerErrorException('Erro ao realizar login');
+      throw new InternalServerErrorException("Erro ao realizar login");
     }
   }
 
   async logout(userId: string, refreshToken: string): Promise<void> {
     try {
       if (!refreshToken) {
-        throw new BadRequestException('Refresh token é obrigatório');
+        throw new BadRequestException("Refresh token é obrigatório");
       }
 
       // Revogar refresh token
@@ -156,7 +156,7 @@ export class AuthService {
         `Erro ao realizar logout: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new InternalServerErrorException('Erro ao realizar logout');
+      throw new InternalServerErrorException("Erro ao realizar logout");
     }
   }
 
@@ -165,7 +165,7 @@ export class AuthService {
   ): Promise<{ accessToken: string; refreshToken: string }> {
     try {
       if (!refreshTokenDto.refreshToken) {
-        throw new BadRequestException('Refresh token é obrigatório');
+        throw new BadRequestException("Refresh token é obrigatório");
       }
 
       // Validar refresh token
@@ -185,14 +185,14 @@ export class AuthService {
         this.logger.warn(
           `Tentativa de refresh com usuário inativo: ${refreshTokenRecord.userId}`,
         );
-        throw new UnauthorizedException('Usuário não encontrado ou inativo');
+        throw new UnauthorizedException("Usuário não encontrado ou inativo");
       }
 
-      if (user.tenant.status !== 'active') {
+      if (user.tenant.status !== "active") {
         this.logger.warn(
           `Tentativa de refresh com tenant inativo: ${user.tenantId}`,
         );
-        throw new UnauthorizedException('Tenant inativo');
+        throw new UnauthorizedException("Tenant inativo");
       }
 
       // Revogar refresh token antigo
@@ -203,8 +203,8 @@ export class AuthService {
       const newRefreshToken = this.generateRefreshToken();
       const expiresAt = new Date();
       const refreshExpiresIn =
-        this.configService.get<string>('JWT_REFRESH_EXPIRES_IN') || '7d';
-      const days = refreshExpiresIn.includes('d')
+        this.configService.get<string>("JWT_REFRESH_EXPIRES_IN") || "7d";
+      const days = refreshExpiresIn.includes("d")
         ? Number.parseInt(refreshExpiresIn)
         : 7;
       expiresAt.setDate(expiresAt.getDate() + days);
@@ -229,14 +229,14 @@ export class AuthService {
         `Erro ao renovar token: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new InternalServerErrorException('Erro ao renovar token');
+      throw new InternalServerErrorException("Erro ao renovar token");
     }
   }
 
   async getProfile(userId: string): Promise<ProfileResponseDto> {
     try {
       if (!userId) {
-        throw new BadRequestException('ID do usuário é obrigatório');
+        throw new BadRequestException("ID do usuário é obrigatório");
       }
 
       const user = await this.prisma.user.findUnique({
@@ -244,7 +244,7 @@ export class AuthService {
       });
 
       if (!user) {
-        throw new NotFoundException('Usuário não encontrado');
+        throw new NotFoundException("Usuário não encontrado");
       }
 
       return {
@@ -268,7 +268,7 @@ export class AuthService {
         `Erro ao obter perfil: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new InternalServerErrorException('Erro ao obter perfil');
+      throw new InternalServerErrorException("Erro ao obter perfil");
     }
   }
 
@@ -283,25 +283,25 @@ export class AuthService {
         !changePasswordDto.newPassword ||
         !changePasswordDto.confirmPassword
       ) {
-        throw new BadRequestException('Todos os campos são obrigatórios');
+        throw new BadRequestException("Todos os campos são obrigatórios");
       }
 
       // Validar confirmação de senha
       if (changePasswordDto.newPassword !== changePasswordDto.confirmPassword) {
-        throw new BadRequestException('Nova senha e confirmação não coincidem');
+        throw new BadRequestException("Nova senha e confirmação não coincidem");
       }
 
       // Validar se nova senha é diferente da atual
       if (changePasswordDto.newPassword === changePasswordDto.currentPassword) {
         throw new BadRequestException(
-          'Nova senha deve ser diferente da senha atual',
+          "Nova senha deve ser diferente da senha atual",
         );
       }
 
       // Validar força da senha
       if (changePasswordDto.newPassword.length < 8) {
         throw new BadRequestException(
-          'Nova senha deve ter no mínimo 8 caracteres',
+          "Nova senha deve ter no mínimo 8 caracteres",
         );
       }
 
@@ -311,7 +311,7 @@ export class AuthService {
       });
 
       if (!user) {
-        throw new NotFoundException('Usuário não encontrado');
+        throw new NotFoundException("Usuário não encontrado");
       }
 
       // Validar senha atual
@@ -324,7 +324,7 @@ export class AuthService {
         this.logger.warn(
           `Tentativa de alterar senha com senha atual incorreta: ${userId}`,
         );
-        throw new UnauthorizedException('Senha atual incorreta');
+        throw new UnauthorizedException("Senha atual incorreta");
       }
 
       // Hash da nova senha
@@ -363,7 +363,7 @@ export class AuthService {
         `Erro ao alterar senha: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new InternalServerErrorException('Erro ao alterar senha');
+      throw new InternalServerErrorException("Erro ao alterar senha");
     }
   }
 
@@ -385,7 +385,7 @@ export class AuthService {
       tenantId: user.tenantId,
     };
 
-    const expiresIn = this.configService.get<string>('jwt.expiresIn') || '7d';
+    const expiresIn = this.configService.get<string>("jwt.expiresIn") || "7d";
     // @ts-expect-error - expiresIn type compatibility issue with @nestjs/jwt
     return this.jwtService.sign(payload, {
       expiresIn,
@@ -414,7 +414,7 @@ export class AuthService {
         `Erro ao salvar refresh token: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new InternalServerErrorException('Erro ao salvar refresh token');
+      throw new InternalServerErrorException("Erro ao salvar refresh token");
     }
   }
 
@@ -433,7 +433,7 @@ export class AuthService {
   private async validateRefreshToken(token: string) {
     try {
       if (!token) {
-        throw new BadRequestException('Refresh token é obrigatório');
+        throw new BadRequestException("Refresh token é obrigatório");
       }
 
       const refreshToken = await this.prisma.refreshToken.findUnique({
@@ -442,21 +442,21 @@ export class AuthService {
 
       if (!refreshToken) {
         this.logger.warn(`Tentativa de usar refresh token inválido`);
-        throw new UnauthorizedException('Refresh token inválido');
+        throw new UnauthorizedException("Refresh token inválido");
       }
 
       if (refreshToken.revokedAt) {
         this.logger.warn(
           `Tentativa de usar refresh token revogado: ${refreshToken.id}`,
         );
-        throw new UnauthorizedException('Refresh token revogado');
+        throw new UnauthorizedException("Refresh token revogado");
       }
 
       if (refreshToken.expiresAt < new Date()) {
         this.logger.warn(
           `Tentativa de usar refresh token expirado: ${refreshToken.id}`,
         );
-        throw new UnauthorizedException('Refresh token expirado');
+        throw new UnauthorizedException("Refresh token expirado");
       }
 
       return refreshToken;
@@ -471,7 +471,7 @@ export class AuthService {
         `Erro ao validar refresh token: ${getErrorMessage(error)}`,
         getErrorStack(error),
       );
-      throw new InternalServerErrorException('Erro ao validar refresh token');
+      throw new InternalServerErrorException("Erro ao validar refresh token");
     }
   }
 
@@ -490,7 +490,7 @@ export class AuthService {
           email: normalizedEmail,
           isActive: true,
           tenant: {
-            status: 'active',
+            status: "active",
           },
         },
         include: {
@@ -551,12 +551,12 @@ export class AuthService {
       );
       return {
         message:
-          'Se o email existir em nossa base, você receberá as instruções de recuperação.',
+          "Se o email existir em nossa base, você receberá as instruções de recuperação.",
       };
     }
 
     // Gerar token único
-    const resetToken = randomUUID() + '-' + randomUUID();
+    const resetToken = randomUUID() + "-" + randomUUID();
     const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutos
 
     // Salvar token no banco
@@ -575,7 +575,7 @@ export class AuthService {
     // Retornar dados para envio de email (será tratado no controller)
     return {
       message:
-        'Se o email existir em nossa base, você receberá as instruções de recuperação.',
+        "Se o email existir em nossa base, você receberá as instruções de recuperação.",
       // Dados internos para envio de email (não expostos na resposta)
       // O controller irá usar esses dados para enviar o email
     };
@@ -631,7 +631,7 @@ export class AuthService {
     }
 
     const frontendUrl =
-      this.configService.get<string>('FRONTEND_URL') ||
+      this.configService.get<string>("FRONTEND_URL") ||
       `http://${user.tenant.subdomain}.localhost:3000`;
     const resetUrl = `${frontendUrl}/reset-password?token=${user.passwordResetToken}`;
 
@@ -665,14 +665,14 @@ export class AuthService {
 
     if (!user) {
       throw new BadRequestException(
-        'Token inválido ou expirado. Solicite uma nova recuperação de senha.',
+        "Token inválido ou expirado. Solicite uma nova recuperação de senha.",
       );
     }
 
     // Validar se usuário está ativo
     if (!user.isActive) {
       throw new BadRequestException(
-        'Usuário inativo. Entre em contato com o suporte.',
+        "Usuário inativo. Entre em contato com o suporte.",
       );
     }
 
@@ -694,7 +694,7 @@ export class AuthService {
     );
 
     return {
-      message: 'Senha alterada com sucesso! Você já pode fazer login.',
+      message: "Senha alterada com sucesso! Você já pode fazer login.",
     };
   }
 
@@ -722,8 +722,8 @@ export class AuthService {
     }
 
     // Mascarar email para segurança
-    const emailParts = user.email.split('@');
-    const maskedEmail = emailParts[0].substring(0, 2) + '***@' + emailParts[1];
+    const emailParts = user.email.split("@");
+    const maskedEmail = emailParts[0].substring(0, 2) + "***@" + emailParts[1];
 
     return { valid: true, email: maskedEmail };
   }
@@ -744,8 +744,8 @@ export class AuthService {
       where: { id: adminUserId },
     });
 
-    if (!adminUser || !['admin', 'manager'].includes(adminUser.role)) {
-      throw new UnauthorizedException('Sem permissão para redefinir senhas');
+    if (!adminUser || !["admin", "manager"].includes(adminUser.role)) {
+      throw new UnauthorizedException("Sem permissão para redefinir senhas");
     }
 
     // Buscar usuário alvo
@@ -755,12 +755,12 @@ export class AuthService {
     });
 
     if (!targetUser) {
-      throw new NotFoundException('Usuário não encontrado');
+      throw new NotFoundException("Usuário não encontrado");
     }
 
     // Verificar se é do mesmo tenant
     if (targetUser.tenantId !== tenantId) {
-      throw new UnauthorizedException('Sem permissão para este usuário');
+      throw new UnauthorizedException("Sem permissão para este usuário");
     }
 
     // Gerar senha temporária
@@ -795,9 +795,9 @@ export class AuthService {
    * Gera uma senha temporária segura
    */
   private generateTempPassword(): string {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-    const specials = '!@#$%';
-    let password = '';
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+    const specials = "!@#$%";
+    let password = "";
 
     // 6 caracteres alfanuméricos
     for (let i = 0; i < 6; i++) {

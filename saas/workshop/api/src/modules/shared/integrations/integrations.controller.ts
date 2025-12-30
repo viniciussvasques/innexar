@@ -9,40 +9,40 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
-} from '@nestjs/common';
+} from "@nestjs/common";
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
-} from '@nestjs/swagger';
-import { IntegrationsService } from './integrations.service';
+} from "@nestjs/swagger";
+import { IntegrationsService } from "./integrations.service";
 import {
   CreateIntegrationDto,
   UpdateIntegrationDto,
   IntegrationResponseDto,
   TestIntegrationDto,
-} from './dto';
-import { JwtAuthGuard } from '@core/auth/guards/jwt-auth.guard';
-import { TenantGuard } from '@common/guards/tenant.guard';
-import { Roles } from '@core/auth/decorators/roles.decorator';
-import { RolesGuard } from '@core/auth/guards/roles.guard';
-import { TenantId } from '@common/decorators/tenant.decorator';
+} from "./dto";
+import { JwtAuthGuard } from "@core/auth/guards/jwt-auth.guard";
+import { TenantGuard } from "@common/guards/tenant.guard";
+import { Roles } from "@core/auth/decorators/roles.decorator";
+import { RolesGuard } from "@core/auth/guards/roles.guard";
+import { TenantId } from "@common/decorators/tenant.decorator";
 
-@ApiTags('Integrações')
+@ApiTags("Integrações")
 @ApiBearerAuth()
-@Controller('integrations')
+@Controller("integrations")
 @UseGuards(JwtAuthGuard, TenantGuard, RolesGuard)
-@Roles('admin', 'superadmin')
+@Roles("admin", "superadmin")
 export class IntegrationsController {
   constructor(private readonly integrationsService: IntegrationsService) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Criar nova integração (configuração via admin)' })
+  @ApiOperation({ summary: "Criar nova integração (configuração via admin)" })
   @ApiResponse({
     status: 201,
-    description: 'Integração criada com sucesso',
+    description: "Integração criada com sucesso",
     type: IntegrationResponseDto,
   })
   create(
@@ -53,63 +53,63 @@ export class IntegrationsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Listar integrações configuradas' })
+  @ApiOperation({ summary: "Listar integrações configuradas" })
   @ApiResponse({
     status: 200,
-    description: 'Lista de integrações',
+    description: "Lista de integrações",
     type: [IntegrationResponseDto],
   })
   findAll(@TenantId() tenantId: string): Promise<IntegrationResponseDto[]> {
     return this.integrationsService.findAll(tenantId);
   }
 
-  @Get(':id')
-  @ApiOperation({ summary: 'Buscar integração por ID' })
+  @Get(":id")
+  @ApiOperation({ summary: "Buscar integração por ID" })
   @ApiResponse({
     status: 200,
-    description: 'Integração encontrada',
+    description: "Integração encontrada",
     type: IntegrationResponseDto,
   })
   findOne(
     @TenantId() tenantId: string,
-    @Param('id') id: string,
+    @Param("id") id: string,
   ): Promise<IntegrationResponseDto> {
     return this.integrationsService.findOne(tenantId, id);
   }
 
-  @Patch(':id')
-  @ApiOperation({ summary: 'Atualizar integração' })
+  @Patch(":id")
+  @ApiOperation({ summary: "Atualizar integração" })
   @ApiResponse({
     status: 200,
-    description: 'Integração atualizada com sucesso',
+    description: "Integração atualizada com sucesso",
     type: IntegrationResponseDto,
   })
   update(
     @TenantId() tenantId: string,
-    @Param('id') id: string,
+    @Param("id") id: string,
     @Body() updateIntegrationDto: UpdateIntegrationDto,
   ): Promise<IntegrationResponseDto> {
     return this.integrationsService.update(tenantId, id, updateIntegrationDto);
   }
 
-  @Delete(':id')
+  @Delete(":id")
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Remover integração' })
-  @ApiResponse({ status: 204, description: 'Integração removida com sucesso' })
-  remove(@TenantId() tenantId: string, @Param('id') id: string): Promise<void> {
+  @ApiOperation({ summary: "Remover integração" })
+  @ApiResponse({ status: 204, description: "Integração removida com sucesso" })
+  remove(@TenantId() tenantId: string, @Param("id") id: string): Promise<void> {
     return this.integrationsService.remove(tenantId, id);
   }
 
-  @Post(':id/test')
+  @Post(":id/test")
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Testar integração' })
+  @ApiOperation({ summary: "Testar integração" })
   @ApiResponse({
     status: 200,
-    description: 'Resultado do teste',
+    description: "Resultado do teste",
   })
   test(
     @TenantId() tenantId: string,
-    @Param('id') id: string,
+    @Param("id") id: string,
     @Body() testData: TestIntegrationDto,
   ) {
     return this.integrationsService.test(tenantId, id, testData);

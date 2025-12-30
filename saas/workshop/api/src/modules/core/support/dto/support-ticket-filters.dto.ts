@@ -1,12 +1,12 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsOptional, IsEnum, IsString, IsInt, Min, Max } from 'class-validator';
-import { SupportPriority, SupportCategory } from './create-support-ticket.dto';
-import { SupportStatus } from './support-ticket-response.dto';
+import { ApiProperty } from "@nestjs/swagger";
+import { Type } from "class-transformer";
+import { IsOptional, IsEnum, IsString, IsInt, Min, Max } from "class-validator";
+import { SupportPriority, SupportCategory } from "./create-support-ticket.dto";
+import { SupportStatus } from "./support-ticket-response.dto";
 
 export class SupportTicketFiltersDto {
   @ApiProperty({
-    description: 'Página (começando em 1)',
+    description: "Página (começando em 1)",
     minimum: 1,
     default: 1,
     required: false,
@@ -18,7 +18,7 @@ export class SupportTicketFiltersDto {
   page?: number = 1;
 
   @ApiProperty({
-    description: 'Itens por página',
+    description: "Itens por página",
     minimum: 1,
     maximum: 100,
     default: 10,
@@ -32,7 +32,7 @@ export class SupportTicketFiltersDto {
   limit?: number = 10;
 
   @ApiProperty({
-    description: 'Status do ticket',
+    description: "Status do ticket",
     enum: SupportStatus,
     required: false,
   })
@@ -41,7 +41,7 @@ export class SupportTicketFiltersDto {
   status?: SupportStatus;
 
   @ApiProperty({
-    description: 'Prioridade do ticket',
+    description: "Prioridade do ticket",
     enum: SupportPriority,
     required: false,
   })
@@ -50,7 +50,7 @@ export class SupportTicketFiltersDto {
   priority?: SupportPriority;
 
   @ApiProperty({
-    description: 'Categoria do ticket',
+    description: "Categoria do ticket",
     enum: SupportCategory,
     required: false,
   })
@@ -59,7 +59,7 @@ export class SupportTicketFiltersDto {
   category?: SupportCategory;
 
   @ApiProperty({
-    description: 'ID do usuário responsável',
+    description: "ID do usuário responsável",
     required: false,
   })
   @IsString()
@@ -67,7 +67,7 @@ export class SupportTicketFiltersDto {
   assignedToId?: string;
 
   @ApiProperty({
-    description: 'ID do tenant',
+    description: "ID do tenant",
     required: false,
   })
   @IsString()
@@ -75,7 +75,7 @@ export class SupportTicketFiltersDto {
   tenantId?: string;
 
   @ApiProperty({
-    description: 'Busca por assunto ou mensagem',
+    description: "Busca por assunto ou mensagem",
     required: false,
   })
   @IsString()

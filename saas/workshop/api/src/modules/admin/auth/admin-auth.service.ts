@@ -1,8 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from '../../../database/prisma.service';
-import * as bcrypt from 'bcrypt';
-import { AdminLoginDto } from './dto/admin-login.dto';
+import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import { PrismaService } from "../../../database/prisma.service";
+import * as bcrypt from "bcrypt";
+import { AdminLoginDto } from "./dto/admin-login.dto";
 
 @Injectable()
 export class AdminAuthService {
@@ -19,12 +19,12 @@ export class AdminAuthService {
     });
 
     if (!admin) {
-      throw new UnauthorizedException('Credenciais inválidas');
+      throw new UnauthorizedException("Credenciais inválidas");
     }
 
     const isPasswordValid = await bcrypt.compare(password, admin.passwordHash);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Credenciais inválidas');
+      throw new UnauthorizedException("Credenciais inválidas");
     }
 
     // Atualizar último login
@@ -37,7 +37,7 @@ export class AdminAuthService {
       sub: admin.id,
       email: admin.email,
       role: admin.role,
-      type: 'admin', // Diferencia de tenant auth
+      type: "admin", // Diferencia de tenant auth
     };
 
     return {
@@ -66,7 +66,7 @@ export class AdminAuthService {
   async getProfile(adminId: string) {
     const admin = await this.validateAdmin(adminId);
     if (!admin) {
-      throw new UnauthorizedException('Admin não encontrado');
+      throw new UnauthorizedException("Admin não encontrado");
     }
     return admin;
   }

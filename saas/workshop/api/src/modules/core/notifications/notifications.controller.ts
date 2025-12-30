@@ -8,7 +8,7 @@ import {
   HttpCode,
   HttpStatus,
   Logger,
-} from '@nestjs/common';
+} from "@nestjs/common";
 import {
   ApiTags,
   ApiOperation,
@@ -16,15 +16,15 @@ import {
   ApiBearerAuth,
   ApiQuery,
   ApiParam,
-} from '@nestjs/swagger';
-import { NotificationsService } from './notifications.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { TenantId } from '../../../common/decorators/tenant.decorator';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { getErrorMessage } from '../../../common/utils/error.utils';
+} from "@nestjs/swagger";
+import { NotificationsService } from "./notifications.service";
+import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
+import { TenantId } from "../../../common/decorators/tenant.decorator";
+import { CurrentUser } from "../auth/decorators/current-user.decorator";
+import { getErrorMessage } from "../../../common/utils/error.utils";
 
-@ApiTags('Notifications')
-@Controller('notifications')
+@ApiTags("Notifications")
+@Controller("notifications")
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 export class NotificationsController {
@@ -33,30 +33,30 @@ export class NotificationsController {
   constructor(private readonly notificationsService: NotificationsService) {}
 
   @Get()
-  @ApiOperation({ summary: 'Listar notificações do usuário' })
+  @ApiOperation({ summary: "Listar notificações do usuário" })
   @ApiQuery({
-    name: 'unreadOnly',
+    name: "unreadOnly",
     required: false,
     type: Boolean,
-    description: 'Apenas notificações não lidas',
+    description: "Apenas notificações não lidas",
   })
   @ApiQuery({
-    name: 'limit',
+    name: "limit",
     required: false,
     type: Number,
-    description: 'Limite de resultados (padrão: 50)',
+    description: "Limite de resultados (padrão: 50)",
   })
   @ApiResponse({
     status: 200,
-    description: 'Lista de notificações',
+    description: "Lista de notificações",
   })
   async findAll(
     @TenantId() tenantId: string,
-    @CurrentUser('id') userId: string,
-    @Query('unreadOnly') unreadOnly?: string,
-    @Query('limit') limit?: string,
+    @CurrentUser("id") userId: string,
+    @Query("unreadOnly") unreadOnly?: string,
+    @Query("limit") limit?: string,
   ) {
-    const unread = unreadOnly === 'true';
+    const unread = unreadOnly === "true";
     const limitNum = limit ? Number.parseInt(limit, 10) : 50;
     return this.notificationsService.findByUser(
       tenantId,
@@ -66,21 +66,21 @@ export class NotificationsController {
     );
   }
 
-  @Get('unread-count')
-  @ApiOperation({ summary: 'Obter contador de notificações não lidas' })
+  @Get("unread-count")
+  @ApiOperation({ summary: "Obter contador de notificações não lidas" })
   @ApiResponse({
     status: 200,
-    description: 'Contador de notificações não lidas',
+    description: "Contador de notificações não lidas",
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        unreadCount: { type: 'number' },
+        unreadCount: { type: "number" },
       },
     },
   })
   async getUnreadCount(
     @TenantId() tenantId: string,
-    @CurrentUser('id') userId: string | undefined,
+    @CurrentUser("id") userId: string | undefined,
   ) {
     try {
       if (!userId) {
@@ -96,40 +96,40 @@ export class NotificationsController {
     } catch (error: unknown) {
       // Se houver erro, retornar 0 para não quebrar o frontend
       this.logger.error(
-        'Erro ao buscar contador de notificações:',
+        "Erro ao buscar contador de notificações:",
         getErrorMessage(error),
       );
       return { unreadCount: 0 };
     }
   }
 
-  @Post(':id/read')
+  @Post(":id/read")
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Marcar notificação como lida' })
-  @ApiParam({ name: 'id', description: 'ID da notificação' })
+  @ApiOperation({ summary: "Marcar notificação como lida" })
+  @ApiParam({ name: "id", description: "ID da notificação" })
   @ApiResponse({
     status: 204,
-    description: 'Notificação marcada como lida',
+    description: "Notificação marcada como lida",
   })
-  @ApiResponse({ status: 404, description: 'Notificação não encontrada' })
+  @ApiResponse({ status: 404, description: "Notificação não encontrada" })
   async markAsRead(
     @TenantId() tenantId: string,
-    @CurrentUser('id') userId: string,
-    @Param('id') id: string,
+    @CurrentUser("id") userId: string,
+    @Param("id") id: string,
   ): Promise<void> {
     await this.notificationsService.markAsRead(tenantId, userId, id);
   }
 
-  @Post('read-all')
+  @Post("read-all")
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Marcar todas as notificações como lidas' })
+  @ApiOperation({ summary: "Marcar todas as notificações como lidas" })
   @ApiResponse({
     status: 204,
-    description: 'Todas as notificações marcadas como lidas',
+    description: "Todas as notificações marcadas como lidas",
   })
   async markAllAsRead(
     @TenantId() tenantId: string,
-    @CurrentUser('id') userId: string,
+    @CurrentUser("id") userId: string,
   ): Promise<void> {
     await this.notificationsService.markAllAsRead(tenantId, userId);
   }

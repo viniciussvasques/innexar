@@ -48,7 +48,7 @@ export default function AffiliateDashboardLayout({ children }: { children: React
         // Check auth
         const token = localStorage.getItem('innexar_token');
         const userData = localStorage.getItem('innexar_user');
-        
+
         if (!token) {
             router.push('/login');
             return;
@@ -56,6 +56,7 @@ export default function AffiliateDashboardLayout({ children }: { children: React
 
         if (userData) {
             try {
+                // eslint-disable-next-line react-hooks/exhaustive-deps
                 setUser(JSON.parse(userData));
             } catch {
                 // Invalid user data
@@ -123,11 +124,10 @@ export default function AffiliateDashboardLayout({ children }: { children: React
                             <Link
                                 key={item.href}
                                 href={item.href}
-                                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                                    active 
-                                        ? 'bg-[#4aa8b3]/10 text-white border border-[#4aa8b3]/20' 
+                                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${active
+                                        ? 'bg-[#4aa8b3]/10 text-white border border-[#4aa8b3]/20'
                                         : 'text-[#6b7a8a] hover:bg-[#4aa8b3]/5 hover:text-white'
-                                }`}
+                                    }`}
                             >
                                 <Icon className={`w-5 h-5 ${active ? 'text-[#4aa8b3]' : ''}`} />
                                 <span className="font-medium text-sm">{item.label}</span>
@@ -138,14 +138,14 @@ export default function AffiliateDashboardLayout({ children }: { children: React
 
                 {/* Footer Actions */}
                 <div className="space-y-2">
-                    <Link 
+                    <Link
                         href="/settings"
                         className="flex items-center gap-3 px-4 py-3 text-[#6b7a8a] hover:bg-[#4aa8b3]/5 hover:text-white transition-colors rounded-xl"
                     >
                         <GearIcon className="w-5 h-5" />
                         <span className="text-sm font-medium">Configurações</span>
                     </Link>
-                    <button 
+                    <button
                         onClick={handleLogout}
                         className="w-full flex items-center gap-3 px-4 py-3 text-[#6b7a8a] hover:text-[#ef4444] transition-colors rounded-xl"
                     >

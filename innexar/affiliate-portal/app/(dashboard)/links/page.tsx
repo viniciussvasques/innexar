@@ -1,4 +1,7 @@
+
 'use client';
+
+import Image from 'next/image';
 
 import { useEffect, useState } from 'react';
 import {
@@ -53,8 +56,8 @@ export default function AffiliateLinks() {
                 innexarApi.getLinks(),
                 innexarApi.getProducts()
             ]);
-            setLinks(linksData);
-            setProducts(productsData);
+            setLinks(linksData as AffiliateLink[]);
+            setProducts(productsData as Product[]);
         } catch (error) {
             console.error('Erro ao carregar dados:', error);
         } finally {
@@ -105,7 +108,7 @@ export default function AffiliateLinks() {
                     <h1 className="text-3xl font-extrabold text-white">Meus Links</h1>
                     <p className="text-[#6b7a8a] mt-1">Gerencie seus links de afiliado e acompanhe o desempenho.</p>
                 </div>
-                <button 
+                <button
                     onClick={() => setShowCreateModal(true)}
                     disabled={availableProducts.length === 0}
                     className="inline-flex items-center gap-2 bg-gradient-to-r from-[#4aa8b3] to-[#2d7a85] text-white px-6 py-3 rounded-xl font-bold text-sm hover:shadow-lg hover:shadow-[#4aa8b3]/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
@@ -126,7 +129,7 @@ export default function AffiliateLinks() {
                         <Link2Icon className="w-12 h-12 text-[#4aa8b3] mx-auto mb-4 opacity-50" />
                         <h3 className="text-white font-bold text-lg mb-2">Nenhum link criado</h3>
                         <p className="text-[#6b7a8a] mb-4">Crie seu primeiro link de afiliado para começar a ganhar comissões.</p>
-                        <button 
+                        <button
                             onClick={() => setShowCreateModal(true)}
                             className="inline-flex items-center gap-2 bg-[#4aa8b3]/10 text-[#4aa8b3] px-6 py-3 rounded-xl font-medium text-sm hover:bg-[#4aa8b3]/20 transition-colors"
                         >
@@ -140,7 +143,14 @@ export default function AffiliateLinks() {
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 bg-[#4aa8b3]/10 rounded-xl flex items-center justify-center">
                                     {link.product.logoUrl ? (
-                                        <img src={link.product.logoUrl} alt={link.product.name} className="w-8 h-8 rounded" />
+                                        <Image
+                                            src={link.product.logoUrl}
+                                            alt={link.product.name}
+                                            width={32}
+                                            height={32}
+                                            className="rounded"
+                                            unoptimized
+                                        />
                                     ) : (
                                         <Link2Icon className="text-[#4aa8b3] w-6 h-6" />
                                     )}
@@ -174,11 +184,10 @@ export default function AffiliateLinks() {
                                 </div>
                                 <button
                                     onClick={() => copyToClipboard(link.targetUrl, link.id)}
-                                    className={`p-2.5 rounded-lg transition-colors ${
-                                        copiedId === link.id 
-                                            ? 'bg-[#10b981]/20 text-[#10b981]' 
-                                            : 'bg-[#4aa8b3]/10 hover:bg-[#4aa8b3]/20 text-[#4aa8b3]'
-                                    }`}
+                                    className={`p-2.5 rounded-lg transition-colors ${copiedId === link.id
+                                        ? 'bg-[#10b981]/20 text-[#10b981]'
+                                        : 'bg-[#4aa8b3]/10 hover:bg-[#4aa8b3]/20 text-[#4aa8b3]'
+                                        }`}
                                     title="Copiar Link"
                                 >
                                     {copiedId === link.id ? <CheckIcon /> : <CopyIcon />}
@@ -210,7 +219,7 @@ export default function AffiliateLinks() {
                 <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                     <div className="bg-[#0a1628] border border-[#4aa8b3]/20 rounded-2xl p-8 max-w-md w-full">
                         <h2 className="text-xl font-bold text-white mb-6">Criar Novo Link</h2>
-                        
+
                         {availableProducts.length === 0 ? (
                             <p className="text-[#6b7a8a] text-center py-8">
                                 Você já tem links para todos os produtos disponíveis.
@@ -223,11 +232,10 @@ export default function AffiliateLinks() {
                                         <button
                                             key={product.id}
                                             onClick={() => setSelectedProduct(product.id)}
-                                            className={`w-full p-4 rounded-xl border text-left transition-all ${
-                                                selectedProduct === product.id
-                                                    ? 'bg-[#4aa8b3]/10 border-[#4aa8b3]/30'
-                                                    : 'bg-[#050b14]/50 border-[#4aa8b3]/10 hover:border-[#4aa8b3]/20'
-                                            }`}
+                                            className={`w-full p-4 rounded-xl border text-left transition-all ${selectedProduct === product.id
+                                                ? 'bg-[#4aa8b3]/10 border-[#4aa8b3]/30'
+                                                : 'bg-[#050b14]/50 border-[#4aa8b3]/10 hover:border-[#4aa8b3]/20'
+                                                }`}
                                         >
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 bg-[#4aa8b3]/10 rounded-lg flex items-center justify-center">
@@ -269,6 +277,6 @@ export default function AffiliateLinks() {
 // Simple Rocket Icon for the modal
 const RocketIcon = ({ className }: { className?: string }) => (
     <svg className={className} width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M6.85355 3.85355C7.04882 3.65829 7.04882 3.34171 6.85355 3.14645C6.65829 2.95118 6.34171 2.95118 6.14645 3.14645L2.14645 7.14645C1.95118 7.34171 1.95118 7.65829 2.14645 7.85355L6.14645 11.8536C6.34171 12.0488 6.65829 12.0488 6.85355 11.8536C7.04882 11.6583 7.04882 11.3417 6.85355 11.1464L3.20711 7.5L6.85355 3.85355ZM12.8536 3.85355C13.0488 3.65829 13.0488 3.34171 12.8536 3.14645C12.6583 2.95118 12.3417 2.95118 12.1464 3.14645L8.14645 7.14645C7.95118 7.34171 7.95118 7.65829 8.14645 7.85355L12.1464 11.8536C12.3417 12.0488 12.6583 12.0488 12.8536 11.8536C13.0488 11.6583 13.0488 11.3417 12.8536 11.1464L9.20711 7.5L12.8536 3.85355Z" fill="currentColor"/>
+        <path d="M6.85355 3.85355C7.04882 3.65829 7.04882 3.34171 6.85355 3.14645C6.65829 2.95118 6.34171 2.95118 6.14645 3.14645L2.14645 7.14645C1.95118 7.34171 1.95118 7.65829 2.14645 7.85355L6.14645 11.8536C6.34171 12.0488 6.65829 12.0488 6.85355 11.8536C7.04882 11.6583 7.04882 11.3417 6.85355 11.1464L3.20711 7.5L6.85355 3.85355ZM12.8536 3.85355C13.0488 3.65829 13.0488 3.34171 12.8536 3.14645C12.6583 2.95118 12.3417 2.95118 12.1464 3.14645L8.14645 7.14645C7.95118 7.34171 7.95118 7.65829 8.14645 7.85355L12.1464 11.8536C12.3417 12.0488 12.6583 12.0488 12.8536 11.8536C13.0488 11.6583 13.0488 11.3417 12.8536 11.1464L9.20711 7.5L12.8536 3.85355Z" fill="currentColor" />
     </svg>
 );

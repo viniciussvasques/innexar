@@ -4,9 +4,9 @@ import {
   ArgumentMetadata,
   BadRequestException,
   Logger,
-} from '@nestjs/common';
-import { validate } from 'class-validator';
-import { plainToInstance } from 'class-transformer';
+} from "@nestjs/common";
+import { validate } from "class-validator";
+import { plainToInstance } from "class-transformer";
 
 type Constructor = new (...args: unknown[]) => unknown;
 
@@ -26,15 +26,15 @@ export class ValidationPipe implements PipeTransform<unknown> {
 
     if (errors.length > 0) {
       const messages = errors.map((error) =>
-        Object.values(error.constraints || {}).join(', '),
+        Object.values(error.constraints || {}).join(", "),
       );
       // Log detalhado para debug
       this.logger.error(
-        '[ValidationPipe] Erros de validação:',
+        "[ValidationPipe] Erros de validação:",
         JSON.stringify(errors, null, 2),
       );
       this.logger.error(
-        '[ValidationPipe] Valor recebido:',
+        "[ValidationPipe] Valor recebido:",
         JSON.stringify(value, null, 2),
       );
       throw new BadRequestException(messages);

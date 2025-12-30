@@ -1,6 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { exec } from 'node:child_process';
-import { promisify } from 'node:util';
+import { Injectable, Logger } from "@nestjs/common";
+import { exec } from "node:child_process";
+import { promisify } from "node:util";
 import {
   existsSync,
   statSync,
@@ -8,12 +8,12 @@ import {
   openSync,
   readSync,
   closeSync,
-} from 'node:fs';
-import { dirname } from 'node:path';
-import { ConfigService } from '@nestjs/config';
-import { BackupStrategy, BackupResult } from './backup-strategy.interface';
-import { BackupType } from '../dto';
-import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
+} from "node:fs";
+import { dirname } from "node:path";
+import { ConfigService } from "@nestjs/config";
+import { BackupStrategy, BackupResult } from "./backup-strategy.interface";
+import { BackupType } from "../dto";
+import { getErrorMessage, getErrorStack } from "@common/utils/error.utils";
 
 const execAsync = promisify(exec);
 
@@ -29,9 +29,9 @@ export class LocalBackupStrategy implements BackupStrategy {
     tenantId?: string,
   ): Promise<BackupResult> {
     try {
-      const databaseUrl = this.configService.get<string>('DATABASE_URL');
+      const databaseUrl = this.configService.get<string>("DATABASE_URL");
       if (!databaseUrl) {
-        throw new Error('DATABASE_URL não configurada');
+        throw new Error("DATABASE_URL não configurada");
       }
 
       // Extrair informações do DATABASE_URL
@@ -39,9 +39,9 @@ export class LocalBackupStrategy implements BackupStrategy {
       const dbName = url.pathname.slice(1); // Remove a barra inicial
       const dbUser = url.username;
       const dbHost = url.hostname;
-      const dbPort = url.port || '5432';
+      const dbPort = url.port || "5432";
       // Decode URL-encoded password
-      const dbPassword = decodeURIComponent(url.password || '');
+      const dbPassword = decodeURIComponent(url.password || "");
 
       // Criar diretório se não existir
       const dir = dirname(outputPath);
@@ -58,7 +58,7 @@ export class LocalBackupStrategy implements BackupStrategy {
 
       // Verificar se o arquivo foi criado
       if (!existsSync(outputPath)) {
-        throw new Error('Backup não foi criado');
+        throw new Error("Backup não foi criado");
       }
 
       const stats = statSync(outputPath);
@@ -93,16 +93,16 @@ export class LocalBackupStrategy implements BackupStrategy {
         throw new Error(`Backup não encontrado: ${backupPath}`);
       }
 
-      const databaseUrl = this.configService.get<string>('DATABASE_URL');
+      const databaseUrl = this.configService.get<string>("DATABASE_URL");
       if (!databaseUrl) {
-        throw new Error('DATABASE_URL não configurada');
+        throw new Error("DATABASE_URL não configurada");
       }
 
       const url = new URL(databaseUrl);
       const dbName = url.pathname.slice(1);
       const dbUser = url.username;
       const dbHost = url.hostname;
-      const dbPort = url.port || '5432';
+      const dbPort = url.port || "5432";
       const dbPassword = url.password;
 
       // Comando pg_restore
@@ -112,7 +112,7 @@ export class LocalBackupStrategy implements BackupStrategy {
 
       await execAsync(pgRestoreCommand);
 
-      this.logger.log('Backup restaurado com sucesso');
+      this.logger.log("Backup restaurado com sucesso");
     } catch (error: unknown) {
       this.logger.error(
         `Erro ao restaurar backup: ${getErrorMessage(error)}`,
@@ -135,13 +135,13 @@ export class LocalBackupStrategy implements BackupStrategy {
 
       // Verificar se é um arquivo válido do pg_dump (formato custom)
       // Arquivos pg_dump custom começam com "PGDMP"
-      const fd = openSync(backupPath, 'r');
+      const fd = openSync(backupPath, "r");
       const buffer = Buffer.alloc(5);
       readSync(fd, buffer, 0, 5, 0);
       closeSync(fd);
 
-      const header = buffer.toString('utf8');
-      return header === 'PGDMP';
+      const header = buffer.toString("utf8");
+      return header === "PGDMP";
     } catch (error: unknown) {
       this.logger.error(
         `Erro ao validar backup: ${getErrorMessage(error)}`,

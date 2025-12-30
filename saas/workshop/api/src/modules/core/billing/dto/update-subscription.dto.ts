@@ -1,14 +1,14 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsString, IsArray } from 'class-validator';
+import { ApiProperty } from "@nestjs/swagger";
+import { IsEnum, IsOptional, IsString, IsArray } from "class-validator";
 import {
   SubscriptionPlan,
   SubscriptionStatus,
   BillingCycle,
-} from './subscription-response.dto';
+} from "./subscription-response.dto";
 
 export class UpdateSubscriptionDto {
   @ApiProperty({
-    description: 'Plano da assinatura',
+    description: "Plano da assinatura",
     enum: SubscriptionPlan,
     required: false,
   })
@@ -17,7 +17,7 @@ export class UpdateSubscriptionDto {
   plan?: SubscriptionPlan;
 
   @ApiProperty({
-    description: 'Status da assinatura',
+    description: "Status da assinatura",
     enum: SubscriptionStatus,
     required: false,
   })
@@ -26,7 +26,7 @@ export class UpdateSubscriptionDto {
   status?: SubscriptionStatus;
 
   @ApiProperty({
-    description: 'Features ativos',
+    description: "Features ativos",
     type: [String],
     required: false,
   })
@@ -36,7 +36,7 @@ export class UpdateSubscriptionDto {
   activeFeatures?: string[];
 
   @ApiProperty({
-    description: 'Limite de service orders (null = ilimitado)',
+    description: "Limite de service orders (null = ilimitado)",
     nullable: true,
     required: false,
   })
@@ -44,7 +44,7 @@ export class UpdateSubscriptionDto {
   serviceOrdersLimit?: number | null;
 
   @ApiProperty({
-    description: 'Limite de peças (null = ilimitado)',
+    description: "Limite de peças (null = ilimitado)",
     nullable: true,
     required: false,
   })
@@ -52,7 +52,7 @@ export class UpdateSubscriptionDto {
   partsLimit?: number | null;
 
   @ApiProperty({
-    description: 'Ciclo de cobrança',
+    description: "Ciclo de cobrança",
     enum: BillingCycle,
     required: false,
   })
@@ -61,7 +61,7 @@ export class UpdateSubscriptionDto {
   billingCycle?: BillingCycle;
 
   @ApiProperty({
-    description: 'ID da subscription no Stripe',
+    description: "ID da subscription no Stripe",
     required: false,
   })
   @IsString()
@@ -69,7 +69,7 @@ export class UpdateSubscriptionDto {
   stripeSubscriptionId?: string;
 
   @ApiProperty({
-    description: 'ID do customer no Stripe',
+    description: "ID do customer no Stripe",
     required: false,
   })
   @IsString()

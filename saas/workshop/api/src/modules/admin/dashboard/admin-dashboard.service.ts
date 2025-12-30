@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from '../../../database/prisma.service';
+import { Injectable } from "@nestjs/common";
+import { Prisma } from "@prisma/client";
+import { PrismaService } from "../../../database/prisma.service";
 
 @Injectable()
 export class AdminDashboardService {
@@ -33,9 +33,9 @@ export class AdminDashboardService {
       recentAuditLogs,
     ] = await Promise.all([
       this.prisma.tenant.count(),
-      this.prisma.tenant.count({ where: { status: 'active' } }),
-      this.prisma.tenant.count({ where: { status: 'suspended' } }),
-      this.prisma.tenant.count({ where: { status: 'canceled' } }),
+      this.prisma.tenant.count({ where: { status: "active" } }),
+      this.prisma.tenant.count({ where: { status: "suspended" } }),
+      this.prisma.tenant.count({ where: { status: "canceled" } }),
       this.prisma.tenant.count({
         where: { createdAt: { gte: thirtyDaysAgo } },
       }),
@@ -43,29 +43,29 @@ export class AdminDashboardService {
       this.prisma.user.count({ where: { isActive: true } }),
       this.prisma.invoice.aggregate({
         _sum: { total: true },
-        where: { status: 'paid' },
+        where: { status: "paid" },
       }),
       this.prisma.invoice.aggregate({
         _sum: { total: true },
-        where: { status: 'paid', createdAt: { gte: thirtyDaysAgo } },
+        where: { status: "paid", createdAt: { gte: thirtyDaysAgo } },
       }),
       this.prisma.serviceOrder.count({
         where: { createdAt: { gte: thirtyDaysAgo } },
       }),
-      this.prisma.subscription.count({ where: { status: 'active' } }),
+      this.prisma.subscription.count({ where: { status: "active" } }),
       this.prisma.subscription.groupBy({
-        by: ['planId'],
+        by: ["planId"],
         _count: { planId: true },
         where: { planId: { not: null } },
-        orderBy: { _count: { planId: 'desc' } },
+        orderBy: { _count: { planId: "desc" } },
       }),
       this.prisma.supportTicket.count(),
-      this.prisma.supportTicket.count({ where: { status: 'open' } }),
+      this.prisma.supportTicket.count({ where: { status: "open" } }),
       this.prisma.job.count(),
-      this.prisma.job.count({ where: { status: 'failed' } }),
+      this.prisma.job.count({ where: { status: "failed" } }),
       this.prisma.auditLog.findMany({
         take: 10,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         include: {
           user: { select: { name: true, email: true } },
           tenant: { select: { name: true, subdomain: true } },
@@ -99,7 +99,8 @@ export class AdminDashboardService {
           .filter((item) => item.planId)
           .map((item) => ({
             planId: item.planId as string,
-            planName: planMap.get(item.planId as string) ?? 'Plano desconhecido',
+            planName:
+              planMap.get(item.planId as string) ?? "Plano desconhecido",
             count: item._count.planId,
           })),
       },

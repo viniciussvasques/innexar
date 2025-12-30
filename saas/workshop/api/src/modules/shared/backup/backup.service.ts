@@ -3,9 +3,9 @@ import {
   Logger,
   NotFoundException,
   BadRequestException,
-} from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '@database/prisma.service';
+} from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { PrismaService } from "@database/prisma.service";
 import {
   BackupConfigDto,
   BackupType,
@@ -13,15 +13,15 @@ import {
   BackupResponseDto,
   BackupFiltersDto,
   RestoreRequestDto,
-} from './dto';
-import { LocalBackupStrategy } from './strategies/local-backup.strategy';
-import { S3BackupStrategy } from './strategies/s3-backup.strategy';
-import { EncryptionUtil } from './utils/encryption.util';
-import { getErrorMessage, getErrorStack } from '@common/utils/error.utils';
-import { Prisma } from '@prisma/client';
-import { join } from 'node:path';
-import { existsSync, unlinkSync, statSync } from 'node:fs';
-import { randomUUID } from 'node:crypto';
+} from "./dto";
+import { LocalBackupStrategy } from "./strategies/local-backup.strategy";
+import { S3BackupStrategy } from "./strategies/s3-backup.strategy";
+import { EncryptionUtil } from "./utils/encryption.util";
+import { getErrorMessage, getErrorStack } from "@common/utils/error.utils";
+import { Prisma } from "@prisma/client";
+import { join } from "node:path";
+import { existsSync, unlinkSync, statSync } from "node:fs";
+import { randomUUID } from "node:crypto";
 
 @Injectable()
 export class BackupService {
@@ -36,11 +36,11 @@ export class BackupService {
     private readonly s3Strategy: S3BackupStrategy,
   ) {
     this.backupDir =
-      this.configService.get<string>('BACKUP_DIR') || './backups';
+      this.configService.get<string>("BACKUP_DIR") || "./backups";
     this.encryptionKey =
-      this.configService.get<string>('BACKUP_ENCRYPTION_KEY') ||
-      this.configService.get<string>('JWT_SECRET') ||
-      'default-backup-key-change-in-production';
+      this.configService.get<string>("BACKUP_ENCRYPTION_KEY") ||
+      this.configService.get<string>("JWT_SECRET") ||
+      "default-backup-key-change-in-production";
   }
 
   /**
@@ -51,7 +51,7 @@ export class BackupService {
     tenantId?: string,
   ): Promise<BackupResponseDto> {
     const backupId = randomUUID();
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const filename = `backup-${config.type}-${timestamp}.dump`;
     const backupPath = join(this.backupDir, filename);
     const encryptedPath = config.encrypted
@@ -75,11 +75,11 @@ export class BackupService {
       });
 
       this.logger.log(
-        `Iniciando backup ${config.type} para tenant ${tenantId || 'all'}`,
+        `Iniciando backup ${config.type} para tenant ${tenantId || "all"}`,
       );
 
       // Criar backup usando estratégia (S3 se configurado, senão local)
-      const s3Bucket = this.configService.get<string>('AWS_S3_BACKUP_BUCKET');
+      const s3Bucket = this.configService.get<string>("AWS_S3_BACKUP_BUCKET");
       const strategy = s3Bucket ? this.s3Strategy : this.localStrategy;
 
       const result = await strategy.createBackup(
@@ -190,7 +190,7 @@ export class BackupService {
       const [backups, total] = await Promise.all([
         this.prisma.backup.findMany({
           where,
-          orderBy: { startedAt: 'desc' },
+          orderBy: { startedAt: "desc" },
           skip,
           take: limit,
         }),
@@ -223,7 +223,7 @@ export class BackupService {
       const backup = await this.prisma.backup.findFirst({ where });
 
       if (!backup) {
-        throw new NotFoundException('Backup não encontrado');
+        throw new NotFoundException("Backup não encontrado");
       }
 
       return this.toResponseDto(backup);
@@ -254,7 +254,7 @@ export class BackupService {
 
       if (backup.status !== BackupStatus.SUCCESS) {
         throw new BadRequestException(
-          'Backup não pode ser restaurado (status inválido)',
+          "Backup não pode ser restaurado (status inválido)",
         );
       }
 
@@ -264,7 +264,7 @@ export class BackupService {
           id: restoreId,
           backupId: request.backupId,
           tenantId: tenantId || request.tenantId || null,
-          status: 'in_progress',
+          status: "in_progress",
           startedAt: new Date(),
         },
       });
@@ -274,7 +274,7 @@ export class BackupService {
       // Descriptografar se necessário
       let restorePath = backup.path;
       if (backup.encrypted && backup.path) {
-        const decryptedPath = backup.path.replace('.encrypted', '');
+        const decryptedPath = backup.path.replace(".encrypted", "");
         await EncryptionUtil.decryptFile(
           backup.path,
           decryptedPath,
@@ -285,7 +285,7 @@ export class BackupService {
 
       // Restaurar backup
       const strategy = backup.s3Key ? this.s3Strategy : this.localStrategy;
-      await strategy.restoreBackup(restorePath || '');
+      await strategy.restoreBackup(restorePath || "");
 
       // Limpar arquivo descriptografado temporário
       if (backup.encrypted && restorePath && existsSync(restorePath)) {
@@ -296,7 +296,7 @@ export class BackupService {
       await this.prisma.restoreOperation.update({
         where: { id: restoreId },
         data: {
-          status: 'success',
+          status: "success",
           completedAt: new Date(),
         },
       });
@@ -305,7 +305,7 @@ export class BackupService {
 
       return {
         id: restoreId,
-        status: 'success',
+        status: "success",
       };
     } catch (error: unknown) {
       this.logger.error(
@@ -318,7 +318,7 @@ export class BackupService {
         await this.prisma.restoreOperation.update({
           where: { id: restoreId },
           data: {
-            status: 'failed',
+            status: "failed",
             error: getErrorMessage(error),
             completedAt: new Date(),
           },

@@ -1,86 +1,86 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from "@nestjs/swagger";
 
 export class CustomerResponseDto {
   @ApiProperty({
-    description: 'ID do cliente',
-    example: '550e8400-e29b-41d4-a716-446655440000',
+    description: "ID do cliente",
+    example: "550e8400-e29b-41d4-a716-446655440000",
   })
   id: string;
 
   @ApiProperty({
-    description: 'ID do tenant',
-    example: '550e8400-e29b-41d4-a716-446655440000',
+    description: "ID do tenant",
+    example: "550e8400-e29b-41d4-a716-446655440000",
   })
   tenantId: string;
 
   @ApiProperty({
-    description: 'Nome completo do cliente',
-    example: 'João Silva',
+    description: "Nome completo do cliente",
+    example: "João Silva",
   })
   name: string;
 
   @ApiProperty({
-    description: 'Email do cliente',
-    example: 'joao.silva@email.com',
+    description: "Email do cliente",
+    example: "joao.silva@email.com",
     required: false,
     nullable: true,
   })
   email: string | null;
 
   @ApiProperty({
-    description: 'Telefone do cliente',
-    example: '(11) 98765-4321',
+    description: "Telefone do cliente",
+    example: "(11) 98765-4321",
   })
   phone: string;
 
   @ApiProperty({
-    description: 'Tipo de documento',
-    example: 'cpf',
-    enum: ['cpf', 'cnpj'],
+    description: "Tipo de documento",
+    example: "cpf",
+    enum: ["cpf", "cnpj"],
   })
   documentType: string;
 
   @ApiProperty({
-    description: 'CPF do cliente (se pessoa física)',
-    example: '12345678901',
+    description: "CPF do cliente (se pessoa física)",
+    example: "12345678901",
     required: false,
     nullable: true,
   })
   cpf: string | null;
 
   @ApiProperty({
-    description: 'CNPJ da empresa (se pessoa jurídica)',
-    example: '12345678000199',
+    description: "CNPJ da empresa (se pessoa jurídica)",
+    example: "12345678000199",
     required: false,
     nullable: true,
   })
   cnpj: string | null;
 
   @ApiProperty({
-    description: 'Endereço completo do cliente',
-    example: 'Rua das Flores, 123 - Centro - São Paulo/SP',
+    description: "Endereço completo do cliente",
+    example: "Rua das Flores, 123 - Centro - São Paulo/SP",
     required: false,
     nullable: true,
   })
   address: string | null;
 
   @ApiProperty({
-    description: 'Observações sobre o cliente',
-    example: 'Cliente preferencial, sempre paga em dia',
+    description: "Observações sobre o cliente",
+    example: "Cliente preferencial, sempre paga em dia",
     required: false,
     nullable: true,
   })
   notes: string | null;
 
   @ApiProperty({
-    description: 'Data de criação',
-    example: '2024-01-01T00:00:00.000Z',
+    description: "Data de criação",
+    example: "2024-01-01T00:00:00.000Z",
   })
   createdAt: Date;
 
   @ApiProperty({
-    description: 'Data de atualização',
-    example: '2024-01-01T00:00:00.000Z',
+    description: "Data de atualização",
+    example: "2024-01-01T00:00:00.000Z",
   })
   updatedAt: Date;
 }
